@@ -235,10 +235,9 @@
                         console.log('Stored data:', localStorage.getItem('currentUser'));
                         Toast.success('Admin login successful! Redirecting...');
                         setTimeout(() => {
-                            const currentUrl = window.location.href;
-                            const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/'));
-                            window.location.href = baseUrl + '/dashboard.html';
-                        }, 1500);
+                            // Direct navigation to dashboard
+                            window.location.replace('dashboard.html');
+                        }, 1000);
                     } else {
                         console.log('Invalid credentials');
                         Toast.error('Invalid credentials. Try: admin / admin123');
