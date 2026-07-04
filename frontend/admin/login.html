@@ -169,60 +169,86 @@
     <script src="../assets/js/auth.js"></script>
     <script src="../assets/js/validation.js"></script>
     <script>
-        document.getElementById('togglePassword').addEventListener('click', function() {
-            const password = document.getElementById('password');
-            const icon = this.querySelector('i');
-            if (password.type === 'password') {
-                password.type = 'text';
-                icon.classList.replace('bi-eye', 'bi-eye-slash');
-            } else {
-                password.type = 'password';
-                icon.classList.replace('bi-eye-slash', 'bi-eye');
+        console.log('Admin login page loaded');
+        
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM ready, initializing admin login');
+            
+            const togglePasswordBtn = document.getElementById('togglePassword');
+            const form = document.getElementById('adminLoginForm');
+            
+            if (!togglePasswordBtn) console.error('togglePassword button not found');
+            if (!form) console.error('adminLoginForm not found');
+            
+            if (togglePasswordBtn) {
+                togglePasswordBtn.addEventListener('click', function() {
+                    const password = document.getElementById('password');
+                    const icon = this.querySelector('i');
+                    if (password.type === 'password') {
+                        password.type = 'text';
+                        icon.classList.replace('bi-eye', 'bi-eye-slash');
+                    } else {
+                        password.type = 'password';
+                        icon.classList.replace('bi-eye-slash', 'bi-eye');
+                    }
+                });
+            }
+            
+            if (form) {
+                form.addEventListener('submit', (e) => {
+                    console.log('Form submitted');
+                    e.preventDefault();
+                    
+                    const username = document.getElementById('username').value.trim();
+                    const password = document.getElementById('password').value.trim();
+                    
+                    console.log('Username:', username);
+                    console.log('Password length:', password.length);
+                    
+                    // Validate required fields
+                    let isValid = true;
+                    if (!username) {
+                        Validation.showError(document.getElementById('username'), 'Username is required');
+                        isValid = false;
+                    } else {
+                        Validation.showSuccess(document.getElementById('username'));
+                    }
+                    
+                    if (!password) {
+                        Validation.showError(document.getElementById('password'), 'Password is required');
+                        isValid = false;
+                    } else {
+                        Validation.showSuccess(document.getElementById('password'));
+                    }
+                    
+                    if (!isValid) {
+                        console.log('Form validation failed');
+                        return;
+                    }
+                    
+                    // Demo: username "admin", password "admin123"
+                    if (username === 'admin' && password === 'admin123') {
+                        console.log('Credentials matched, logging in');
+                        const user = Auth.login(username + '@admin.local', password, 'admin');
+                        console.log('User logged in:', user);
+                        Toast.success('Admin login successful! Redirecting...');
+                        setTimeout(() => {
+                            window.location.href = 'dashboard.html';
+                        }, 1500);
+                    } else {
+                        console.log('Invalid credentials');
+                        Toast.error('Invalid credentials. Try: admin / admin123');
+                    }
+                });
+            }
+            
+            // Check if already logged in as admin
+            if (Auth.isAdmin()) {
+                console.log('Already logged in as admin, redirecting to dashboard');
+                window.location.href = 'dashboard.html';
             }
         });
-        
-        const form = document.getElementById('adminLoginForm');
-        
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim();
-            
-            // Validate required fields
-            let isValid = true;
-            if (!username) {
-                Validation.showError(document.getElementById('username'), 'Username is required');
-                isValid = false;
-            } else {
-                Validation.showSuccess(document.getElementById('username'));
-            }
-            
-            if (!password) {
-                Validation.showError(document.getElementById('password'), 'Password is required');
-                isValid = false;
-            } else {
-                Validation.showSuccess(document.getElementById('password'));
-            }
-            
-            if (!isValid) return;
-            
-            // Demo: username "admin", password "admin123"
-            if (username === 'admin' && password === 'admin123') {
-                const user = Auth.login(username + '@admin.local', password, 'admin');
-                Toast.success('Admin login successful! Redirecting...');
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 1500);
-            } else {
-                Toast.error('Invalid credentials. Try: admin / admin123');
-            }
-        });
-        
-        // Check if already logged in as admin
-        if (Auth.isAdmin()) {
-            window.location.href = 'dashboard.html';
-        }
     </script>
 </body>
 </html>
