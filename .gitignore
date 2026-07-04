@@ -55,3 +55,7 @@ update-footers.ps1
 # Kiro specific
 .kiro/
 .vscode/
+
+# Installers
+*.exe
+postgresql_*.exe
