@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Checkout - Fashion Store">
+    <title>Checkout - Fashion Store</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@300;400;500;600;700&family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/animations.css">
+    <link rel="stylesheet" href="assets/css/responsive.css">
+    
+    <style>
+        .checkout-section {
+            padding: var(--spacing-4xl) 0;
+            background: var(--off-white);
+            min-height: 80vh;
+        }
+        
+        .checkout-header {
+            text-align: center;
+            margin-bottom: var(--spacing-3xl);
+            padding-top: var(--spacing-2xl);
+        }
+        
+        .checkout-header h1 {
+            font-family: var(--font-secondary);
+            font-size: var(--font-size-5xl);
+            font-weight: var(--font-weight-light);
+            color: var(--primary-color);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .checkout-steps {
+            display: flex;
+            justify-content: center;
+            margin-bottom: var(--spacing-4xl);
+            position: relative;
+        }
+        
+        .checkout-steps::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 25%;
+            right: 25%;
+            height: 2px;
+            background: var(--gray-300);
+            z-index: 0;
+        }
+        
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            max-width: 200px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gray-300);
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--spacing-sm);
+            transition: all var(--transition-base);
+        }
+        
+        .step.active .step-number {
+            background: var(--secondary-color);
+            transform: scale(1.1);
+        }
+        
+        .step.completed .step-number {
+            background: var(--success);
+        }
+        
+        .step-label {
+            font-size: var(--font-size-xs);
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wider);
+            color: var(--gray-600);
+        }
+        
+        .step.active .step-label {
+            color: var(--primary-color);
+            font-weight: var(--font-weight-semibold);
+        }
+        
+        .checkout-card {
+            background: var(--white);
+            padding: var(--spacing-3xl);
+            border: 1px solid var(--gray-200);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .checkout-card h3 {
+            font-family: var(--font-primary);
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-semibold);
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wider);
+            margin-bottom: var(--spacing-xl);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 2px solid var(--gray-200);
+        }
+        
+        .form-label {
+            font-size: var(--font-size-xs);
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wider);
+            font-weight: var(--font-weight-semibold);
+            color: var(--gray-700);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .form-control,
+        .form-select {
+            border: 2px solid var(--gray-300);
+            border-radius: 0;
+            padding: var(--spacing-md);
+            font-size: var(--font-size-base);
+            transition: border-color var(--transition-fast);
+        }
+        
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--secondary-color);
+            box-shadow: none;
+        }
+        
+        .order-summary {
+            background: var(--white);
+            padding: var(--spacing-2xl);
+            border: 2px solid var(--gray-200);
+            position: sticky;
+            top: 100px;
+        }
+        
+        .order-summary h3 {
+            font-family: var(--font-primary);
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-semibold);
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wider);
+            margin-bottom: var(--spacing-xl);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 2px solid var(--gray-200);
+        }
+        
+        .order-item {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        
+        .order-item-image {
+            width: 60px;
+            height: 75px;
+            object-fit: cover;
+            border: 1px solid var(--gray-200);
+        }
+        
+        .order-item-details h5 {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: 0.25rem;
+        }
+        
+        .order-item-details p {
+            font-size: var(--font-size-xs);
+            color: var(--gray-600);
+            margin-bottom: 0;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-md);
+            font-size: var(--font-size-base);
+        }
+        
+        .summary-row.total {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--primary-color);
+            padding-top: var(--spacing-md);
+            border-top: 2px solid var(--gray-200);
+            margin-top: var(--spacing-lg);
+        }
+        
+        .payment-method {
+            border: 2px solid var(--gray-300);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        
+        .payment-method:hover {
+            border-color: var(--secondary-color);
+            background: var(--cream);
+        }
+        
+        .payment-method.selected {
+            border-color: var(--secondary-color);
+            background: var(--cream);
+        }
+        
+        .payment-method input[type="radio"] {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .payment-method input[type="radio"]:checked {
+            accent-color: var(--secondary-color);
+        }
+        
+        .btn-place-order {
+            background: var(--primary-color);
+            color: var(--white);
+            border: 2px solid var(--primary-color);
+            padding: 1rem 2rem;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wider);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            transition: all var(--transition-base);
+            margin-top: var(--spacing-xl);
+        }
+        
+        .btn-place-order:hover {
+            background: transparent;
+            color: var(--primary-color);
+        }
+        
+        .btn-next,
+        .btn-back {
+            padding: 0.75rem 2rem;
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wider);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            transition: all var(--transition-base);
+        }
+        
+        .btn-next {
+            background: var(--primary-color);
+            color: var(--white);
+            border: 2px solid var(--primary-color);
+        }
+        
+        .btn-next:hover {
+            background: transparent;
+            color: var(--primary-color);
+        }
+        
+        .btn-back {
+            background: transparent;
+            color: var(--gray-700);
+            border: 2px solid var(--gray-300);
+        }
+        
+        .btn-back:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .checkout-step {
+            display: none;
+        }
+        
+        .checkout-step.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm" id="mainNavbar" style="padding: 1.5rem 0;">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <h3 class="mb-0 fw-bold" style="font-family: var(--font-accent); letter-spacing: 0.1em; font-size: 1.5rem;">
+                    FASHION<span style="color: var(--secondary-color);">STORE</span>
+                </h3>
+            </a>
+        </div>
+    </nav>
+    
+    <!-- Checkout Section -->
+    <section class="checkout-section">
+        <div class="container">
+            <!-- Checkout Header -->
+            <div class="checkout-header">
+                <h1>Checkout</h1>
+                <p class="text-muted">Complete your purchase</p>
+            </div>
+            
+            <!-- Progress Steps -->
+            <div class="checkout-steps">
+                <div class="step active" data-step="1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Shipping</div>
+                </div>
+                <div class="step" data-step="2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Review</div>
+                </div>
+                <div class="step" data-step="3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Payment</div>
+                </div>
+            </div>
+            
+            <!-- Checkout Content -->
+            <div class="row g-4">
+                <!-- Checkout Forms -->
+                <div class="col-lg-8">
+                    <!-- Step 1: Shipping Information -->
+                    <div class="checkout-step active" id="step1">
+                        <div class="checkout-card">
+                            <h3>Shipping Information</h3>
+                            
+                            <form id="shippingForm">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="firstName" class="form-label">First Name</label>
+                                            <input type="text" class="form-control" id="firstName" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="lastName" class="form-label">Last Name</label>
+                                            <input type="text" class="form-control" id="lastName" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <div class="mb-3">
+                                            <label for="email" class="form-label">Email Address</label>
+                                            <input type="email" class="form-control" id="email" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <div class="mb-3">
+                                            <label for="phone" class="form-label">Phone Number</label>
+                                            <input type="tel" class="form-control" id="phone" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <div class="mb-3">
+                                            <label for="address" class="form-label">Street Address</label>
+                                            <input type="text" class="form-control" id="address" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <div class="mb-3">
+                                            <label for="apartment" class="form-label">Apartment, Suite, etc. (Optional)</label>
+                                            <input type="text" class="form-control" id="apartment">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="city" class="form-label">City</label>
+                                            <input type="text" class="form-control" id="city" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label for="state" class="form-label">State</label>
+                                            <select class="form-select" id="state" required>
+                                                <option value="">Choose...</option>
+                                                <option>New York</option>
+                                                <option>California</option>
+                                                <option>Texas</option>
+                                                <option>Florida</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label for="zip" class="form-label">ZIP Code</label>
+                                            <input type="text" class="form-control" id="zip" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="saveAddress">
+                                            <label class="form-check-label" for="saveAddress" style="text-transform: none; letter-spacing: normal; font-size: 0.875rem;">
+                                                Save this address for future orders
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between mt-4">
+                                    <a href="cart.html" class="btn btn-back">
+                                        <i class="bi bi-arrow-left me-2"></i> Back to Cart
+                                    </a>
+                                    <button type="button" class="btn btn-next" id="toReview">
+                                        Continue to Review <i class="bi bi-arrow-right ms-2"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2: Order Review -->
+                    <div class="checkout-step" id="step2">
+                        <div class="checkout-card">
+                            <h3>Review Your Order</h3>
+                            
+                            <div class="mb-4">
+                                <h5 class="text-uppercase mb-3" style="font-size: 0.875rem; letter-spacing: 0.1em; color: var(--gray-700);">Shipping Address</h5>
+                                <div id="reviewAddress" style="line-height: 1.8; color: var(--gray-600);"></div>
+                                <button type="button" class="btn btn-sm mt-2" style="border: 1px solid var(--gray-400); color: var(--gray-700);" id="editShipping">
+                                    <i class="bi bi-pencil me-1"></i> Edit
+                                </button>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h5 class="text-uppercase mb-3" style="font-size: 0.875rem; letter-spacing: 0.1em; color: var(--gray-700);">Order Items</h5>
+                                <div id="reviewItems"></div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-back" id="backToShipping">
+                                    <i class="bi bi-arrow-left me-2"></i> Back
+                                </button>
+                                <button type="button" class="btn btn-next" id="toPayment">
+                                    Continue to Payment <i class="bi bi-arrow-right ms-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3: Payment -->
+                    <div class="checkout-step" id="step3">
+                        <div class="checkout-card">
+                            <h3>Payment Method</h3>
+                            
+                            <div class="payment-methods">
+                                <div class="payment-method selected" data-method="card">
+                                    <div class="d-flex align-items-center">
+                                        <input type="radio" name="payment" value="card" checked class="me-3">
+                                        <div class="flex-grow-1">
+                                            <h5 class="mb-1" style="font-size: 1rem; font-weight: 600;">Credit / Debit Card</h5>
+                                            <p class="mb-0 text-muted" style="font-size: 0.875rem;">Pay securely with your card</p>
+                                        </div>
+                                        <div>
+                                            <i class="bi bi-credit-card" style="font-size: 2rem; color: var(--gray-400);"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="payment-method" data-method="paypal">
+                                    <div class="d-flex align-items-center">
+                                        <input type="radio" name="payment" value="paypal" class="me-3">
+                                        <div class="flex-grow-1">
+                                            <h5 class="mb-1" style="font-size: 1rem; font-weight: 600;">PayPal</h5>
+                                            <p class="mb-0 text-muted" style="font-size: 0.875rem;">Fast and secure payment</p>
+                                        </div>
+                                        <div>
+                                            <i class="bi bi-paypal" style="font-size: 2rem; color: var(--gray-400);"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="payment-method" data-method="cod">
+                                    <div class="d-flex align-items-center">
+                                        <input type="radio" name="payment" value="cod" class="me-3">
+                                        <div class="flex-grow-1">
+                                            <h5 class="mb-1" style="font-size: 1rem; font-weight: 600;">Cash on Delivery</h5>
+                                            <p class="mb-0 text-muted" style="font-size: 0.875rem;">Pay when you receive</p>
+                                        </div>
+                                        <div>
+                                            <i class="bi bi-cash" style="font-size: 2rem; color: var(--gray-400);"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="cardForm" class="mt-4">
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <div class="mb-3">
+                                            <label for="cardNumber" class="form-label">Card Number</label>
+                                            <input type="text" class="form-control" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <div class="mb-3">
+                                            <label for="cardName" class="form-label">Cardholder Name</label>
+                                            <input type="text" class="form-control" id="cardName" placeholder="John Doe">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="cardExpiry" class="form-label">Expiry Date</label>
+                                            <input type="text" class="form-control" id="cardExpiry" placeholder="MM/YY" maxlength="5">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="cardCVV" class="form-label">CVV</label>
+                                            <input type="text" class="form-control" id="cardCVV" placeholder="123" maxlength="4">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-back" id="backToReview">
+                                    <i class="bi bi-arrow-left me-2"></i> Back
+                                </button>
+                                <button type="button" class="btn btn-place-order" id="placeOrderBtn">
+                                    Place Order <i class="bi bi-lock ms-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Order Summary Sidebar -->
+                <div class="col-lg-4">
+                    <div class="order-summary">
+                        <h3>Order Summary</h3>
+                        
+                        <div id="orderItems" class="mb-4">
+                            <!-- Order items will be loaded here -->
+                        </div>
+                        
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <span id="subtotal">$0.00</span>
+                        </div>
+                        
+                        <div class="summary-row">
+                            <span>Shipping</span>
+                            <span id="shipping">$10.00</span>
+                        </div>
+                        
+                        <div class="summary-row">
+                            <span>Tax (10%)</span>
+                            <span id="tax">$0.00</span>
+                        </div>
+                        
+                        <div class="summary-row total">
+                            <span>Total</span>
+                            <span id="total">$0.00</span>
+                        </div>
+                        
+                        <div class="text-center mt-3">
+                            <small class="text-muted">
+                                <i class="bi bi-shield-check me-1"></i> 100% Secure Checkout
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="footer bg-dark text-white pt-5 pb-3">
+        <div class="container">
+            <div class="border-top border-secondary pt-3 text-center">
+                <p class="text-white-50 mb-0">&copy; 2026 FashionStore. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/checkout.js"></script>
+    
+</body>
+</html>

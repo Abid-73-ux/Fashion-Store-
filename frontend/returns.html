@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Returns & Exchange Policy - Fashion Store">
+    <title>Returns & Exchange - Fashion Store</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@300;400;500;600;700&family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/animations.css">
+    <link rel="stylesheet" href="assets/css/responsive.css">
+    
+    <style>
+        .page-hero {
+            background: linear-gradient(135deg, rgba(0,0,0,0.7), rgba(0,0,0,0.4)),
+                        url('https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=2070') center/cover;
+            min-height: 40vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--white);
+        }
+        
+        .page-hero h1 {
+            font-size: var(--font-size-6xl);
+            color: var(--white);
+            margin-bottom: var(--spacing-lg);
+            font-family: var(--font-secondary);
+            font-weight: var(--font-weight-light);
+        }
+        
+        .content-section {
+            padding: var(--spacing-4xl) 0;
+        }
+        
+        .policy-card {
+            background: var(--white);
+            padding: var(--spacing-2xl);
+            margin-bottom: var(--spacing-xl);
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .policy-card h3 {
+            font-family: var(--font-primary);
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-semibold);
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wider);
+            margin-bottom: var(--spacing-lg);
+            color: var(--primary-color);
+        }
+        
+        .policy-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .policy-card ul li {
+            padding: var(--spacing-sm) 0;
+            padding-left: var(--spacing-xl);
+            position: relative;
+            color: var(--gray-600);
+            line-height: 1.8;
+        }
+        
+        .policy-card ul li::before {
+            content: '\F26A';
+            font-family: 'bootstrap-icons';
+            position: absolute;
+            left: 0;
+            color: var(--secondary-color);
+            font-size: 1.2rem;
+        }
+        
+        .info-box {
+            background: var(--cream);
+            padding: var(--spacing-xl);
+            border: 1px solid var(--gray-200);
+            margin: var(--spacing-xl) 0;
+        }
+        
+        .info-box h4 {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--spacing-md);
+            color: var(--primary-color);
+        }
+        
+        .steps-list {
+            counter-reset: step-counter;
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .steps-list li {
+            counter-increment: step-counter;
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            position: relative;
+            padding-left: 80px;
+        }
+        
+        .steps-list li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: var(--spacing-lg);
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            background: var(--primary-color);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
+            font-family: var(--font-accent);
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm" id="mainNavbar" style="padding: 1.5rem 0;">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <h3 class="mb-0 fw-bold" style="font-family: var(--font-accent); letter-spacing: 0.1em; font-size: 1.5rem;">
+                    FASHION<span style="color: var(--secondary-color);">STORE</span>
+                </h3>
+            </a>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-lg-1">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem; font-weight: 500;">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="shop.html" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem; font-weight: 500;">Shop</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="categoriesDropdown" role="button" data-bs-toggle="dropdown" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem; font-weight: 500;">
+                            Categories
+                        </a>
+                        <ul class="dropdown-menu border-0 shadow-lg">
+                            <li><a class="dropdown-item" href="shop.html?category=men">Men</a></li>
+                            <li><a class="dropdown-item" href="shop.html?category=women">Women</a></li>
+                            <li><a class="dropdown-item" href="shop.html?category=children">Children</a></li>
+                            <li><a class="dropdown-item" href="shop.html?category=accessories">Accessories</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="about.html" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem; font-weight: 500;">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact.html" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem; font-weight: 500;">Contact</a>
+                    </li>
+                </ul>
+                
+                <div class="d-flex align-items-center gap-3">
+                    <a href="wishlist.html" class="btn btn-link text-dark p-0" title="Wishlist">
+                        <i class="bi bi-heart" style="font-size: 1.25rem;"></i>
+                    </a>
+                    
+                    <a href="cart.html" class="btn btn-link text-dark p-0 position-relative" title="Shopping Cart">
+                        <i class="bi bi-bag" style="font-size: 1.25rem;"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" style="background: var(--secondary-color); font-size: 0.65rem;" id="cartCount">0</span>
+                    </a>
+                    
+                    <a href="login.html" class="btn btn-sm" style="background: var(--primary-color); color: var(--white); padding: 0.5rem 1.5rem; letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.75rem;">Login</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Hero Section -->
+    <section class="page-hero">
+        <div class="container">
+            <h1>Returns & Exchange</h1>
+            <p class="lead" style="color: var(--cream);">Our hassle-free return policy</p>
+        </div>
+    </section>
+    
+    <!-- Content Section -->
+    <section class="content-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <!-- Overview -->
+                    <div class="text-center mb-5">
+                        <h6 class="text-uppercase mb-3" style="color: var(--secondary-color); letter-spacing: 0.15em;">Our Promise</h6>
+                        <h2>Shop with Confidence</h2>
+                        <div class="divider"></div>
+                        <p class="text-muted">We want you to be completely satisfied with your purchase. If for any reason you're not happy, we offer a simple 30-day return policy.</p>
+                    </div>
+                    
+                    <!-- Return Policy -->
+                    <div class="policy-card">
+                        <h3><i class="bi bi-arrow-repeat me-3" style="color: var(--secondary-color);"></i>Return Policy</h3>
+                        <p class="mb-4">Items may be returned within 30 days of purchase for a full refund or exchange.</p>
+                        <ul>
+                            <li>Items must be in original, unworn, unwashed condition</li>
+                            <li>All original tags must be attached</li>
+                            <li>Original packaging must be included</li>
+                            <li>Items must not have any signs of wear or damage</li>
+                            <li>Sale and clearance items are final sale</li>
+                            <li>Intimate apparel, swimwear, and earrings cannot be returned for hygiene reasons</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Exchange Policy -->
+                    <div class="policy-card">
+                        <h3><i class="bi bi-arrow-left-right me-3" style="color: var(--secondary-color);"></i>Exchange Policy</h3>
+                        <p class="mb-4">We offer free exchanges for size or color within 30 days of purchase.</p>
+                        <ul>
+                            <li>Exchanges are subject to availability</li>
+                            <li>Original item must meet return conditions</li>
+                            <li>Exchange shipping is free within the US</li>
+                            <li>International exchanges may incur shipping fees</li>
+                            <li>We'll ship your new item as soon as we receive your return</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- How to Return -->
+                    <div class="mt-5">
+                        <h2 class="mb-4 text-center">How to Return an Item</h2>
+                        <ol class="steps-list">
+                            <li>
+                                <h5>Initiate Return</h5>
+                                <p class="mb-0 text-muted">Log into your account and go to "My Orders". Select the item you wish to return and click "Return Item".</p>
+                            </li>
+                            <li>
+                                <h5>Print Label</h5>
+                                <p class="mb-0 text-muted">Print the prepaid return shipping label provided in your return confirmation email.</p>
+                            </li>
+                            <li>
+                                <h5>Package Item</h5>
+                                <p class="mb-0 text-muted">Place the item in its original packaging with all tags attached. Include your return form.</p>
+                            </li>
+                            <li>
+                                <h5>Ship</h5>
+                                <p class="mb-0 text-muted">Drop off your package at any authorized shipping location. Keep your tracking number.</p>
+                            </li>
+                            <li>
+                                <h5>Refund</h5>
+                                <p class="mb-0 text-muted">Once we receive and inspect your return, we'll process your refund within 5-7 business days.</p>
+                            </li>
+                        </ol>
+                    </div>
+                    
+                    <!-- Refund Information -->
+                    <div class="info-box">
+                        <h4><i class="bi bi-cash-stack me-2" style="color: var(--secondary-color);"></i>Refund Information</h4>
+                        <ul class="mb-0" style="list-style: disc; padding-left: 1.5rem;">
+                            <li class="mb-2">Refunds are issued to the original payment method</li>
+                            <li class="mb-2">Please allow 5-7 business days for refund processing</li>
+                            <li class="mb-2">Bank processing times may vary (typically 3-5 business days)</li>
+                            <li class="mb-2">Original shipping charges are non-refundable</li>
+                            <li>Return shipping is free within the US; international customers responsible for return shipping costs</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Contact -->
+                    <div class="text-center mt-5 p-4" style="background: var(--cream);">
+                        <h4 class="mb-3">Need Help?</h4>
+                        <p class="mb-4">Our customer service team is here to assist you with your return.</p>
+                        <div class="d-flex justify-content-center gap-4 flex-wrap">
+                            <div>
+                                <i class="bi bi-envelope fs-4 d-block mb-2" style="color: var(--secondary-color);"></i>
+                                <a href="mailto:returns@fashionstore.com" class="text-decoration-none">returns@fashionstore.com</a>
+                            </div>
+                            <div>
+                                <i class="bi bi-telephone fs-4 d-block mb-2" style="color: var(--secondary-color);"></i>
+                                <a href="tel:+12345678900" class="text-decoration-none">+1 234 567 8900</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="footer bg-dark text-white pt-5 pb-3">
+        <div class="container">
+            <div class="row g-4 mb-5">
+                <!-- Company Info -->
+                <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                    <h3 class="fw-bold mb-4" style="font-family: var(--font-accent); letter-spacing: 0.05em; font-size: 1.5rem; word-spacing: -0.3em;">
+                        FASHION<span style="color: var(--secondary-color);">STORE</span>
+                    </h3>
+                    <p class="text-white-50" style="line-height: 1.8; font-size: 0.9rem; max-width: 280px;">Your destination for premium clothing and timeless fashion.</p>
+                    <div class="social-links mt-4">
+                        <a href="#" class="btn btn-outline-light btn-sm me-2" style="width: 40px; height: 40px;"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="btn btn-outline-light btn-sm me-2" style="width: 40px; height: 40px;"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="btn btn-outline-light btn-sm me-2" style="width: 40px; height: 40px;"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="btn btn-outline-light btn-sm" style="width: 40px; height: 40px;"><i class="bi bi-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <!-- Shop Links -->
+                <div class="col-lg-2 col-md-6 col-6 mb-4 mb-lg-0">
+                    <h5 class="mb-3" style="font-weight: 600; font-size: 1rem;">Shop</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="shop.html?category=men" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Men</a></li>
+                        <li class="mb-2"><a href="shop.html?category=women" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Women</a></li>
+                        <li class="mb-2"><a href="shop.html?category=children" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Children</a></li>
+                        <li class="mb-2"><a href="shop.html?category=accessories" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Accessories</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Customer Service -->
+                <div class="col-lg-3 col-md-6 col-6 mb-4 mb-lg-0">
+                    <h5 class="mb-3" style="font-weight: 600; font-size: 1rem;">Customer Service</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="contact.html" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Contact Us</a></li>
+                        <li class="mb-2"><a href="shipping.html" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Shipping Info</a></li>
+                        <li class="mb-2"><a href="returns.html" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Returns</a></li>
+                        <li class="mb-2"><a href="faq.html" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">FAQ</a></li>
+                    </ul>
+                </div>
+                
+                <!-- About & Contact -->
+                <div class="col-lg-4 col-md-6">
+                    <h5 class="mb-3" style="font-weight: 600; font-size: 1rem;">Contact</h5>
+                    <ul class="list-unstyled text-white-50" style="font-size: 0.9rem;">
+                        <li class="mb-2"><i class="bi bi-geo-alt me-2"></i>123 Fashion St, NY</li>
+                        <li class="mb-2"><i class="bi bi-telephone me-2"></i>+1 234 567 8900</li>
+                        <li class="mb-2"><i class="bi bi-envelope me-2"></i>info@fashionstore.com</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Copyright -->
+            <div class="border-top border-secondary pt-4 text-center">
+                <p class="text-white-50 mb-0" style="font-size: 0.875rem;">&copy; 2026 FashionStore. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/main.js"></script>
+    
+</body>
+</html>

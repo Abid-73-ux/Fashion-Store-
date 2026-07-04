@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="My Orders - Fashion Store">
+    <title>My Orders - Fashion Store</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@300;400;500;600;700&family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/animations.css">
+    <link rel="stylesheet" href="assets/css/responsive.css">
+    
+    <style>
+        .orders-section {
+            padding: var(--spacing-4xl) 0;
+            background: var(--off-white);
+            min-height: 70vh;
+        }
+        
+        .orders-header {
+            text-align: center;
+            margin-bottom: var(--spacing-3xl);
+            padding-top: var(--spacing-2xl);
+        }
+        
+        .orders-header h1 {
+            font-family: var(--font-secondary);
+            font-size: var(--font-size-5xl);
+            font-weight: var(--font-weight-light);
+            color: var(--primary-color);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .order-card {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-lg);
+            transition: all var(--transition-base);
+        }
+        
+        .order-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            padding-bottom: var(--spacing-md);
+            border-bottom: 1px solid var(--gray-200);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .order-number {
+            font-family: var(--font-accent);
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-bold);
+            color: var(--primary-color);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .order-date {
+            font-size: var(--font-size-sm);
+            color: var(--gray-600);
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wide);
+        }
+        
+        .order-status {
+            padding: 0.5rem 1.5rem;
+            font-size: var(--font-size-xs);
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wider);
+            font-weight: var(--font-weight-semibold);
+            border: 2px solid;
+        }
+        
+        .status-delivered {
+            background: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+        
+        .status-processing {
+            background: #fff3cd;
+            color: #856404;
+            border-color: #ffeeba;
+        }
+        
+        .status-shipped {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-color: #bee5eb;
+        }
+        
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+        
+        .order-items {
+            display: flex;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .order-item-image {
+            width: 80px;
+            height: 100px;
+            object-fit: cover;
+            border: 1px solid var(--gray-200);
+        }
+        
+        .order-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: var(--spacing-md);
+            border-top: 1px solid var(--gray-200);
+        }
+        
+        .order-total {
+            font-family: var(--font-accent);
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--secondary-color);
+        }
+        
+        .order-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+        
+        .btn-order-action {
+            background: transparent;
+            border: 2px solid var(--gray-300);
+            padding: 0.5rem 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wider);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            transition: all var(--transition-base);
+            color: var(--gray-700);
+        }
+        
+        .btn-order-action:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .btn-order-action.primary {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: var(--white);
+        }
+        
+        .btn-order-action.primary:hover {
+            background: transparent;
+            color: var(--primary-color);
+        }
+        
+        .empty-orders {
+            text-align: center;
+            padding: var(--spacing-5xl) 0;
+        }
+        
+        .empty-orders i {
+            font-size: 6rem;
+            color: var(--gray-300);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .empty-orders h2 {
+            font-family: var(--font-secondary);
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-light);
+            color: var(--gray-600);
+            margin-bottom: var(--spacing-lg);
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm" id="mainNavbar">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <h3 class="mb-0 fw-bold" style="font-family: var(--font-accent); letter-spacing: 0.1em;">
+                    FASHION<span style="color: var(--secondary-color);">STORE</span>
+                </h3>
+            </a>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem;">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="shop.html" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem;">Shop</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="categoriesDropdown" role="button" data-bs-toggle="dropdown" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem;">
+                            Categories
+                        </a>
+                        <ul class="dropdown-menu border-0 shadow-lg">
+                            <li><a class="dropdown-item" href="shop.html?category=men">Men</a></li>
+                            <li><a class="dropdown-item" href="shop.html?category=women">Women</a></li>
+                            <li><a class="dropdown-item" href="shop.html?category=accessories">Accessories</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="about.html" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem;">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact.html" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem;">Contact</a>
+                    </li>
+                </ul>
+                
+                <div class="d-flex align-items-center gap-3">
+                    <a href="wishlist.html" class="btn btn-link text-dark p-0" title="Wishlist">
+                        <i class="bi bi-heart" style="font-size: 1.25rem;"></i>
+                    </a>
+                    
+                    <a href="cart.html" class="btn btn-link text-dark p-0 position-relative" title="Shopping Cart">
+                        <i class="bi bi-bag" style="font-size: 1.25rem;"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" style="background: var(--secondary-color); font-size: 0.65rem;" id="cartCount">0</span>
+                    </a>
+                    
+                    <div class="dropdown">
+                        <button class="btn btn-link text-dark p-0 dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" style="font-size: 1.25rem;">
+                            <i class="bi bi-person-circle"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg">
+                            <li><a class="dropdown-item" href="profile.html"><i class="bi bi-person me-2"></i>Profile</a></li>
+                            <li><a class="dropdown-item active" href="orders.html"><i class="bi bi-box-seam me-2"></i>Orders</a></li>
+                            <li><a class="dropdown-item" href="wishlist.html"><i class="bi bi-heart me-2"></i>Wishlist</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" id="logoutBtn"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Orders Section -->
+    <section class="orders-section">
+        <div class="container">
+            <!-- Orders Header -->
+            <div class="orders-header">
+                <h1>My Orders</h1>
+                <p class="text-muted">Track and manage your orders</p>
+            </div>
+            
+            <!-- Orders List -->
+            <div id="ordersList">
+                <!-- Order Card 1 -->
+                <div class="order-card">
+                    <div class="order-header">
+                        <div>
+                            <div class="order-number">Order #FS-2026-001</div>
+                            <div class="order-date">Placed on June 28, 2026</div>
+                        </div>
+                        <span class="order-status status-delivered">Delivered</span>
+                    </div>
+                    
+                    <div class="order-items">
+                        <img src="https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?q=80&w=200" alt="Product" class="order-item-image">
+                        <img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=200" alt="Product" class="order-item-image">
+                        <img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=200" alt="Product" class="order-item-image">
+                    </div>
+                    
+                    <div class="order-footer">
+                        <div>
+                            <span class="text-muted me-2" style="font-size: var(--font-size-sm);">Total:</span>
+                            <span class="order-total">$379.97</span>
+                        </div>
+                        <div class="order-actions">
+                            <button class="btn-order-action">Track Order</button>
+                            <button class="btn-order-action primary">View Details</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Order Card 2 -->
+                <div class="order-card">
+                    <div class="order-header">
+                        <div>
+                            <div class="order-number">Order #FS-2026-002</div>
+                            <div class="order-date">Placed on July 1, 2026</div>
+                        </div>
+                        <span class="order-status status-shipped">Shipped</span>
+                    </div>
+                    
+                    <div class="order-items">
+                        <img src="https://images.unsplash.com/photo-1606902965551-dce093cda6e7?q=80&w=200" alt="Product" class="order-item-image">
+                        <img src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=200" alt="Product" class="order-item-image">
+                    </div>
+                    
+                    <div class="order-footer">
+                        <div>
+                            <span class="text-muted me-2" style="font-size: var(--font-size-sm);">Total:</span>
+                            <span class="order-total">$259.98</span>
+                        </div>
+                        <div class="order-actions">
+                            <button class="btn-order-action">Track Order</button>
+                            <button class="btn-order-action primary">View Details</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Order Card 3 -->
+                <div class="order-card">
+                    <div class="order-header">
+                        <div>
+                            <div class="order-number">Order #FS-2026-003</div>
+                            <div class="order-date">Placed on July 2, 2026</div>
+                        </div>
+                        <span class="order-status status-processing">Processing</span>
+                    </div>
+                    
+                    <div class="order-items">
+                        <img src="https://images.unsplash.com/photo-1603252109360-909baaf261c7?q=80&w=200" alt="Product" class="order-item-image">
+                    </div>
+                    
+                    <div class="order-footer">
+                        <div>
+                            <span class="text-muted me-2" style="font-size: var(--font-size-sm);">Total:</span>
+                            <span class="order-total">$149.99</span>
+                        </div>
+                        <div class="order-actions">
+                            <button class="btn-order-action">Cancel Order</button>
+                            <button class="btn-order-action primary">View Details</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Empty Orders Message (Hidden by default) -->
+            <div id="emptyOrders" class="empty-orders d-none">
+                <i class="bi bi-box-seam"></i>
+                <h2>No orders yet</h2>
+                <p class="text-muted mb-4">Start shopping to see your orders here</p>
+                <a href="shop.html" class="btn btn-lg" style="background: var(--primary-color); color: var(--white); padding: 1rem 2.5rem; letter-spacing: 0.1em; text-transform: uppercase;">Start Shopping</a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="footer bg-dark text-white pt-5 pb-3">
+        <div class="container">
+            <div class="row g-4 mb-5">
+                <!-- Company Info -->
+                <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                    <h3 class="fw-bold mb-4" style="font-family: var(--font-accent); letter-spacing: 0.05em; font-size: 1.5rem; word-spacing: -0.3em;">
+                        FASHION<span style="color: var(--secondary-color);">STORE</span>
+                    </h3>
+                    <p class="text-white-50" style="line-height: 1.8; font-size: 0.9rem; max-width: 280px;">Your destination for premium clothing and timeless fashion.</p>
+                    <div class="social-links mt-4">
+                        <a href="#" class="btn btn-outline-light btn-sm me-2" style="width: 40px; height: 40px;"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="btn btn-outline-light btn-sm me-2" style="width: 40px; height: 40px;"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="btn btn-outline-light btn-sm me-2" style="width: 40px; height: 40px;"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="btn btn-outline-light btn-sm" style="width: 40px; height: 40px;"><i class="bi bi-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <!-- Shop Links -->
+                <div class="col-lg-2 col-md-6 col-6 mb-4 mb-lg-0">
+                    <h5 class="mb-3" style="font-weight: 600; font-size: 1rem;">Shop</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="shop.html?category=men" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Men</a></li>
+                        <li class="mb-2"><a href="shop.html?category=women" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Women</a></li>
+                        <li class="mb-2"><a href="shop.html?category=accessories" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Accessories</a></li>
+                        <li class="mb-2"><a href="shop.html?filter=sale" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Sale</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Customer Service -->
+                <div class="col-lg-3 col-md-6 col-6 mb-4 mb-lg-0">
+                    <h5 class="mb-3" style="font-weight: 600; font-size: 1rem;">Customer Service</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="contact.html" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Contact Us</a></li>
+                        <li class="mb-2"><a href="shipping.html" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Shipping Info</a></li>
+                        <li class="mb-2"><a href="returns.html" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Returns</a></li>
+                        <li class="mb-2"><a href="faq.html" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">FAQ</a></li>
+                    </ul>
+                </div>
+                
+                <!-- About & Contact -->
+                <div class="col-lg-4 col-md-6">
+                    <h5 class="mb-3" style="font-weight: 600; font-size: 1rem;">Contact</h5>
+                    <ul class="list-unstyled text-white-50" style="font-size: 0.9rem;">
+                        <li class="mb-2"><i class="bi bi-geo-alt me-2"></i>123 Fashion St, NY</li>
+                        <li class="mb-2"><i class="bi bi-telephone me-2"></i>+1 234 567 8900</li>
+                        <li class="mb-2"><i class="bi bi-envelope me-2"></i>info@fashionstore.com</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Copyright -->
+            <div class="border-top border-secondary pt-4 text-center">
+                <p class="text-white-50 mb-0" style="font-size: 0.875rem;">&copy; 2026 FashionStore. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/main.js"></script>
+    
+</body>
+</html>

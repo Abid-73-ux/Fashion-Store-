@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Register - Fashion Store">
+    <title>Register - Fashion Store</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@300;400;500;600;700&family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/animations.css">
+    <link rel="stylesheet" href="assets/css/responsive.css">
+    
+    <style>
+        .auth-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(135deg, var(--cream) 0%, var(--off-white) 100%);
+            padding: var(--spacing-3xl) 0;
+        }
+        
+        .auth-card {
+            background: var(--white);
+            padding: var(--spacing-4xl) var(--spacing-3xl);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .auth-header {
+            text-align: center;
+            margin-bottom: var(--spacing-3xl);
+        }
+        
+        .auth-header .brand {
+            font-family: var(--font-accent);
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--primary-color);
+            margin-bottom: var(--spacing-md);
+            letter-spacing: 0.1em;
+        }
+        
+        .auth-header h1 {
+            font-family: var(--font-secondary);
+            font-size: var(--font-size-4xl);
+            font-weight: var(--font-weight-light);
+            color: var(--primary-color);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .form-floating > label {
+            font-size: var(--font-size-xs);
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wide);
+            font-weight: var(--font-weight-medium);
+            color: var(--gray-600);
+        }
+        
+        .form-control {
+            border: 2px solid var(--gray-300);
+            padding: 1.2rem 1rem;
+            font-size: var(--font-size-base);
+            transition: all var(--transition-fast);
+        }
+        
+        .form-control:focus {
+            border-color: var(--secondary-color);
+            box-shadow: none;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--gray-500);
+            cursor: pointer;
+            z-index: 10;
+        }
+        
+        .password-toggle:hover {
+            color: var(--primary-color);
+        }
+        
+        .password-strength {
+            height: 4px;
+            background: var(--gray-200);
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .password-strength-bar {
+            height: 100%;
+            width: 0;
+            transition: all 0.3s;
+        }
+        
+        .strength-weak { width: 33%; background: #dc3545; }
+        .strength-medium { width: 66%; background: #ffc107; }
+        .strength-strong { width: 100%; background: #28a745; }
+        
+        .btn-register {
+            background: var(--primary-color);
+            color: var(--white);
+            border: 2px solid var(--primary-color);
+            padding: 1rem;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wider);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            transition: all var(--transition-base);
+        }
+        
+        .btn-register:hover {
+            background: transparent;
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    
+    <section class="auth-section">
+        <div class="container">
+            <div class="auth-card">
+                <!-- Header -->
+                <div class="auth-header">
+                    <div class="brand">FASHION<span style="color: var(--secondary-color);">STORE</span></div>
+                    <h1>Create Account</h1>
+                    <p class="text-muted">Register to start shopping</p>
+                </div>
+                
+                <!-- Register Form -->
+                <form id="registerForm">
+                    <div class="row g-3">
+                        <!-- First Name -->
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="firstName" name="firstName" placeholder="First Name" required>
+                                <label for="firstName">First Name</label>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Last Name -->
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="lastName" name="lastName" placeholder="Last Name" required>
+                                <label for="lastName">Last Name</label>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Email -->
+                        <div class="col-12">
+                            <div class="form-floating">
+                                <input type="email" class="form-control" id="email" name="email" placeholder="Email Address" required>
+                                <label for="email">Email Address</label>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Phone -->
+                        <div class="col-12">
+                            <div class="form-floating">
+                                <input type="tel" class="form-control" id="phone" name="phone" placeholder="Phone Number" required>
+                                <label for="phone">Phone Number</label>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Password -->
+                        <div class="col-md-6">
+                            <div class="form-floating position-relative">
+                                <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                                <label for="password">Password</label>
+                                <button type="button" class="password-toggle" id="togglePassword">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                            <div class="password-strength">
+                                <div class="password-strength-bar" id="strengthBar"></div>
+                            </div>
+                            <small class="text-muted" id="strengthText"></small>
+                        </div>
+                        
+                        <!-- Confirm Password -->
+                        <div class="col-md-6">
+                            <div class="form-floating position-relative">
+                                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Confirm Password" required>
+                                <label for="confirmPassword">Confirm Password</label>
+                                <button type="button" class="password-toggle" id="toggleConfirmPassword">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Terms & Conditions -->
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="terms" required>
+                                <label class="form-check-label" for="terms" style="font-size: var(--font-size-sm);">
+                                    I agree to the <a href="#" class="text-decoration-none" style="color: var(--secondary-color);">Terms & Conditions</a> and 
+                                    <a href="#" class="text-decoration-none" style="color: var(--secondary-color);">Privacy Policy</a>
+                                </label>
+                                <div class="invalid-feedback">You must agree to the terms</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Register Button -->
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-register">Create Account</button>
+                        </div>
+                    </div>
+                </form>
+                
+                <!-- Login Link -->
+                <div class="text-center mt-4">
+                    <p class="text-muted" style="font-size: var(--font-size-sm);">
+                        Already have an account? 
+                        <a href="login.html" class="text-decoration-none" style="color: var(--secondary-color); font-weight: var(--font-weight-semibold);">
+                            Login
+                        </a>
+                    </p>
+                </div>
+                
+                <!-- Back to Home -->
+                <div class="text-center mt-3">
+                    <a href="index.html" class="text-decoration-none" style="font-size: var(--font-size-sm); color: var(--gray-600);">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="assets/js/toast.js"></script>
+    <script src="assets/js/modal.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/validation.js"></script>
+    
+    <script>
+        // Password toggles
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const password = document.getElementById('password');
+            const icon = this.querySelector('i');
+            
+            if (password.type === 'password') {
+                password.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                password.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        });
+        
+        document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
+            const password = document.getElementById('confirmPassword');
+            const icon = this.querySelector('i');
+            
+            if (password.type === 'password') {
+                password.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                password.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        });
+        
+        // Password strength indicator
+        document.getElementById('password').addEventListener('input', function() {
+            const password = this.value;
+            const strengthBar = document.getElementById('strengthBar');
+            const strengthText = document.getElementById('strengthText');
+            
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
+            if (password.match(/\d/)) strength++;
+            if (password.match(/[@$!%*?&]/)) strength++;
+            
+            strengthBar.className = 'password-strength-bar';
+            
+            if (strength === 0 || strength === 1) {
+                strengthBar.classList.add('strength-weak');
+                strengthText.textContent = 'Weak password';
+                strengthText.style.color = '#dc3545';
+            } else if (strength === 2 || strength === 3) {
+                strengthBar.classList.add('strength-medium');
+                strengthText.textContent = 'Medium strength';
+                strengthText.style.color = '#ffc107';
+            } else {
+                strengthBar.classList.add('strength-strong');
+                strengthText.textContent = 'Strong password';
+                strengthText.style.color = '#28a745';
+            }
+        });
+        
+        // Initialize validation
+        const form = document.getElementById('registerForm');
+        Validation.initForm(form);
+        
+        // Handle form submission
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Check terms
+            const terms = document.getElementById('terms');
+            if (!terms.checked) {
+                terms.classList.add('is-invalid');
+                return;
+            }
+            
+            if (!Validation.validateForm(form)) {
+                return;
+            }
+            
+            const userData = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                password: document.getElementById('password').value
+            };
+            
+            // Simulate registration (frontend only)
+            const user = Auth.register(userData);
+            
+            Toast.success('Registration successful! Redirecting...');
+            
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1500);
+        });
+        
+        // Check if already logged in
+        if (Auth.isLoggedIn()) {
+            window.location.href = 'index.html';
+        }
+    </script>
+    
+</body>
+</html>

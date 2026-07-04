@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Fashion Store</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@300;400;500;600;700&family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../assets/css/variables.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body class="admin-body">
+
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">FASHION<span style="color: var(--white);">STORE</span></div>
+                <small class="sidebar-subtitle">Admin Panel</small>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <div class="menu-section-title">Main</div>
+                <a href="dashboard.html" class="menu-item active">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+                
+                <div class="menu-section-title">E-Commerce</div>
+                <a href="products.html" class="menu-item">
+                    <i class="bi bi-box-seam"></i>
+                    <span>Products</span>
+                </a>
+                <a href="categories.html" class="menu-item">
+                    <i class="bi bi-grid"></i>
+                    <span>Categories</span>
+                </a>
+                <a href="orders.html" class="menu-item">
+                    <i class="bi bi-cart-check"></i>
+                    <span>Orders</span>
+                </a>
+                <a href="customers.html" class="menu-item">
+                    <i class="bi bi-people"></i>
+                    <span>Customers</span>
+                </a>
+                <a href="reviews.html" class="menu-item">
+                    <i class="bi bi-star"></i>
+                    <span>Reviews</span>
+                </a>
+                
+                <div class="menu-section-title">Management</div>
+                <a href="inventory.html" class="menu-item">
+                    <i class="bi bi-boxes"></i>
+                    <span>Inventory</span>
+                </a>
+                <a href="coupons.html" class="menu-item">
+                    <i class="bi bi-ticket-perforated"></i>
+                    <span>Coupons</span>
+                </a>
+                <a href="analytics.html" class="menu-item">
+                    <i class="bi bi-bar-chart"></i>
+                    <span>Analytics</span>
+                </a>
+                
+                <div class="menu-section-title">System</div>
+                <a href="settings.html" class="menu-item">
+                    <i class="bi bi-gear"></i>
+                    <span>Settings</span>
+                </a>
+                <a href="#" class="menu-item" id="adminLogout">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Logout</span>
+                </a>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Topbar -->
+            <header class="admin-topbar">
+                <div class="topbar-search position-relative">
+                    <i class="bi bi-search position-absolute" style="left: 1rem; top: 50%; transform: translateY(-50%); color: var(--gray-500);"></i>
+                    <input type="text" class="form-control" placeholder="Search...">
+                </div>
+                
+                <div class="topbar-actions">
+                    <div class="topbar-icon" title="Notifications">
+                        <i class="bi bi-bell"></i>
+                        <span class="notification-badge">5</span>
+                    </div>
+                    <div class="topbar-icon" title="Messages">
+                        <i class="bi bi-envelope"></i>
+                        <span class="notification-badge">3</span>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-link p-0 dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100" alt="Admin" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
+                            <span style="font-size: 0.9rem; color: var(--gray-800);">Admin</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm">
+                            <li><a class="dropdown-item" href="admin-profile.html"><i class="bi bi-person me-2"></i>Profile</a></li>
+                            <li><a class="dropdown-item" href="settings.html"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" id="topbarLogout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Content -->
+            <div class="admin-content">
+                <div class="page-header">
+                    <h1 class="page-title">Dashboard Overview</h1>
+                    <p class="page-subtitle">Welcome back! Here's your store performance summary.</p>
+                </div>
+                
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon primary">
+                            <i class="bi bi-currency-dollar"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">Total Revenue</div>
+                            <div class="stat-value">$0</div>
+                            <div class="stat-change positive"><i class="bi bi-arrow-up-short"></i> 0% from last month</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon success" style="background: rgba(39, 174, 96, 0.1); color: #27ae60;">
+                            <i class="bi bi-cart-check"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">Total Orders</div>
+                            <div class="stat-value">0</div>
+                            <div class="stat-change positive"><i class="bi bi-arrow-up-short"></i> 0% from last month</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon info" style="background: rgba(52, 152, 219, 0.1); color: #3498db;">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">Total Customers</div>
+                            <div class="stat-value">0</div>
+                            <div class="stat-change positive"><i class="bi bi-arrow-up-short"></i> 0% from last month</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon warning" style="background: rgba(241, 196, 15, 0.1); color: #f1c40f;">
+                            <i class="bi bi-box-seam"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">Total Products</div>
+                            <div class="stat-value">0</div>
+                            <div class="stat-change negative"><i class="bi bi-arrow-down-short"></i> 0% from last month</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Stats Row -->
+                <div class="row g-3 mb-4">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: rgba(201, 169, 97, 0.1); color: var(--secondary-color); width: 50px; height: 50px;">
+                                <i class="bi bi-hourglass-split"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Pending Orders</div>
+                                <div class="stat-value">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: rgba(39, 174, 96, 0.1); color: #27ae60; width: 50px; height: 50px;">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Delivered Orders</div>
+                                <div class="stat-value">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: rgba(231, 76, 60, 0.1); color: #e74c3c; width: 50px; height: 50px;">
+                                <i class="bi bi-exclamation-triangle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Low Stock Products</div>
+                                <div class="stat-value">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: rgba(52, 152, 219, 0.1); color: #3498db; width: 50px; height: 50px;">
+                                <i class="bi bi-star-fill"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Avg Rating</div>
+                                <div class="stat-value">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Charts & Quick Actions Row -->
+                <div class="row g-4">
+                    <!-- Sales Chart -->
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h3 class="card-title">Monthly Sales Overview</h3>
+                                <select class="form-select form-select-sm" style="width: 150px;">
+                                    <option>Last 30 Days</option>
+                                    <option>Last 60 Days</option>
+                                    <option>Last 90 Days</option>
+                                    <option>This Year</option>
+                                </select>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-placeholder">
+                                    <i class="bi bi-bar-chart"></i>
+                                    <div>
+                                        <p class="mb-1">Chart.js / Chart Area</p>
+                                        <small class="text-muted">Monthly Sales Data Visualization</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h3 class="card-title">Quick Actions</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <a href="products.html" class="btn btn-outline-primary"><i class="bi bi-plus-circle me-2"></i>Add Product</a>
+                                    <a href="orders.html" class="btn btn-outline-success"><i class="bi bi-cart-plus me-2"></i>View Orders</a>
+                                    <a href="customers.html" class="btn btn-outline-info"><i class="bi bi-person-plus me-2"></i>Customers</a>
+                                    <a href="coupons.html" class="btn btn-outline-warning"><i class="bi bi-ticket-perforated me-2"></i>Coupons</a>
+                                    <a href="analytics.html" class="btn btn-outline-secondary"><i class="bi bi-file-text me-2"></i>Analytics</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Orders & Customers -->
+                <div class="row g-4 mt-2">
+                    <!-- Recent Orders Table -->
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h3 class="card-title">Recent Orders</h3>
+                                <a href="orders.html" class="btn btn-sm btn-outline-secondary">View All</a>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Order ID</th>
+                                                <th>Customer</th>
+                                                <th>Date</th>
+                                                <th>Items</th>
+                                                <th>Total</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Orders will be rendered here by JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Customers -->
+                    <div class="col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h3 class="card-title">Recent Customers</h3>
+                                <a href="customers.html" class="btn btn-sm btn-outline-secondary">View All</a>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="list-group list-group-flush">
+                                    <!-- Customers will be rendered here by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Low Stock & Top Products Row -->
+                <div class="row g-4 mt-2">
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Low Stock Products</h3>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Product</th>
+                                                <th>Stock</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Low stock products will be rendered here by JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Top Selling Products</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="list-group list-group-flush">
+                                    <!-- Products will be rendered here by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/toast.js"></script>
+    <script src="../assets/js/modal.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/admin-storage.js"></script>
+    <script src="../assets/js/admin-dashboard.js"></script>
+    <script>
+        // Check admin access
+        if (!Auth.isAdmin()) {
+            Toast.error('Access denied. Admin privileges required.');
+            setTimeout(() => {
+                window.location.href = '../login.html';
+            }, 2000);
+        }
+        
+        // Initialize dashboard module
+        document.addEventListener('DOMContentLoaded', () => {
+            AdminDashboard.init();
+        });
+        
+        // Logout handlers
+        document.getElementById('adminLogout').addEventListener('click', (e) => {
+            e.preventDefault();
+            handleLogout();
+        });
+        
+        document.getElementById('topbarLogout').addEventListener('click', (e) => {
+            e.preventDefault();
+            handleLogout();
+        });
+        
+        function handleLogout() {
+            Modal.showLogoutConfirm(() => {
+                Auth.logout();
+                Toast.success('Logged out successfully');
+                setTimeout(() => {
+                    window.location.href = '../login.html';
+                }, 1000);
+            });
+        }
+    </script>
+</body>
+</html>

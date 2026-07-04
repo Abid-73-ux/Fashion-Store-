@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Product Details - Fashion Store">
+    <title>Product Details - Fashion Store</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@300;400;500;600;700&family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/animations.css">
+    <link rel="stylesheet" href="assets/css/responsive.css">
+    
+    <style>
+        .product-section {
+            padding: var(--spacing-4xl) 0;
+            background: var(--off-white);
+        }
+        
+        .product-gallery {
+            position: sticky;
+            top: 100px;
+        }
+        
+        .main-image-container {
+            position: relative;
+            margin-bottom: var(--spacing-md);
+            overflow: hidden;
+            border: 1px solid var(--gray-200);
+        }
+        
+        .main-image {
+            width: 100%;
+            height: 700px;
+            object-fit: cover;
+        }
+        
+        .wishlist-btn-product {
+            position: absolute;
+            top: var(--spacing-md);
+            right: var(--spacing-md);
+            background: rgba(255, 255, 255, 0.95);
+            border: none;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--gray-600);
+            cursor: pointer;
+            transition: all var(--transition-base);
+        }
+        
+        .wishlist-btn-product:hover {
+            background: var(--secondary-color);
+            color: var(--white);
+        }
+        
+        .wishlist-btn-product.active {
+            color: var(--danger);
+        }
+        
+        .thumbnail-images {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--spacing-sm);
+        }
+        
+        .thumbnail {
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color var(--transition-fast);
+            overflow: hidden;
+        }
+        
+        .thumbnail img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+        }
+        
+        .thumbnail.active {
+            border-color: var(--primary-color);
+        }
+        
+        .thumbnail:hover {
+            border-color: var(--gray-400);
+        }
+        
+        .product-info h1 {
+            font-family: var(--font-secondary);
+            font-size: var(--font-size-4xl);
+            font-weight: var(--font-weight-light);
+            color: var(--primary-color);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .product-price {
+            font-family: var(--font-accent);
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--secondary-color);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .product-rating {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .stars {
+            color: var(--secondary-color);
+        }
+        
+        .review-count {
+            color: var(--gray-600);
+            font-size: var(--font-size-sm);
+        }
+        
+        .product-description {
+            padding: var(--spacing-xl) 0;
+            border-top: 1px solid var(--gray-200);
+            border-bottom: 1px solid var(--gray-200);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .product-options {
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .option-label {
+            font-size: var(--font-size-xs);
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wider);
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--spacing-md);
+            display: block;
+        }
+        
+        .size-options, .color-options {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+        }
+        
+        .size-option {
+            min-width: 60px;
+            padding: var(--spacing-md);
+            border: 2px solid var(--gray-300);
+            background: transparent;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            font-weight: var(--font-weight-medium);
+            text-transform: uppercase;
+            font-size: var(--font-size-sm);
+        }
+        
+        .size-option:hover {
+            border-color: var(--primary-color);
+        }
+        
+        .size-option.active {
+            background: var(--primary-color);
+            color: var(--white);
+            border-color: var(--primary-color);
+        }
+        
+        .color-option {
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--gray-300);
+            cursor: pointer;
+            position: relative;
+            transition: all var(--transition-fast);
+        }
+        
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        
+        .color-option.active::after {
+            content: '\F26A';
+            font-family: 'bootstrap-icons';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--white);
+            font-size: 1.5rem;
+        }
+        
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .quantity-control-product {
+            display: flex;
+            border: 2px solid var(--gray-300);
+        }
+        
+        .qty-btn {
+            background: transparent;
+            border: none;
+            width: 50px;
+            height: 50px;
+            font-size: var(--font-size-lg);
+            color: var(--gray-700);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        
+        .qty-btn:hover {
+            background: var(--cream);
+        }
+        
+        .qty-input {
+            border: none;
+            width: 80px;
+            text-align: center;
+            font-weight: var(--font-weight-semibold);
+            background: transparent;
+        }
+        
+        .qty-input:focus {
+            outline: none;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-2xl);
+        }
+        
+        .btn-add-cart {
+            flex: 1;
+            background: var(--primary-color);
+            color: var(--white);
+            border: 2px solid var(--primary-color);
+            padding: 1rem 2rem;
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wider);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            transition: all var(--transition-base);
+        }
+        
+        .btn-add-cart:hover {
+            background: transparent;
+            color: var(--primary-color);
+        }
+        
+        .btn-buy-now {
+            flex: 1;
+            background: var(--secondary-color);
+            color: var(--white);
+            border: 2px solid var(--secondary-color);
+            padding: 1rem 2rem;
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wider);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            transition: all var(--transition-base);
+        }
+        
+        .btn-buy-now:hover {
+            background: transparent;
+            color: var(--secondary-color);
+        }
+        
+        .product-features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--spacing-md);
+            padding: var(--spacing-xl);
+            background: var(--cream);
+            margin-bottom: var(--spacing-2xl);
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-size: var(--font-size-sm);
+        }
+        
+        .feature-icon {
+            color: var(--secondary-color);
+            font-size: var(--font-size-lg);
+        }
+        
+        .product-tabs {
+            margin-top: var(--spacing-4xl);
+        }
+        
+        .nav-tabs {
+            border-bottom: 2px solid var(--gray-200);
+        }
+        
+        .nav-tabs .nav-link {
+            border: none;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wider);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            padding: var(--spacing-md) var(--spacing-xl);
+        }
+        
+        .nav-tabs .nav-link:hover {
+            color: var(--primary-color);
+            border: none;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            background: transparent;
+        }
+        
+        .tab-content {
+            padding: var(--spacing-2xl) 0;
+        }
+        
+        .review-item {
+            padding: var(--spacing-xl);
+            border: 1px solid var(--gray-200);
+            margin-bottom: var(--spacing-md);
+            background: var(--white);
+        }
+        
+        .reviewer-name {
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .review-date {
+            font-size: var(--font-size-sm);
+            color: var(--gray-500);
+            margin-bottom: var(--spacing-sm);
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm" id="mainNavbar">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <h3 class="mb-0 fw-bold" style="font-family: var(--font-accent); letter-spacing: 0.1em;">
+                    FASHION<span style="color: var(--secondary-color);">STORE</span>
+                </h3>
+            </a>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem;">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="shop.html" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem;">Shop</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="categoriesDropdown" role="button" data-bs-toggle="dropdown" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem;">
+                            Categories
+                        </a>
+                        <ul class="dropdown-menu border-0 shadow-lg">
+                            <li><a class="dropdown-item" href="shop.html?category=men">Men</a></li>
+                            <li><a class="dropdown-item" href="shop.html?category=women">Women</a></li>
+                            <li><a class="dropdown-item" href="shop.html?category=accessories">Accessories</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="about.html" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem;">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact.html" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem;">Contact</a>
+                    </li>
+                </ul>
+                
+                <div class="d-flex align-items-center gap-3">
+                    <a href="wishlist.html" class="btn btn-link text-dark p-0" title="Wishlist">
+                        <i class="bi bi-heart" style="font-size: 1.25rem;"></i>
+                    </a>
+                    
+                    <a href="cart.html" class="btn btn-link text-dark p-0 position-relative" title="Shopping Cart">
+                        <i class="bi bi-bag" style="font-size: 1.25rem;"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" style="background: var(--secondary-color); font-size: 0.65rem;" id="cartCount">0</span>
+                    </a>
+                    
+                    <a href="login.html" class="btn btn-sm" style="background: var(--primary-color); color: var(--white); padding: 0.5rem 1.5rem; letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.75rem;">Login</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Product Section -->
+    <section class="product-section">
+        <div class="container">
+            <div class="row g-5">
+                <!-- Product Gallery -->
+                <div class="col-lg-6">
+                    <div class="product-gallery">
+                        <div class="main-image-container">
+                            <img src="https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?q=80&w=1200" alt="Product" class="main-image" id="mainImage">
+                            <button class="wishlist-btn-product" id="wishlistBtn">
+                                <i class="bi bi-heart"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="thumbnail-images">
+                            <div class="thumbnail active" data-image="https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?q=80&w=1200">
+                                <img src="https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?q=80&w=300" alt="Thumbnail 1">
+                            </div>
+                            <div class="thumbnail" data-image="https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?q=80&w=1200">
+                                <img src="https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?q=80&w=300" alt="Thumbnail 2">
+                            </div>
+                            <div class="thumbnail" data-image="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=1200">
+                                <img src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=300" alt="Thumbnail 3">
+                            </div>
+                            <div class="thumbnail" data-image="https://images.unsplash.com/photo-1603252109360-909baaf261c7?q=80&w=1200">
+                                <img src="https://images.unsplash.com/photo-1603252109360-909baaf261c7?q=80&w=300" alt="Thumbnail 4">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Product Info -->
+                <div class="col-lg-6">
+                    <div class="product-info">
+                        <h1 id="productName">Premium Cotton T-Shirt</h1>
+                        
+                        <div class="product-rating">
+                            <div class="stars">
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-half"></i>
+                            </div>
+                            <span class="review-count">(4.5) 128 Reviews</span>
+                        </div>
+                        
+                        <div class="product-price" id="productPrice">$89.99</div>
+                        
+                        <div class="product-description">
+                            <p id="productDescription">Crafted from premium 100% organic cotton, this t-shirt combines comfort with timeless style. Features a relaxed fit, reinforced stitching, and a soft hand feel that gets better with every wash. Perfect for casual everyday wear or layering.</p>
+                        </div>
+                        
+                        <!-- Size Selection -->
+                        <div class="product-options">
+                            <label class="option-label">Select Size</label>
+                            <div class="size-options">
+                                <button class="size-option" data-size="XS">XS</button>
+                                <button class="size-option" data-size="S">S</button>
+                                <button class="size-option active" data-size="M">M</button>
+                                <button class="size-option" data-size="L">L</button>
+                                <button class="size-option" data-size="XL">XL</button>
+                                <button class="size-option" data-size="XXL">XXL</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Color Selection -->
+                        <div class="product-options">
+                            <label class="option-label">Select Color</label>
+                            <div class="color-options">
+                                <button class="color-option active" style="background: #000000;" data-color="Black"></button>
+                                <button class="color-option" style="background: #FFFFFF; border-color: #ddd;" data-color="White"></button>
+                                <button class="color-option" style="background: #2C3E50;" data-color="Navy"></button>
+                                <button class="color-option" style="background: #95A5A6;" data-color="Gray"></button>
+                                <button class="color-option" style="background: #C9A961;" data-color="Gold"></button>
+                            </div>
+                        </div>
+                        
+                        <!-- Quantity -->
+                        <div class="quantity-selector">
+                            <label class="option-label mb-0">Quantity</label>
+                            <div class="quantity-control-product">
+                                <button class="qty-btn" id="decreaseQty">-</button>
+                                <input type="number" class="qty-input" id="quantity" value="1" min="1" max="10">
+                                <button class="qty-btn" id="increaseQty">+</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <button class="btn btn-add-cart" id="addToCartBtn">
+                                <i class="bi bi-bag me-2"></i> Add to Cart
+                            </button>
+                            <button class="btn btn-buy-now" id="buyNowBtn">
+                                Buy Now
+                            </button>
+                        </div>
+                        
+                        <!-- Product Features -->
+                        <div class="product-features">
+                            <div class="feature-item">
+                                <i class="bi bi-truck feature-icon"></i>
+                                <span>Free Shipping Over $100</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="bi bi-arrow-repeat feature-icon"></i>
+                                <span>Easy 30 Day Returns</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="bi bi-shield-check feature-icon"></i>
+                                <span>1 Year Warranty</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="bi bi-credit-card feature-icon"></i>
+                                <span>Secure Payment</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Additional Info -->
+                        <div class="text-muted" style="font-size: 0.875rem;">
+                            <p class="mb-2"><strong>SKU:</strong> TSH-001-BLK-M</p>
+                            <p class="mb-2"><strong>Category:</strong> <a href="shop.html?category=men" class="text-decoration-none">Men's Clothing</a></p>
+                            <p class="mb-0"><strong>Tags:</strong> T-Shirt, Cotton, Casual, Premium</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product Tabs -->
+            <div class="product-tabs mt-5">
+                <ul class="nav nav-tabs" id="productTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button">Description</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="specifications-tab" data-bs-toggle="tab" data-bs-target="#specifications" type="button">Specifications</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button">Reviews (128)</button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="productTabsContent">
+                    <!-- Description Tab -->
+                    <div class="tab-pane fade show active" id="description" role="tabpanel">
+                        <h4 class="mb-3">Product Description</h4>
+                        <p>Experience unparalleled comfort with our Premium Cotton T-Shirt. Made from 100% organic cotton sourced from sustainable farms, this t-shirt represents the perfect blend of quality, comfort, and conscious fashion.</p>
+                        
+                        <h5 class="mt-4 mb-3">Key Features:</h5>
+                        <ul>
+                            <li>100% Organic Cotton - Soft, breathable, and environmentally friendly</li>
+                            <li>Relaxed Fit - Designed for all-day comfort</li>
+                            <li>Reinforced Stitching - Built to last</li>
+                            <li>Pre-Shrunk Fabric - Maintains size and shape after washing</li>
+                            <li>Tagless Design - No irritation, maximum comfort</li>
+                        </ul>
+                        
+                        <h5 class="mt-4 mb-3">Care Instructions:</h5>
+                        <ul>
+                            <li>Machine wash cold with like colors</li>
+                            <li>Tumble dry low or hang to dry</li>
+                            <li>Do not bleach</li>
+                            <li>Iron on low heat if needed</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Specifications Tab -->
+                    <div class="tab-pane fade" id="specifications" role="tabpanel">
+                        <h4 class="mb-4">Technical Specifications</h4>
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <td style="width: 30%;"><strong>Material</strong></td>
+                                    <td>100% Organic Cotton</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Weight</strong></td>
+                                    <td>180 GSM</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Fit</strong></td>
+                                    <td>Relaxed Fit</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Neck Style</strong></td>
+                                    <td>Crew Neck</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Sleeve Length</strong></td>
+                                    <td>Short Sleeve</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Origin</strong></td>
+                                    <td>Made in USA</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Certification</strong></td>
+                                    <td>GOTS Certified Organic Cotton</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Reviews Tab -->
+                    <div class="tab-pane fade" id="reviews" role="tabpanel">
+                        <h4 class="mb-4">Customer Reviews</h4>
+                        
+                        <div class="review-item">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <div class="reviewer-name">John Anderson</div>
+                                    <div class="stars text-warning">
+                                        <i class="bi bi-star-fill"></i>
+                                        <i class="bi bi-star-fill"></i>
+                                        <i class="bi bi-star-fill"></i>
+                                        <i class="bi bi-star-fill"></i>
+                                        <i class="bi bi-star-fill"></i>
+                                    </div>
+                                </div>
+                                <div class="review-date">2 days ago</div>
+                            </div>
+                            <p class="mb-0">Excellent quality! The fabric is incredibly soft and the fit is perfect. Worth every penny.</p>
+                        </div>
+                        
+                        <div class="review-item">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <div class="reviewer-name">Sarah Mitchell</div>
+                                    <div class="stars text-warning">
+                                        <i class="bi bi-star-fill"></i>
+                                        <i class="bi bi-star-fill"></i>
+                                        <i class="bi bi-star-fill"></i>
+                                        <i class="bi bi-star-fill"></i>
+                                        <i class="bi bi-star"></i>
+                                    </div>
+                                </div>
+                                <div class="review-date">1 week ago</div>
+                            </div>
+                            <p class="mb-0">Great t-shirt, very comfortable. The only reason it's not 5 stars is that it runs slightly large.</p>
+                        </div>
+                        
+                        <div class="review-item">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <div class="reviewer-name">Michael Chen</div>
+                                    <div class="stars text-warning">
+                                        <i class="bi bi-star-fill"></i>
+                                        <i class="bi bi-star-fill"></i>
+                                        <i class="bi bi-star-fill"></i>
+                                        <i class="bi bi-star-fill"></i>
+                                        <i class="bi bi-star-fill"></i>
+                                    </div>
+                                </div>
+                                <div class="review-date">2 weeks ago</div>
+                            </div>
+                            <p class="mb-0">Best t-shirt I've purchased online. The quality is outstanding and shipping was fast!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="footer bg-dark text-white pt-5 pb-3">
+        <div class="container">
+            <div class="row g-4 mb-5">
+                <!-- Company Info -->
+                <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                    <h3 class="fw-bold mb-4" style="font-family: var(--font-accent); letter-spacing: 0.05em; font-size: 1.5rem; word-spacing: -0.3em;">
+                        FASHION<span style="color: var(--secondary-color);">STORE</span>
+                    </h3>
+                    <p class="text-white-50" style="line-height: 1.8; font-size: 0.9rem; max-width: 280px;">Your destination for premium clothing and timeless fashion.</p>
+                    <div class="social-links mt-4">
+                        <a href="#" class="btn btn-outline-light btn-sm me-2" style="width: 40px; height: 40px;"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="btn btn-outline-light btn-sm me-2" style="width: 40px; height: 40px;"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="btn btn-outline-light btn-sm me-2" style="width: 40px; height: 40px;"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="btn btn-outline-light btn-sm" style="width: 40px; height: 40px;"><i class="bi bi-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <!-- Shop Links -->
+                <div class="col-lg-2 col-md-6 col-6 mb-4 mb-lg-0">
+                    <h5 class="mb-3" style="font-weight: 600; font-size: 1rem;">Shop</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="shop.html?category=men" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Men</a></li>
+                        <li class="mb-2"><a href="shop.html?category=women" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Women</a></li>
+                        <li class="mb-2"><a href="shop.html?category=accessories" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Accessories</a></li>
+                        <li class="mb-2"><a href="shop.html?filter=sale" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Sale</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Customer Service -->
+                <div class="col-lg-3 col-md-6 col-6 mb-4 mb-lg-0">
+                    <h5 class="mb-3" style="font-weight: 600; font-size: 1rem;">Customer Service</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="contact.html" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Contact Us</a></li>
+                        <li class="mb-2"><a href="shipping.html" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Shipping Info</a></li>
+                        <li class="mb-2"><a href="returns.html" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Returns</a></li>
+                        <li class="mb-2"><a href="faq.html" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">FAQ</a></li>
+                    </ul>
+                </div>
+                
+                <!-- About & Contact -->
+                <div class="col-lg-4 col-md-6">
+                    <h5 class="mb-3" style="font-weight: 600; font-size: 1rem;">Contact</h5>
+                    <ul class="list-unstyled text-white-50" style="font-size: 0.9rem;">
+                        <li class="mb-2"><i class="bi bi-geo-alt me-2"></i>123 Fashion St, NY</li>
+                        <li class="mb-2"><i class="bi bi-telephone me-2"></i>+1 234 567 8900</li>
+                        <li class="mb-2"><i class="bi bi-envelope me-2"></i>info@fashionstore.com</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Copyright -->
+            <div class="border-top border-secondary pt-4 text-center">
+                <p class="text-white-50 mb-0" style="font-size: 0.875rem;">&copy; 2026 FashionStore. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="assets/js/main.js"></script>
+    <script>
+        // Thumbnail Gallery
+        document.querySelectorAll('.thumbnail').forEach(thumb => {
+            thumb.addEventListener('click', function() {
+                document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById('mainImage').src = this.dataset.image;
+            });
+        });
+        
+        // Size Selection
+        document.querySelectorAll('.size-option').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.size-option').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // Color Selection
+        document.querySelectorAll('.color-option').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.color-option').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // Quantity Controls
+        document.getElementById('decreaseQty').addEventListener('click', () => {
+            const input = document.getElementById('quantity');
+            if (input.value > 1) input.value = parseInt(input.value) - 1;
+        });
+        
+        document.getElementById('increaseQty').addEventListener('click', () => {
+            const input = document.getElementById('quantity');
+            if (input.value < 10) input.value = parseInt(input.value) + 1;
+        });
+        
+        // Wishlist Toggle
+        document.getElementById('wishlistBtn').addEventListener('click', function() {
+            this.classList.toggle('active');
+            const icon = this.querySelector('i');
+            icon.classList.toggle('bi-heart');
+            icon.classList.toggle('bi-heart-fill');
+        });
+    </script>
+    
+</body>
+</html>

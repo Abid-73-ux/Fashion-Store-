@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Frequently Asked Questions - Fashion Store">
+    <title>FAQ - Fashion Store</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@300;400;500;600;700&family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/animations.css">
+    <link rel="stylesheet" href="assets/css/responsive.css">
+    
+    <style>
+        .page-hero {
+            background: linear-gradient(135deg, rgba(0,0,0,0.7), rgba(0,0,0,0.4)),
+                        url('https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=2070') center/cover;
+            min-height: 40vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--white);
+        }
+        
+        .page-hero h1 {
+            font-size: var(--font-size-6xl);
+            color: var(--white);
+            margin-bottom: var(--spacing-lg);
+            font-family: var(--font-secondary);
+            font-weight: var(--font-weight-light);
+        }
+        
+        .faq-category {
+            background: var(--white);
+            padding: var(--spacing-xl);
+            border: 1px solid var(--gray-200);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .faq-category h3 {
+            font-family: var(--font-primary);
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-semibold);
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wider);
+            margin-bottom: var(--spacing-lg);
+            color: var(--primary-color);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 2px solid var(--secondary-color);
+        }
+        
+        .accordion-item {
+            border: none;
+            border-bottom: 1px solid var(--gray-200);
+            background: transparent;
+        }
+        
+        .accordion-button {
+            background: transparent;
+            color: var(--primary-color);
+            font-weight: var(--font-weight-semibold);
+            padding: var(--spacing-lg) 0;
+            font-size: var(--font-size-base);
+            box-shadow: none;
+        }
+        
+        .accordion-button:not(.collapsed) {
+            background: var(--cream);
+            color: var(--primary-color);
+        }
+        
+        .accordion-button::after {
+            background-image: none;
+            content: '\F282';
+            font-family: 'bootstrap-icons';
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+            transition: transform 0.3s ease;
+        }
+        
+        .accordion-button:not(.collapsed)::after {
+            transform: rotate(180deg);
+        }
+        
+        .accordion-body {
+            padding: var(--spacing-lg) 0;
+            color: var(--gray-600);
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm" id="mainNavbar" style="padding: 1.5rem 0;">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <h3 class="mb-0 fw-bold" style="font-family: var(--font-accent); letter-spacing: 0.1em; font-size: 1.5rem;">
+                    FASHION<span style="color: var(--secondary-color);">STORE</span>
+                </h3>
+            </a>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-lg-1">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem; font-weight: 500;">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="shop.html" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem; font-weight: 500;">Shop</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="categoriesDropdown" role="button" data-bs-toggle="dropdown" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem; font-weight: 500;">
+                            Categories
+                        </a>
+                        <ul class="dropdown-menu border-0 shadow-lg">
+                            <li><a class="dropdown-item" href="shop.html?category=men">Men</a></li>
+                            <li><a class="dropdown-item" href="shop.html?category=women">Women</a></li>
+                            <li><a class="dropdown-item" href="shop.html?category=children">Children</a></li>
+                            <li><a class="dropdown-item" href="shop.html?category=accessories">Accessories</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="about.html" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem; font-weight: 500;">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact.html" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem; font-weight: 500;">Contact</a>
+                    </li>
+                </ul>
+                
+                <div class="d-flex align-items-center gap-3">
+                    <a href="wishlist.html" class="btn btn-link text-dark p-0" title="Wishlist">
+                        <i class="bi bi-heart" style="font-size: 1.25rem;"></i>
+                    </a>
+                    
+                    <a href="cart.html" class="btn btn-link text-dark p-0 position-relative" title="Shopping Cart">
+                        <i class="bi bi-bag" style="font-size: 1.25rem;"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" style="background: var(--secondary-color); font-size: 0.65rem;" id="cartCount">0</span>
+                    </a>
+                    
+                    <a href="login.html" class="btn btn-sm" style="background: var(--primary-color); color: var(--white); padding: 0.5rem 1.5rem; letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.75rem;">Login</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Hero Section -->
+    <section class="page-hero">
+        <div class="container">
+            <h1>Frequently Asked Questions</h1>
+            <p class="lead" style="color: var(--cream);">Find answers to common questions</p>
+        </div>
+    </section>
+    
+    <!-- Content Section -->
+    <section style="padding: var(--spacing-4xl) 0;">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <!-- General Questions -->
+                    <div class="faq-category">
+                        <h3><i class="bi bi-question-circle me-3" style="color: var(--secondary-color);"></i>General Questions</h3>
+                        <div class="accordion" id="accordionGeneral">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#general1">
+                                        What is your return policy?
+                                    </button>
+                                </h2>
+                                <div id="general1" class="accordion-collapse collapse show" data-bs-parent="#accordionGeneral">
+                                    <div class="accordion-body">
+                                        We offer a 30-day return policy on all items. Items must be unworn, unwashed, and in original condition with tags attached. Please visit our <a href="returns.html">Returns page</a> for complete details.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#general2">
+                                        How long does shipping take?
+                                    </button>
+                                </h2>
+                                <div id="general2" class="accordion-collapse collapse" data-bs-parent="#accordionGeneral">
+                                    <div class="accordion-body">
+                                        Standard shipping takes 5-7 business days. We also offer Express (2-3 days) and Overnight shipping options. International shipping times vary by destination. Visit our <a href="shipping.html">Shipping page</a> for more information.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#general3">
+                                        Do you ship internationally?
+                                    </button>
+                                </h2>
+                                <div id="general3" class="accordion-collapse collapse" data-bs-parent="#accordionGeneral">
+                                    <div class="accordion-body">
+                                        Yes! We ship to over 50 countries worldwide. International shipping rates and delivery times vary by destination. Customs fees and import taxes are the responsibility of the recipient.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#general4">
+                                        How can I track my order?
+                                    </button>
+                                </h2>
+                                <div id="general4" class="accordion-collapse collapse" data-bs-parent="#accordionGeneral">
+                                    <div class="accordion-body">
+                                        Once your order ships, you'll receive a confirmation email with a tracking number. You can also track your order by logging into your account and visiting the "My Orders" section.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Orders & Payment -->
+                    <div class="faq-category">
+                        <h3><i class="bi bi-credit-card me-3" style="color: var(--secondary-color);"></i>Orders & Payment</h3>
+                        <div class="accordion" id="accordionPayment">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#payment1">
+                                        What payment methods do you accept?
+                                    </button>
+                                </h2>
+                                <div id="payment1" class="accordion-collapse collapse show" data-bs-parent="#accordionPayment">
+                                    <div class="accordion-body">
+                                        We accept all major credit cards (Visa, Mastercard, American Express, Discover), PayPal, Apple Pay, and Google Pay. All payments are processed securely through our encrypted payment gateway.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#payment2">
+                                        Can I cancel or modify my order?
+                                    </button>
+                                </h2>
+                                <div id="payment2" class="accordion-collapse collapse" data-bs-parent="#accordionPayment">
+                                    <div class="accordion-body">
+                                        Orders can be cancelled or modified within 1 hour of placement. After that, orders are processed and cannot be changed. Please contact customer service immediately if you need to make changes.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#payment3">
+                                        When will I be charged for my order?
+                                    </button>
+                                </h2>
+                                <div id="payment3" class="accordion-collapse collapse" data-bs-parent="#accordionPayment">
+                                    <div class="accordion-body">
+                                        Your payment method is charged immediately when you place your order. If an item is out of stock or your order cannot be fulfilled, we'll issue a full refund within 5-7 business days.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#payment4">
+                                        Do you offer gift cards?
+                                    </button>
+                                </h2>
+                                <div id="payment4" class="accordion-collapse collapse" data-bs-parent="#accordionPayment">
+                                    <div class="accordion-body">
+                                        Yes! We offer digital gift cards in various denominations. Gift cards are delivered via email and can be redeemed at checkout. They never expire.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Products & Sizing -->
+                    <div class="faq-category">
+                        <h3><i class="bi bi-rulers me-3" style="color: var(--secondary-color);"></i>Products & Sizing</h3>
+                        <div class="accordion" id="accordionProducts">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#products1">
+                                        How do I choose the right size?
+                                    </button>
+                                </h2>
+                                <div id="products1" class="accordion-collapse collapse show" data-bs-parent="#accordionProducts">
+                                    <div class="accordion-body">
+                                        Each product page includes a detailed size chart. We recommend measuring yourself and comparing to our size guide. If you're between sizes, we suggest sizing up. Contact us if you need personalized sizing advice.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#products2">
+                                        Are your products true to size?
+                                    </button>
+                                </h2>
+                                <div id="products2" class="accordion-collapse collapse" data-bs-parent="#accordionProducts">
+                                    <div class="accordion-body">
+                                        Yes, our products are designed to fit true to size based on standard US sizing. Each product page includes customer reviews with fit feedback to help you make the right choice.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#products3">
+                                        What materials are your clothes made from?
+                                    </button>
+                                </h2>
+                                <div id="products3" class="accordion-collapse collapse" data-bs-parent="#accordionProducts">
+                                    <div class="accordion-body">
+                                        We use only premium, sustainable materials including organic cotton, linen, silk, and eco-friendly synthetic blends. Full material composition is listed on each product page.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Account & Security -->
+                    <div class="faq-category">
+                        <h3><i class="bi bi-shield-check me-3" style="color: var(--secondary-color);"></i>Account & Security</h3>
+                        <div class="accordion" id="accordionAccount">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#account1">
+                                        Do I need an account to place an order?
+                                    </button>
+                                </h2>
+                                <div id="account1" class="accordion-collapse collapse show" data-bs-parent="#accordionAccount">
+                                    <div class="accordion-body">
+                                        No, you can checkout as a guest. However, creating an account allows you to track orders, save addresses, manage your wishlist, and access exclusive member benefits.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#account2">
+                                        Is my personal information secure?
+                                    </button>
+                                </h2>
+                                <div id="account2" class="accordion-collapse collapse" data-bs-parent="#accordionAccount">
+                                    <div class="accordion-body">
+                                        Absolutely. We use industry-standard SSL encryption to protect your data. We never store your complete credit card information and never share your data with third parties.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#account3">
+                                        How do I reset my password?
+                                    </button>
+                                </h2>
+                                <div id="account3" class="accordion-collapse collapse" data-bs-parent="#accordionAccount">
+                                    <div class="accordion-body">
+                                        Click "Forgot Password" on the login page. Enter your email address and we'll send you a secure link to reset your password. The link expires after 24 hours.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Contact Section -->
+                    <div class="text-center mt-5 p-5" style="background: var(--cream); border: 1px solid var(--gray-200);">
+                        <h3 class="mb-3">Still Have Questions?</h3>
+                        <p class="mb-4 text-muted">Can't find the answer you're looking for? Our customer service team is here to help.</p>
+                        <div class="d-flex justify-content-center gap-4 flex-wrap">
+                            <div>
+                                <i class="bi bi-envelope fs-3 d-block mb-2" style="color: var(--secondary-color);"></i>
+                                <strong class="d-block mb-1">Email Us</strong>
+                                <a href="mailto:support@fashionstore.com" class="text-decoration-none">support@fashionstore.com</a>
+                            </div>
+                            <div>
+                                <i class="bi bi-telephone fs-3 d-block mb-2" style="color: var(--secondary-color);"></i>
+                                <strong class="d-block mb-1">Call Us</strong>
+                                <a href="tel:+12345678900" class="text-decoration-none">+1 234 567 8900</a>
+                            </div>
+                            <div>
+                                <i class="bi bi-chat-dots fs-3 d-block mb-2" style="color: var(--secondary-color);"></i>
+                                <strong class="d-block mb-1">Live Chat</strong>
+                                <a href="contact.html" class="text-decoration-none">Start Chat</a>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <a href="contact.html" class="btn" style="background: var(--primary-color); color: var(--white); padding: 1rem 2rem; letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.8125rem; font-weight: 600;">Contact Us</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="footer bg-dark text-white pt-5 pb-3">
+        <div class="container">
+            <div class="row g-4 mb-5">
+                <!-- Company Info -->
+                <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                    <h3 class="fw-bold mb-4" style="font-family: var(--font-accent); letter-spacing: 0.05em; font-size: 1.5rem; word-spacing: -0.3em;">
+                        FASHION<span style="color: var(--secondary-color);">STORE</span>
+                    </h3>
+                    <p class="text-white-50" style="line-height: 1.8; font-size: 0.9rem; max-width: 280px;">Your destination for premium clothing and timeless fashion.</p>
+                    <div class="social-links mt-4">
+                        <a href="#" class="btn btn-outline-light btn-sm me-2" style="width: 40px; height: 40px;"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="btn btn-outline-light btn-sm me-2" style="width: 40px; height: 40px;"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="btn btn-outline-light btn-sm me-2" style="width: 40px; height: 40px;"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="btn btn-outline-light btn-sm" style="width: 40px; height: 40px;"><i class="bi bi-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <!-- Shop Links -->
+                <div class="col-lg-2 col-md-6 col-6 mb-4 mb-lg-0">
+                    <h5 class="mb-3" style="font-weight: 600; font-size: 1rem;">Shop</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="shop.html?category=men" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Men</a></li>
+                        <li class="mb-2"><a href="shop.html?category=women" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Women</a></li>
+                        <li class="mb-2"><a href="shop.html?category=children" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Children</a></li>
+                        <li class="mb-2"><a href="shop.html?category=accessories" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Accessories</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Customer Service -->
+                <div class="col-lg-3 col-md-6 col-6 mb-4 mb-lg-0">
+                    <h5 class="mb-3" style="font-weight: 600; font-size: 1rem;">Customer Service</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="contact.html" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Contact Us</a></li>
+                        <li class="mb-2"><a href="shipping.html" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Shipping Info</a></li>
+                        <li class="mb-2"><a href="returns.html" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Returns</a></li>
+                        <li class="mb-2"><a href="faq.html" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">FAQ</a></li>
+                    </ul>
+                </div>
+                
+                <!-- About & Contact -->
+                <div class="col-lg-4 col-md-6">
+                    <h5 class="mb-3" style="font-weight: 600; font-size: 1rem;">Contact</h5>
+                    <ul class="list-unstyled text-white-50" style="font-size: 0.9rem;">
+                        <li class="mb-2"><i class="bi bi-geo-alt me-2"></i>123 Fashion St, NY</li>
+                        <li class="mb-2"><i class="bi bi-telephone me-2"></i>+1 234 567 8900</li>
+                        <li class="mb-2"><i class="bi bi-envelope me-2"></i>info@fashionstore.com</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Copyright -->
+            <div class="border-top border-secondary pt-4 text-center">
+                <p class="text-white-50 mb-0" style="font-size: 0.875rem;">&copy; 2026 FashionStore. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/main.js"></script>
+    
+</body>
+</html>

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="About Fashion Store - Our Story and Values">
+    <title>About Us - Fashion Store</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@300;400;500;600;700&family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/animations.css">
+    <link rel="stylesheet" href="assets/css/responsive.css">
+    
+    <style>
+        /* About Page Specific Styles */
+        .about-hero {
+            background: linear-gradient(135deg, rgba(0,0,0,0.7), rgba(0,0,0,0.4)),
+                        url('https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070') center/cover;
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--white);
+            position: relative;
+        }
+        
+        .about-hero h1 {
+            font-size: var(--font-size-6xl);
+            color: var(--white);
+            margin-bottom: var(--spacing-lg);
+            font-family: var(--font-secondary);
+            font-weight: var(--font-weight-light);
+        }
+        
+        .about-hero p {
+            font-size: var(--font-size-xl);
+            color: var(--cream);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .story-section {
+            padding: var(--spacing-4xl) 0;
+        }
+        
+        .story-image {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .story-image img {
+            width: 100%;
+            height: 600px;
+            object-fit: cover;
+            transition: transform var(--transition-slow);
+        }
+        
+        .story-image:hover img {
+            transform: scale(1.05);
+        }
+        
+        .values-card {
+            text-align: center;
+            padding: var(--spacing-2xl) var(--spacing-xl);
+            background: var(--white);
+            transition: transform var(--transition-base);
+            border: 1px solid var(--gray-200);
+        }
+        
+        .values-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .values-icon {
+            font-size: 3rem;
+            color: var(--secondary-color);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .values-card h4 {
+            font-family: var(--font-primary);
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wider);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .timeline-section {
+            background: var(--cream);
+            padding: var(--spacing-4xl) 0;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-left: 60px;
+            margin-bottom: var(--spacing-3xl);
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: -40px;
+            width: 1px;
+            background: var(--secondary-color);
+        }
+        
+        .timeline-item:last-child::before {
+            display: none;
+        }
+        
+        .timeline-year {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 40px;
+            height: 40px;
+            background: var(--secondary-color);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: var(--font-weight-bold);
+            font-size: var(--font-size-sm);
+        }
+        
+        .team-section {
+            padding: var(--spacing-4xl) 0;
+        }
+        
+        .team-member {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .team-photo {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            margin-bottom: var(--spacing-lg);
+            filter: grayscale(100%);
+            transition: filter var(--transition-base);
+        }
+        
+        .team-member:hover .team-photo {
+            filter: grayscale(0%);
+        }
+        
+        .team-name {
+            font-family: var(--font-secondary);
+            font-size: var(--font-size-xl);
+            margin-bottom: var(--spacing-xs);
+            color: var(--primary-color);
+        }
+        
+        .team-role {
+            font-size: var(--font-size-sm);
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wider);
+            color: var(--secondary-color);
+        }
+        
+        .cta-section {
+            background: var(--primary-color);
+            color: var(--white);
+            padding: var(--spacing-4xl) 0;
+            text-align: center;
+        }
+        
+        .cta-section h2 {
+            color: var(--white);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .cta-section p {
+            color: var(--gray-300);
+            font-size: var(--font-size-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm" id="mainNavbar">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <h3 class="mb-0 fw-bold" style="font-family: var(--font-accent); letter-spacing: 0.1em;">
+                    FASHION<span style="color: var(--secondary-color);">STORE</span>
+                </h3>
+            </a>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem;">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="shop.html" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem;">Shop</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="categoriesDropdown" role="button" data-bs-toggle="dropdown" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem;">
+                            Categories
+                        </a>
+                        <ul class="dropdown-menu border-0 shadow-lg">
+                            <li><a class="dropdown-item" href="shop.html?category=men">Men</a></li>
+                            <li><a class="dropdown-item" href="shop.html?category=women">Women</a></li>
+                            <li><a class="dropdown-item" href="shop.html?category=accessories">Accessories</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="about.html" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem;">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact.html" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem;">Contact</a>
+                    </li>
+                </ul>
+                
+                <div class="d-flex align-items-center gap-3">
+                    <a href="wishlist.html" class="btn btn-link text-dark p-0" title="Wishlist">
+                        <i class="bi bi-heart" style="font-size: 1.25rem;"></i>
+                    </a>
+                    
+                    <a href="cart.html" class="btn btn-link text-dark p-0 position-relative" title="Shopping Cart">
+                        <i class="bi bi-bag" style="font-size: 1.25rem;"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" style="background: var(--secondary-color); font-size: 0.65rem;" id="cartCount">0</span>
+                    </a>
+                    
+                    <a href="login.html" class="btn btn-sm" style="background: var(--primary-color); color: var(--white); padding: 0.5rem 1.5rem; letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.75rem;">Login</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Hero Section -->
+    <section class="about-hero">
+        <div class="container">
+            <div data-aos="fade-up">
+                <h1>Our Story</h1>
+                <p class="lead">Crafting timeless elegance through sustainable fashion since 2010</p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Story Section -->
+    <section class="story-section">
+        <div class="container">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6">
+                    <div class="story-image">
+                        <img src="https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=2071" alt="Our Story">
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <h6 class="text-uppercase mb-3" style="color: var(--secondary-color); letter-spacing: 0.15em;">Founded in 2010</h6>
+                    <h2 class="mb-4">A Legacy of Excellence</h2>
+                    <div class="divider mx-0"></div>
+                    <p class="mb-4">Fashion Store began with a simple vision: to create clothing that transcends trends and celebrates individual style. What started as a small boutique has grown into a premier destination for discerning fashion enthusiasts worldwide.</p>
+                    <p class="mb-4">We believe that true style is timeless. Every piece in our collection is carefully curated to embody elegance, quality, and sophistication. Our commitment to sustainable practices and ethical sourcing ensures that looking good means doing good.</p>
+                    <p>Today, we continue to honor our heritage while embracing innovation, offering you the finest in contemporary fashion with a touch of classic refinement.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Values Section -->
+    <section class="py-5" style="background: var(--cream);">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h6 class="text-uppercase mb-3" style="color: var(--secondary-color); letter-spacing: 0.15em;">Our Core Values</h6>
+                <h2>What Drives Us</h2>
+                <div class="divider"></div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="values-card">
+                        <div class="values-icon"><i class="bi bi-award"></i></div>
+                        <h4>Quality First</h4>
+                        <p class="text-muted">Premium materials and exceptional craftsmanship in every piece.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="values-card">
+                        <div class="values-icon"><i class="bi bi-leaf"></i></div>
+                        <h4>Sustainability</h4>
+                        <p class="text-muted">Committed to eco-friendly practices and ethical sourcing.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="values-card">
+                        <div class="values-icon"><i class="bi bi-people"></i></div>
+                        <h4>Customer Focus</h4>
+                        <p class="text-muted">Your satisfaction and experience are our top priorities.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="values-card">
+                        <div class="values-icon"><i class="bi bi-lightbulb"></i></div>
+                        <h4>Innovation</h4>
+                        <p class="text-muted">Blending timeless style with modern design innovation.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Timeline Section -->
+    <section class="timeline-section">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h6 class="text-uppercase mb-3" style="color: var(--secondary-color); letter-spacing: 0.15em;">Our Journey</h6>
+                <h2>Milestones</h2>
+                <div class="divider"></div>
+            </div>
+            
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="timeline-item">
+                        <div class="timeline-year">10</div>
+                        <h4>The Beginning</h4>
+                        <p class="text-muted">Fashion Store opens its first boutique with a curated collection of premium clothing.</p>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-year">15</div>
+                        <h4>Expansion</h4>
+                        <p class="text-muted">Launched our online platform, bringing our collection to customers worldwide.</p>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-year">20</div>
+                        <h4>Sustainability Initiative</h4>
+                        <p class="text-muted">Implemented comprehensive sustainable practices across our entire supply chain.</p>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-year">26</div>
+                        <h4>Global Recognition</h4>
+                        <p class="text-muted">Recognized as a leading premium fashion retailer with customers in over 50 countries.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Team Section -->
+    <section class="team-section">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h6 class="text-uppercase mb-3" style="color: var(--secondary-color); letter-spacing: 0.15em;">Meet Our Team</h6>
+                <h2>The People Behind The Brand</h2>
+                <div class="divider"></div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="team-member">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400" alt="Team Member" class="team-photo">
+                        <h5 class="team-name">Michael Anderson</h5>
+                        <p class="team-role">Founder & Creative Director</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="team-member">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=400" alt="Team Member" class="team-photo">
+                        <h5 class="team-name">Sarah Johnson</h5>
+                        <p class="team-role">Head of Design</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="team-member">
+                        <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400" alt="Team Member" class="team-photo">
+                        <h5 class="team-name">David Chen</h5>
+                        <p class="team-role">Operations Director</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="team-member">
+                        <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=400" alt="Team Member" class="team-photo">
+                        <h5 class="team-name">Emma Williams</h5>
+                        <p class="team-role">Brand Manager</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>Ready to Elevate Your Style?</h2>
+            <p>Explore our latest collection and discover timeless pieces crafted just for you.</p>
+            <a href="shop.html" class="btn btn-lg" style="background: var(--secondary-color); color: var(--white); padding: 1rem 3rem; letter-spacing: 0.1em; text-transform: uppercase;">Shop Now</a>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="footer bg-dark text-white pt-5 pb-3">
+        <div class="container">
+            <div class="row g-4 mb-5">
+                <!-- Company Info -->
+                <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                    <h3 class="fw-bold mb-4" style="font-family: var(--font-accent); letter-spacing: 0.05em; font-size: 1.5rem; word-spacing: -0.3em;">
+                        FASHION<span style="color: var(--secondary-color);">STORE</span>
+                    </h3>
+                    <p class="text-white-50" style="line-height: 1.8; font-size: 0.9rem; max-width: 280px;">Your destination for premium clothing and timeless fashion.</p>
+                    <div class="social-links mt-4">
+                        <a href="#" class="btn btn-outline-light btn-sm me-2" style="width: 40px; height: 40px;"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="btn btn-outline-light btn-sm me-2" style="width: 40px; height: 40px;"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="btn btn-outline-light btn-sm me-2" style="width: 40px; height: 40px;"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="btn btn-outline-light btn-sm" style="width: 40px; height: 40px;"><i class="bi bi-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <!-- Shop Links -->
+                <div class="col-lg-2 col-md-6 col-6 mb-4 mb-lg-0">
+                    <h5 class="mb-3" style="font-weight: 600; font-size: 1rem;">Shop</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="shop.html?category=men" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Men</a></li>
+                        <li class="mb-2"><a href="shop.html?category=women" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Women</a></li>
+                        <li class="mb-2"><a href="shop.html?category=accessories" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Accessories</a></li>
+                        <li class="mb-2"><a href="shop.html?filter=sale" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Sale</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Customer Service -->
+                <div class="col-lg-3 col-md-6 col-6 mb-4 mb-lg-0">
+                    <h5 class="mb-3" style="font-weight: 600; font-size: 1rem;">Customer Service</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="contact.html" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Contact Us</a></li>
+                        <li class="mb-2"><a href="shipping.html" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Shipping Info</a></li>
+                        <li class="mb-2"><a href="returns.html" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Returns</a></li>
+                        <li class="mb-2"><a href="faq.html" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">FAQ</a></li>
+                    </ul>
+                </div>
+                
+                <!-- About & Contact -->
+                <div class="col-lg-4 col-md-6">
+                    <h5 class="mb-3" style="font-weight: 600; font-size: 1rem;">Contact</h5>
+                    <ul class="list-unstyled text-white-50" style="font-size: 0.9rem;">
+                        <li class="mb-2"><i class="bi bi-geo-alt me-2"></i>123 Fashion St, NY</li>
+                        <li class="mb-2"><i class="bi bi-telephone me-2"></i>+1 234 567 8900</li>
+                        <li class="mb-2"><i class="bi bi-envelope me-2"></i>info@fashionstore.com</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Copyright -->
+            <div class="border-top border-secondary pt-4 text-center">
+                <p class="text-white-50 mb-0" style="font-size: 0.875rem;">&copy; 2026 FashionStore. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/navbar.js"></script>
+    
+</body>
+</html>
