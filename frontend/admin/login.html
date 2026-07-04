@@ -182,14 +182,30 @@
         });
         
         const form = document.getElementById('adminLoginForm');
-        Validation.initForm(form);
         
         form.addEventListener('submit', (e) => {
             e.preventDefault();
-            if (!Validation.validateForm(form)) return;
             
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            // Validate required fields
+            let isValid = true;
+            if (!username) {
+                Validation.showError(document.getElementById('username'), 'Username is required');
+                isValid = false;
+            } else {
+                Validation.showSuccess(document.getElementById('username'));
+            }
+            
+            if (!password) {
+                Validation.showError(document.getElementById('password'), 'Password is required');
+                isValid = false;
+            } else {
+                Validation.showSuccess(document.getElementById('password'));
+            }
+            
+            if (!isValid) return;
             
             // Demo: username "admin", password "admin123"
             if (username === 'admin' && password === 'admin123') {
