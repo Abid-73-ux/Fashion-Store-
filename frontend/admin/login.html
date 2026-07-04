@@ -234,9 +234,15 @@
                         console.log('User logged in:', user);
                         console.log('Stored data:', localStorage.getItem('currentUser'));
                         Toast.success('Admin login successful! Redirecting...');
+                        console.log('About to redirect to dashboard.html');
                         setTimeout(() => {
-                            // Direct navigation to dashboard
-                            window.location.replace('dashboard.html');
+                            console.log('Redirecting now...');
+                            // Get the directory of current file
+                            const currentPath = window.location.pathname;
+                            const dir = currentPath.substring(0, currentPath.lastIndexOf('/'));
+                            const dashboardPath = dir + '/dashboard.html';
+                            console.log('Dashboard path:', dashboardPath);
+                            window.location.href = dashboardPath;
                         }, 1000);
                     } else {
                         console.log('Invalid credentials');
