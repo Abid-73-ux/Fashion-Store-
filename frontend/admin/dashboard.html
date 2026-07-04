@@ -356,37 +356,54 @@
     <script src="../assets/js/admin-dashboard.js"></script>
     <script>
         // Check admin access
+        console.log('Dashboard loaded');
+        console.log('Current user:', Auth.getCurrentUser());
+        console.log('Is admin?', Auth.isAdmin());
+        
         if (!Auth.isAdmin()) {
+            console.warn('Not admin, redirecting to login');
             Toast.error('Access denied. Admin privileges required.');
             setTimeout(() => {
-                window.location.href = '../login.html';
+                window.location.href = './login.html';
             }, 2000);
+        } else {
+            console.log('Admin access granted');
         }
         
         // Initialize dashboard module
         document.addEventListener('DOMContentLoaded', () => {
-            AdminDashboard.init();
+            console.log('DOM ready, initializing AdminDashboard');
+            if (typeof AdminDashboard !== 'undefined') {
+                AdminDashboard.init();
+            } else {
+                console.error('AdminDashboard module not loaded');
+            }
         });
         
         // Logout handlers
-        document.getElementById('adminLogout').addEventListener('click', (e) => {
-            e.preventDefault();
-            handleLogout();
-        });
+        const logoutBtn = document.getElementById('adminLogout');
+        const topbarLogoutBtn = document.getElementById('topbarLogout');
         
-        document.getElementById('topbarLogout').addEventListener('click', (e) => {
-            e.preventDefault();
-            handleLogout();
-        });
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                handleLogout();
+            });
+        }
+        
+        if (topbarLogoutBtn) {
+            topbarLogoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                handleLogout();
+            });
+        }
         
         function handleLogout() {
-            Modal.showLogoutConfirm(() => {
-                Auth.logout();
-                Toast.success('Logged out successfully');
-                setTimeout(() => {
-                    window.location.href = '../login.html';
-                }, 1000);
-            });
+            Auth.logout();
+            Toast.success('Logged out successfully');
+            setTimeout(() => {
+                window.location.href = './login.html';
+            }, 1000);
         }
     </script>
 </body>
