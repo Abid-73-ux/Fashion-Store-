@@ -1,15 +1,26 @@
 const express = require('express');
+const {
+    getUsers,
+    getUser,
+    updateProfile,
+    changePassword,
+    deleteUser,
+    updateUserRole,
+    deactivateAccount
+} = require('../controllers/userController');
 const { protect, authorize } = require('../middleware/auth');
 
 const router = express.Router();
 
-// TODO: Implement user routes
-router.get('/', protect, authorize('admin'), (req, res) => {
-    res.json({ message: 'GET /users - Coming soon' });
-});
+// Protected routes
+router.get('/profile/:id', protect, getUser);
+router.patch('/profile/update', protect, updateProfile);
+router.patch('/password/change', protect, changePassword);
+router.delete('/account/deactivate', protect, deactivateAccount);
 
-router.get('/:id', protect, (req, res) => {
-    res.json({ message: 'GET /users/:id - Coming soon' });
-});
+// Admin only routes
+router.get('/', protect, authorize('admin'), getUsers);
+router.delete('/:id', protect, authorize('admin'), deleteUser);
+router.patch('/:id/role', protect, authorize('admin'), updateUserRole);
 
 module.exports = router;

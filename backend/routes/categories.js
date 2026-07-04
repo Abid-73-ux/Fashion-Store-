@@ -1,15 +1,22 @@
 const express = require('express');
+const {
+    getCategories,
+    getCategory,
+    createCategory,
+    updateCategory,
+    deleteCategory
+} = require('../controllers/categoryController');
 const { protect, authorize } = require('../middleware/auth');
 
 const router = express.Router();
 
-// TODO: Implement category routes
-router.get('/', (req, res) => {
-    res.json({ message: 'GET /categories - Coming soon' });
-});
+// Public routes
+router.get('/', getCategories);
+router.get('/:id', getCategory);
 
-router.post('/', protect, authorize('admin'), (req, res) => {
-    res.json({ message: 'POST /categories - Coming soon' });
-});
+// Admin only routes
+router.post('/', protect, authorize('admin'), createCategory);
+router.patch('/:id', protect, authorize('admin'), updateCategory);
+router.delete('/:id', protect, authorize('admin'), deleteCategory);
 
 module.exports = router;

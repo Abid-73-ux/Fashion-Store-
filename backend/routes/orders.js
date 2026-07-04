@@ -1,15 +1,24 @@
 const express = require('express');
+const {
+    getOrders,
+    getUserOrders,
+    getOrder,
+    createOrder,
+    updateOrder,
+    cancelOrder
+} = require('../controllers/orderController');
 const { protect, authorize } = require('../middleware/auth');
 
 const router = express.Router();
 
-// TODO: Implement order routes
-router.get('/', protect, (req, res) => {
-    res.json({ message: 'GET /orders - Coming soon' });
-});
+// Protected routes
+router.get('/my-orders', protect, getUserOrders);
+router.post('/', protect, createOrder);
+router.get('/:id', protect, getOrder);
+router.patch('/:id/cancel', protect, cancelOrder);
 
-router.post('/', protect, (req, res) => {
-    res.json({ message: 'POST /orders - Coming soon' });
-});
+// Admin only routes
+router.get('/', protect, authorize('admin'), getOrders);
+router.patch('/:id', protect, authorize('admin'), updateOrder);
 
 module.exports = router;
