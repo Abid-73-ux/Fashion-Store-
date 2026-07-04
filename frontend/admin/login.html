@@ -171,90 +171,87 @@
     <script>
         console.log('Admin login page loaded');
         
-        // Wait for DOM to be ready
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM ready, initializing admin login');
+        // Wait for DOM
+        window.addEventListener('load', function() {
+            console.log('Page fully loaded');
             
-            const togglePasswordBtn = document.getElementById('togglePassword');
             const form = document.getElementById('adminLoginForm');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
             
-            if (!togglePasswordBtn) console.error('togglePassword button not found');
-            if (!form) console.error('adminLoginForm not found');
-            
-            if (togglePasswordBtn) {
-                togglePasswordBtn.addEventListener('click', function() {
-                    const password = document.getElementById('password');
-                    const icon = this.querySelector('i');
-                    if (password.type === 'password') {
-                        password.type = 'text';
-                        icon.classList.replace('bi-eye', 'bi-eye-slash');
-                    } else {
-                        password.type = 'password';
-                        icon.classList.replace('bi-eye-slash', 'bi-eye');
-                    }
-                });
+            if (!form) {
+                console.error('Form not found!');
+                return;
             }
             
-            if (form) {
-                form.addEventListener('submit', (e) => {
-                    console.log('Form submitted');
-                    e.preventDefault();
+            console.log('Form found, attaching submit handler');
+            
+            form.addEventListener('submit', function(e) {
+                console.log('Form submit event fired');
+                e.preventDefault();
+                
+                const username = usernameInput.value.trim();
+                const password = passwordInput.value.trim();
+                
+                console.log('Username:', username);
+                console.log('Password length:', password.length);
+                
+                // Simple validation
+                if (!username || !password) {
+                    console.log('Empty fields');
+                    if (typeof Toast !== 'undefined') {
+                        Toast.error('Username and password required');
+                    }
+                    return;
+                }
+                
+                // Check credentials
+                if (username === 'admin' && password === 'admin123') {
+                    console.log('Credentials correct!');
                     
-                    const username = document.getElementById('username').value.trim();
-                    const password = document.getElementById('password').value.trim();
-                    
-                    console.log('Username:', username);
-                    console.log('Password length:', password.length);
-                    
-                    // Validate required fields
-                    let isValid = true;
-                    if (!username) {
-                        Validation.showError(document.getElementById('username'), 'Username is required');
-                        isValid = false;
-                    } else {
-                        Validation.showSuccess(document.getElementById('username'));
+                    // Store admin user
+                    try {
+                        const adminUser = {
+                            id: 'admin-001',
+                            email: 'admin@admin.local',
+                            name: 'Administrator',
+                            role: 'admin',
+                            loginTime: new Date().toISOString()
+                        };
+                        localStorage.setItem('currentUser', JSON.stringify(adminUser));
+                        console.log('User data stored:', localStorage.getItem('currentUser'));
+                    } catch(err) {
+                        console.error('localStorage error:', err);
                     }
                     
-                    if (!password) {
-                        Validation.showError(document.getElementById('password'), 'Password is required');
-                        isValid = false;
-                    } else {
-                        Validation.showSuccess(document.getElementById('password'));
+                    if (typeof Toast !== 'undefined') {
+                        Toast.success('Login successful!');
                     }
                     
-                    if (!isValid) {
-                        console.log('Form validation failed');
-                        return;
+                    console.log('Redirecting to dashboard...');
+                    // Redirect after 1 second
+                    setTimeout(function() {
+                        console.log('Now redirecting...');
+                        window.location.href = 'dashboard.html';
+                    }, 1000);
+                } else {
+                    console.log('Invalid credentials');
+                    if (typeof Toast !== 'undefined') {
+                        Toast.error('Invalid credentials. Use: admin / admin123');
                     }
-                    
-                    // Demo: username "admin", password "admin123"
-                    if (username === 'admin' && password === 'admin123') {
-                        console.log('Credentials matched, logging in');
-                        const user = Auth.login(username + '@admin.local', password, 'admin');
-                        console.log('User logged in:', user);
-                        console.log('Stored data:', localStorage.getItem('currentUser'));
-                        Toast.success('Admin login successful! Redirecting...');
-                        console.log('About to redirect to dashboard.html');
-                        setTimeout(() => {
-                            console.log('Redirecting now...');
-                            // Get the directory of current file
-                            const currentPath = window.location.pathname;
-                            const dir = currentPath.substring(0, currentPath.lastIndexOf('/'));
-                            const dashboardPath = dir + '/dashboard.html';
-                            console.log('Dashboard path:', dashboardPath);
-                            window.location.href = dashboardPath;
-                        }, 1000);
+                }
+            });
+            
+            // Password toggle
+            const toggleBtn = document.getElementById('togglePassword');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function() {
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
                     } else {
-                        console.log('Invalid credentials');
-                        Toast.error('Invalid credentials. Try: admin / admin123');
+                        passwordInput.type = 'password';
                     }
                 });
-            }
-            
-            // Check if already logged in as admin
-            if (Auth.isAdmin()) {
-                console.log('Already logged in as admin, redirecting to dashboard');
-                window.location.href = 'dashboard.html';
             }
         });
     </script>
