@@ -2,6 +2,8 @@
 
 A modern, fully-featured e-commerce platform built with HTML5, CSS3, and vanilla JavaScript.
 
+**Live Demo**: https://fashionstorea.netlify.app/
+
 ## Features
 
 ### Customer Features
