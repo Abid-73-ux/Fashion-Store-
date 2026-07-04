@@ -1,77 +1,68 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../database/sequelize');
 
-const orderSchema = new mongoose.Schema({
+const Order = sequelize.define('Order', {
+    id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true
+    },
     orderId: {
-        type: String,
+        type: DataTypes.STRING,
         unique: true,
-        default: () => 'ORD-' + Date.now()
+        defaultValue: () => 'ORD-' + Date.now()
     },
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
+    userId: {
+        type: DataTypes.UUID,
+        allowNull: false
     },
-    items: [{
-        product: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Product',
-            required: true
-        },
-        quantity: {
-            type: Number,
-            required: true,
-            min: 1
-        },
-        price: Number,
-        size: String,
-        color: String
-    }],
+    items: {
+        type: DataTypes.JSON,
+        allowNull: false
+    },
     totalAmount: {
-        type: Number,
-        required: true
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false
     },
     discountAmount: {
-        type: Number,
-        default: 0
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0
     },
-    coupon: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Coupon',
-        default: null
+    couponId: {
+        type: DataTypes.UUID,
+        allowNull: true
     },
     shippingAddress: {
-        name: String,
-        phone: String,
-        street: String,
-        city: String,
-        state: String,
-        country: String,
-        zipCode: String
+        type: DataTypes.JSON,
+        allowNull: false
     },
     paymentMethod: {
-        type: String,
-        enum: ['card', 'paypal', 'cod'],
-        required: true
+        type: DataTypes.ENUM('card', 'paypal', 'cod'),
+        allowNull: false
     },
     paymentStatus: {
-        type: String,
-        enum: ['pending', 'paid', 'failed'],
-        default: 'pending'
+        type: DataTypes.ENUM('pending', 'paid', 'failed'),
+        defaultValue: 'pending'
     },
     orderStatus: {
-        type: String,
-        enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
-        default: 'pending'
+        type: DataTypes.ENUM('pending', 'processing', 'shipped', 'delivered', 'cancelled'),
+        defaultValue: 'pending'
     },
-    notes: String,
+    notes: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
     createdAt: {
-        type: Date,
-        default: Date.now
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW
     },
     updatedAt: {
-        type: Date,
-        default: Date.now
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW
     }
+}, {
+    timestamps: true,
+    tableName: 'orders'
 });
 
-module.exports = mongoose.model('Order', orderSchema);
+module.exports = Order;

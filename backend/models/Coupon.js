@@ -1,65 +1,71 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../database/sequelize');
 
-const couponSchema = new mongoose.Schema({
+const Coupon = sequelize.define('Coupon', {
+    id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true
+    },
     code: {
-        type: String,
-        required: [true, 'Please provide a coupon code'],
+        type: DataTypes.STRING,
+        allowNull: false,
         unique: true,
         uppercase: true,
         trim: true
     },
     description: {
-        type: String,
-        default: null
+        type: DataTypes.TEXT,
+        allowNull: true
     },
     discountType: {
-        type: String,
-        enum: ['percentage', 'fixed'],
-        required: true
+        type: DataTypes.ENUM('percentage', 'fixed'),
+        allowNull: false
     },
     discountValue: {
-        type: Number,
-        required: true,
-        min: 0
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+        validate: { min: 0 }
     },
     maxDiscount: {
-        type: Number,
-        default: null
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: true
     },
     minPurchase: {
-        type: Number,
-        default: 0
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0
     },
     usageLimit: {
-        type: Number,
-        default: null
+        type: DataTypes.INTEGER,
+        allowNull: true
     },
     usageCount: {
-        type: Number,
-        default: 0
+        type: DataTypes.INTEGER,
+        defaultValue: 0
     },
-    usedBy: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User'
-        }
-    ],
+    usedBy: {
+        type: DataTypes.ARRAY(DataTypes.UUID),
+        defaultValue: []
+    },
     expiryDate: {
-        type: Date,
-        required: true
+        type: DataTypes.DATE,
+        allowNull: false
     },
     active: {
-        type: Boolean,
-        default: true
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
     },
     createdAt: {
-        type: Date,
-        default: Date.now
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW
     },
     updatedAt: {
-        type: Date,
-        default: Date.now
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW
     }
+}, {
+    timestamps: true,
+    tableName: 'coupons'
 });
 
-module.exports = mongoose.model('Coupon', couponSchema);
+module.exports = Coupon;

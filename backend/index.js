@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const connectDB = require('./database/connection');
+const { connectDB } = require('./database/sequelize');
 
 // Load environment variables
 dotenv.config();

@@ -1,50 +1,69 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../database/sequelize');
 
-const categorySchema = new mongoose.Schema({
+const Category = sequelize.define('Category', {
+    id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true
+    },
     name: {
-        type: String,
-        required: [true, 'Please provide a category name'],
+        type: DataTypes.STRING,
+        allowNull: false,
         unique: true,
         trim: true
     },
     description: {
-        type: String,
-        default: null
+        type: DataTypes.TEXT,
+        allowNull: true
     },
     image: {
-        type: String,
-        default: null
+        type: DataTypes.STRING,
+        allowNull: true
     },
     slug: {
-        type: String,
+        type: DataTypes.STRING,
         unique: true,
         lowercase: true
     },
     active: {
-        type: Boolean,
-        default: true
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
     },
     createdAt: {
-        type: Date,
-        default: Date.now
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW
     },
     updatedAt: {
-        type: Date,
-        default: Date.now
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW
     }
+}, {
+    timestamps: true,
+    tableName: 'categories'
 });
 
 // Auto-generate slug from name
-categorySchema.pre('save', function(next) {
-    if (!this.slug) {
-        this.slug = this.name
+Category.beforeCreate((category) => {
+    if (!category.slug) {
+        category.slug = category.name
             .toLowerCase()
             .trim()
             .replace(/[^\w\s-]/g, '')
             .replace(/\s+/g, '-')
             .replace(/-+/g, '-');
     }
-    next();
 });
 
-module.exports = mongoose.model('Category', categorySchema);
+Category.beforeUpdate((category) => {
+    if (category.changed('name')) {
+        category.slug = category.name
+            .toLowerCase()
+            .trim()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-');
+    }
+});
+
+module.exports = Category;
