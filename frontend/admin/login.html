@@ -232,9 +232,12 @@
                         console.log('Credentials matched, logging in');
                         const user = Auth.login(username + '@admin.local', password, 'admin');
                         console.log('User logged in:', user);
+                        console.log('Stored data:', localStorage.getItem('currentUser'));
                         Toast.success('Admin login successful! Redirecting...');
                         setTimeout(() => {
-                            window.location.href = './dashboard.html';
+                            const currentUrl = window.location.href;
+                            const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/'));
+                            window.location.href = baseUrl + '/dashboard.html';
                         }, 1500);
                     } else {
                         console.log('Invalid credentials');
