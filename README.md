@@ -63,7 +63,9 @@ A modern, fully-featured e-commerce platform built with HTML5, CSS3, and vanilla
 
 ### Backend (Coming Soon)
 - Target: Render.com or Railway
-- Database: MySql
+- Database: MySQL
+- Backend API integration (Node.js/Express,)
+- Database integration ( MySQL)
 
 ### Admin Dashboard Features
 - **Dashboard**: Real-time statistics and recent orders
@@ -80,10 +82,6 @@ A modern, fully-featured e-commerce platform built with HTML5, CSS3, and vanilla
 
 
 ## Future Enhancements
-
-- Backend API integration (Node.js/Express, Python/Django, etc.)
-- Database integration (MongoDB, PostgreSQL, MySQL)
-- Payment gateway integration (Stripe, PayPal)
 - Email notifications
 - SMS notifications
 - Advanced analytics
