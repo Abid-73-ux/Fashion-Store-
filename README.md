@@ -33,6 +33,8 @@ A modern, fully-featured e-commerce platform built with HTML5, CSS3, and vanilla
 - **Styling**: Bootstrap 5, Custom CSS
 - **Icons**: Bootstrap Icons
 - **Fonts**: Google Fonts (Montserrat, Cormorant Garamond, Cinzel)
+- **Deployment**: Netlify (Frontend)
+- **Backend**: Node.js, Express, PostgreSQL (coming soon)
 
 ## Project Structure
 
@@ -47,9 +49,22 @@ A modern, fully-featured e-commerce platform built with HTML5, CSS3, and vanilla
 │   │   ├── css/            # Stylesheets
 │   │   └── js/             # JavaScript modules
 │   └── *.html              # Customer-facing pages
-├── backend/                # Backend API (future implementation)
-└── docs/                   # Documentation
+├── backend/                # Backend API (Node.js/Express)
+├── netlify.toml            # Netlify configuration
+└── README.md               # This file
 ```
+
+## Deployment
+
+### Frontend (Netlify)
+- **Live URL**: https://fashionstorea.netlify.app/
+- **Auto-deployment**: Connected to GitHub main branch
+- Changes pushed to GitHub automatically deploy to Netlify
+
+### Backend (Coming Soon)
+- Target: Render.com or Railway
+- Database: PostgreSQL
+- API Base: `https://api.fashionstore.com` (TBD)
 
 
 ### Admin Dashboard Features
