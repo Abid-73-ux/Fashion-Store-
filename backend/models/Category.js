@@ -1,69 +1,50 @@
-const { DataTypes } = require('sequelize');
-const { sequelize } = require('../database/sequelize');
+const mongoose = require('mongoose');
 
-const Category = sequelize.define('Category', {
-    id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
-        primaryKey: true
-    },
+const categorySchema = new mongoose.Schema({
     name: {
-        type: DataTypes.STRING,
-        allowNull: false,
+        type: String,
+        required: [true, 'Please provide category name'],
         unique: true,
         trim: true
     },
     description: {
-        type: DataTypes.TEXT,
-        allowNull: true
+        type: String,
+        default: ''
     },
     image: {
-        type: DataTypes.STRING,
-        allowNull: true
+        type: String,
+        default: null
     },
     slug: {
-        type: DataTypes.STRING,
+        type: String,
         unique: true,
         lowercase: true
     },
     active: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: true
+        type: Boolean,
+        default: true
     },
     createdAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW
+        type: Date,
+        default: Date.now
     },
     updatedAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW
+        type: Date,
+        default: Date.now
     }
-}, {
-    timestamps: true,
-    tableName: 'categories'
 });
 
 // Auto-generate slug from name
-Category.beforeCreate((category) => {
-    if (!category.slug) {
-        category.slug = category.name
+categorySchema.pre('save', function(next) {
+    if (this.isModified('name') || !this.slug) {
+        this.slug = this.name
             .toLowerCase()
             .trim()
             .replace(/[^\w\s-]/g, '')
             .replace(/\s+/g, '-')
             .replace(/-+/g, '-');
     }
+    next();
 });
 
-Category.beforeUpdate((category) => {
-    if (category.changed('name')) {
-        category.slug = category.name
-            .toLowerCase()
-            .trim()
-            .replace(/[^\w\s-]/g, '')
-            .replace(/\s+/g, '-')
-            .replace(/-+/g, '-');
-    }
-});
-
-module.exports = Category;
+module.exports = mongoose.model('Category', categorySchema);
