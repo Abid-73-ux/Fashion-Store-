@@ -64,8 +64,6 @@ A modern, fully-featured e-commerce platform built with HTML5, CSS3, and vanilla
 ### Backend (Coming Soon)
 - Target: Render.com or Railway
 - Database: PostgreSQL
-- API Base: `https://api.fashionstore.com` (TBD)
-
 
 ### Admin Dashboard Features
 - **Dashboard**: Real-time statistics and recent orders
