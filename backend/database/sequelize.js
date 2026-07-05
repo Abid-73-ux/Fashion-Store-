@@ -1,37 +1,35 @@
 const { Sequelize } = require('sequelize');
+require('dotenv').config();
 
 const sequelize = new Sequelize(
-    process.env.DB_NAME || 'fashionstore',
-    process.env.DB_USER || 'postgres',
-    process.env.DB_PASSWORD || 'admin123',
-    {
-        host: process.env.DB_HOST || 'localhost',
-        port: process.env.DB_PORT || 5432,
-        dialect: 'postgres',
-        logging: false,
-        pool: {
-            max: 5,
-            min: 0,
-            acquire: 30000,
-            idle: 10000
-        }
+  process.env.DB_NAME || 'takanj',
+  process.env.DB_USER || 'root',
+  process.env.DB_PASSWORD || '',
+  {
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 3306,
+    dialect: 'mysql',
+    logging: false, // Set to console.log to see SQL queries
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000
+    },
+    define: {
+      timestamps: true,
+      underscored: false
     }
+  }
 );
 
-const connectDB = async () => {
-    try {
-        await sequelize.authenticate();
-        console.log(`✅ PostgreSQL Connected: ${process.env.DB_HOST || 'localhost'}`);
-        
-        // Sync all models
-        await sequelize.sync();
-        console.log(`✅ Database synced`);
-        
-        return sequelize;
-    } catch (error) {
-        console.error(`❌ PostgreSQL Connection Error: ${error.message}`);
-        process.exit(1);
-    }
-};
+// Test connection
+sequelize.authenticate()
+  .then(() => {
+    console.log('✅ MySQL Database connected successfully');
+  })
+  .catch(err => {
+    console.error('❌ MySQL Database connection failed:', err.message);
+  });
 
-module.exports = { sequelize, connectDB };
+module.exports = sequelize;

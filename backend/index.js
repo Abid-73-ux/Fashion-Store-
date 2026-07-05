@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const { connectDB } = require('./database/mongodb');
+const sequelize = require('./database/sequelize');
 
 // Load environment variables
 dotenv.config();
@@ -17,8 +17,12 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// Connect to database
-connectDB();
+// Sync database models
+sequelize.sync({ alter: false }).then(() => {
+    console.log('✅ Database models synchronized');
+}).catch(err => {
+    console.error('❌ Database sync error:', err.message);
+});
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
@@ -30,7 +34,7 @@ app.use('/api/users', require('./routes/users'));
 
 // Health check
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'OK', message: 'Server is running' });
+    res.json({ status: 'OK', message: 'Server is running', database: 'MySQL' });
 });
 
 // 404 handler
@@ -50,5 +54,7 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`✅ Server running on http://localhost:${PORT}`);
-    console.log(`📝 API Documentation: http://localhost:${PORT}/api`);
+    console.log(`📝 Database: MySQL`);
+    console.log(`🔗 Host: ${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`);
 });
+

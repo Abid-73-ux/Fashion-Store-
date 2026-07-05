@@ -1,50 +1,37 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../database/sequelize');
 
-const categorySchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: [true, 'Please provide category name'],
-        unique: true,
-        trim: true
-    },
-    description: {
-        type: String,
-        default: ''
-    },
-    image: {
-        type: String,
-        default: null
-    },
-    slug: {
-        type: String,
-        unique: true,
-        lowercase: true
-    },
-    active: {
-        type: Boolean,
-        default: true
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    },
-    updatedAt: {
-        type: Date,
-        default: Date.now
-    }
+const Category = sequelize.define('Category', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  name: {
+    type: DataTypes.STRING(100),
+    unique: true,
+    allowNull: false
+  },
+  description: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  image: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  },
+  slug: {
+    type: DataTypes.STRING(100),
+    unique: true,
+    allowNull: true
+  },
+  isActive: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
+  }
+}, {
+  tableName: 'categories',
+  timestamps: true
 });
 
-// Auto-generate slug from name
-categorySchema.pre('save', function(next) {
-    if (this.isModified('name') || !this.slug) {
-        this.slug = this.name
-            .toLowerCase()
-            .trim()
-            .replace(/[^\w\s-]/g, '')
-            .replace(/\s+/g, '-')
-            .replace(/-+/g, '-');
-    }
-    next();
-});
-
-module.exports = mongoose.model('Category', categorySchema);
+module.exports = Category;
