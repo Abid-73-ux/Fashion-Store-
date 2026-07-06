@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Widget Test</title>
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/whatsapp-widget.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #25d366;
+            border-radius: 4px;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #25d366;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #1da851;
+        }
+        .log {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        .log-entry {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 WhatsApp Widget Test Page</h1>
+        
+        <div class="test-section">
+            <h2>✅ Widget Status</h2>
+            <p id="status">Loading widget...</p>
+        </div>
+
+        <div class="test-section">
+            <h2>📝 Test Cases</h2>
+            
+            <h3>Test 1: Default Message</h3>
+            <button onclick="testDefaultMessage()">Generate Default Message</button>
+            
+            <h3>Test 2: Product Page Message</h3>
+            <button onclick="testProductMessage()">Generate Product Message</button>
+            
+            <h3>Test 3: Cart Message</h3>
+            <button onclick="testCartMessage()">Generate Cart Message</button>
+            
+            <h3>Test 4: Checkout Message</h3>
+            <button onclick="testCheckoutMessage()">Generate Checkout Message</button>
+            
+            <h3>Test 5: Analytics</h3>
+            <button onclick="testAnalytics()">Check Local Analytics</button>
+            
+            <h3>Test 6: Clear Analytics</h3>
+            <button onclick="clearAnalyticsTest()">Clear Analytics</button>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Console Log</h2>
+            <div class="log" id="log"></div>
+        </div>
+    </div>
+
+    <!-- WhatsApp Widget CSS & JS -->
+    <link rel="stylesheet" href="assets/css/whatsapp-widget.css">
+    <script src="assets/js/whatsapp-widget.js"></script>
+
+    <script>
+        const logDiv = document.getElementById('log');
+        const statusDiv = document.getElementById('status');
+
+        function log(message) {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        // Override console.log for testing
+        const originalLog = console.log;
+        console.log = function(...args) {
+            log(args.join(' '));
+            originalLog.apply(console, args);
+        };
+
+        // Check widget status
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                if (window.whatsappWidget) {
+                    statusDiv.innerHTML = '✅ WhatsApp Widget Loaded Successfully!';
+                    log('✅ Widget initialized successfully');
+                    log('📱 Business Phone: 923156204745');
+                    log('🏪 Business Name: Takanj');
+                    log('🌍 Current Page: ' + window.location.pathname);
+                } else {
+                    statusDiv.innerHTML = '❌ Widget Failed to Load';
+                    log('❌ Widget failed to initialize');
+                }
+            }, 1000);
+        });
+
+        function testDefaultMessage() {
+            log('Testing default message generation...');
+            const message = window.whatsappWidget?.generateMessage();
+            if (message) {
+                log('✅ Message generated:');
+                log(message);
+            } else {
+                log('❌ Failed to generate message');
+            }
+        }
+
+        function testProductMessage() {
+            log('Testing product message generation...');
+            // Set up product page context
+            if (!document.querySelector('h1')) {
+                const h1 = document.createElement('h1');
+                h1.setAttribute('data-test', 'true');
+                h1.textContent = 'Test Product Name';
+                document.body.appendChild(h1);
+            }
+            const message = window.whatsappWidget?.generateProductMessage();
+            if (message) {
+                log('✅ Product message generated');
+                log(message);
+            } else {
+                log('❌ Failed to generate product message');
+            }
+        }
+
+        function testCartMessage() {
+            log('Testing cart message generation...');
+            const message = window.whatsappWidget?.generateCartMessage();
+            if (message) {
+                log('✅ Cart message generated');
+                log(message);
+            } else {
+                log('❌ Failed to generate cart message');
+            }
+        }
+
+        function testCheckoutMessage() {
+            log('Testing checkout message generation...');
+            const message = window.whatsappWidget?.generateCheckoutMessage();
+            if (message) {
+                log('✅ Checkout message generated');
+                log(message);
+            } else {
+                log('❌ Failed to generate checkout message');
+            }
+        }
+
+        function testAnalytics() {
+            log('Fetching local analytics...');
+            const analytics = window.whatsappWidget?.getAnalytics();
+            if (analytics && analytics.length > 0) {
+                log(`✅ Found ${analytics.length} analytics records`);
+                log(JSON.stringify(analytics[0], null, 2));
+            } else {
+                log('ℹ️ No analytics records yet (click the widget to generate)');
+            }
+        }
+
+        function clearAnalyticsTest() {
+            log('Clearing analytics...');
+            window.whatsappWidget?.clearAnalytics();
+            log('✅ Analytics cleared');
+        }
+    </script>
+</body>
+</html>

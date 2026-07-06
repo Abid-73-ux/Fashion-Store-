@@ -7,7 +7,7 @@
 class WhatsAppWidget {
   constructor(options = {}) {
     // Configuration
-    this.businessPhone = options.businessPhone || '923267148911'; // With country code
+    this.businessPhone = options.businessPhone || '923156204745'; // With country code
     this.businessName = options.businessName || 'Takanj';
     this.position = options.position || 'bottom-left';
     this.enableAnalytics = options.enableAnalytics !== false;
@@ -103,8 +103,8 @@ class WhatsAppWidget {
     container.className = 'whatsapp-widget-container animate-in';
 
     container.innerHTML = `
-      <button class="whatsapp-btn" id="whatsappBtn" aria-label="Chat with us on WhatsApp">
-        <span class="whatsapp-icon">💬</span>
+      <button class="whatsapp-btn" id="whatsappBtn" aria-label="Chat with us on WhatsApp" title="Chat with us on WhatsApp">
+        <i class="bi bi-whatsapp" style="font-size: 28px;"></i>
         <div class="whatsapp-status online"></div>
         <div class="whatsapp-tooltip">
           <span class="whatsapp-tooltip-text">
@@ -116,7 +116,6 @@ class WhatsAppWidget {
     `;
 
     this.container = container;
-    this.button = container.querySelector('.whatsappBtn');
   }
 
   /**
@@ -351,15 +350,24 @@ class WhatsAppWidget {
    */
   sendAnalyticsToBackend(data) {
     // Send to backend API endpoint
-    fetch('/api/support/whatsapp', {
+    fetch('/api/whatsapp/track', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify({
+        sessionId: data.sessionId,
+        userId: data.userId,
+        pageUrl: data.pageUrl,
+        pageType: data.pageType,
+        generatedMessage: data.message,
+        productId: data.productId,
+        deviceType: data.device,
+        browserInfo: data.browserInfo
+      })
     }).catch(err => {
       // Silent fail - don't block user experience
-      console.debug('Analytics tracking (expected if backend not available)');
+      console.debug('Analytics tracking (will work after backend deployment)');
     });
   }
 
@@ -495,7 +503,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (shouldInitialize) {
     window.whatsappWidget = new WhatsAppWidget({
-      businessPhone: '923267148911',
+      businessPhone: '923156204745',
       businessName: 'Takanj',
       enableAnalytics: true,
       showOnlineStatus: true,
