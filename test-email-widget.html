@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Widget Test</title>
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 40px;
+        }
+        
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .status {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .test-item {
+            padding: 12px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+            background: #f8f9fa;
+        }
+        
+        .test-item.pass {
+            border-left-color: #28a745;
+            background: #f1f9f1;
+        }
+        
+        .test-item.fail {
+            border-left-color: #dc3545;
+            background: #fff1f1;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px 10px 0;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>📧 Email Widget Test</h1>
+        <p>Testing email contact widget functionality</p>
+        
+        <div id="results"></div>
+        
+        <button onclick="runTests()">▶ Run Tests</button>
+        <button onclick="testEmailButton()">✉ Test Email Button</button>
+        <button onclick="location.reload()">🔄 Refresh</button>
+    </div>
+
+    <script src="assets/js/email-contact.js"></script>
+    
+    <script>
+        function addResult(title, status, message) {
+            const resultsDiv = document.getElementById('results');
+            const item = document.createElement('div');
+            item.className = `test-item ${status === 'pass' ? 'pass' : 'fail'}`;
+            item.innerHTML = `
+                <strong>${status === 'pass' ? '✅' : '❌'} ${title}</strong><br>
+                <small style="color: #666;">${message}</small>
+            `;
+            resultsDiv.appendChild(item);
+        }
+        
+        function runTests() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="status info">⏳ Running tests...</div>';
+            
+            setTimeout(() => {
+                resultsDiv.innerHTML = '';
+                let passed = 0;
+                let total = 0;
+                
+                // Test 1: Widget container exists
+                total++;
+                const container = document.querySelector('.email-contact-widget-container');
+                if (container) {
+                    addResult('Widget Container', 'pass', 'Email contact widget container found in DOM');
+                    passed++;
+                } else {
+                    addResult('Widget Container', 'fail', 'Widget container NOT found - email-contact.js may not have loaded');
+                }
+                
+                // Test 2: Button exists
+                total++;
+                const button = document.querySelector('.email-contact-btn');
+                if (button) {
+                    addResult('Email Button', 'pass', 'Email button element exists');
+                    passed++;
+                } else {
+                    addResult('Email Button', 'fail', 'Button element not found');
+                }
+                
+                // Test 3: Tooltip exists
+                total++;
+                const tooltip = document.querySelector('.email-contact-tooltip');
+                if (tooltip) {
+                    addResult('Tooltip', 'pass', 'Tooltip element found');
+                    passed++;
+                } else {
+                    addResult('Tooltip', 'fail', 'Tooltip NOT found');
+                }
+                
+                // Test 4: Button has click handler
+                total++;
+                if (button) {
+                    try {
+                        const hasClick = button.onclick || button.attributes['onclick'];
+                        if (button.addEventListener) {
+                            addResult('Click Handler', 'pass', 'Button has event listeners');
+                            passed++;
+                        } else {
+                            addResult('Click Handler', 'fail', 'No event listeners detected');
+                        }
+                    } catch (e) {
+                        addResult('Click Handler', 'fail', e.message);
+                    }
+                }
+                
+                // Test 5: Global widget object
+                total++;
+                if (window.emailContactWidget) {
+                    addResult('Global Widget', 'pass', `Widget initialized - Email: ${window.emailContactWidget.contactEmail}`);
+                    passed++;
+                } else {
+                    addResult('Global Widget', 'fail', 'window.emailContactWidget not found');
+                }
+                
+                // Test 6: CSS styling applied
+                total++;
+                if (button) {
+                    const computed = window.getComputedStyle(button);
+                    const hasStyles = computed.position === 'fixed' || computed.backgroundColor !== '';
+                    if (hasStyles) {
+                        addResult('CSS Styling', 'pass', `Position: ${computed.position}, Background: ${computed.backgroundColor}`);
+                        passed++;
+                    } else {
+                        addResult('CSS Styling', 'fail', 'CSS styles may not be applied correctly');
+                    }
+                }
+                
+                // Test 7: Bootstrap Icons
+                total++;
+                const icon = document.querySelector('.email-contact-btn i');
+                if (icon && icon.classList.contains('bi-envelope-fill')) {
+                    addResult('Bootstrap Icon', 'pass', 'Envelope icon (bi-envelope-fill) found');
+                    passed++;
+                } else {
+                    addResult('Bootstrap Icon', 'fail', 'Bootstrap icon not properly set');
+                }
+                
+                // Summary
+                resultsDiv.innerHTML += `
+                    <div class="status ${passed === total ? 'success' : 'error'}">
+                        <strong>Test Results: ${passed}/${total} passed</strong>
+                    </div>
+                `;
+                
+                if (passed === total) {
+                    resultsDiv.innerHTML += '<div class="status success">✅ All tests passed! Email widget is working correctly.</div>';
+                } else {
+                    resultsDiv.innerHTML += '<div class="status error">⚠️ Some tests failed. Check console for details.</div>';
+                }
+            }, 500);
+        }
+        
+        function testEmailButton() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="status info">📧 Testing email button click...</div>';
+            
+            const button = document.querySelector('#emailContactBtn');
+            if (button) {
+                setTimeout(() => {
+                    button.click();
+                    resultsDiv.innerHTML += '<div class="status success">✅ Button clicked successfully.<br><small>Your default email client should open...</small></div>';
+                }, 300);
+            } else {
+                resultsDiv.innerHTML = '<div class="status error">❌ Email button not found</div>';
+            }
+        }
+        
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            console.log('✅ Test page loaded');
+            console.log('Available objects:', {
+                emailContactWidget: window.emailContactWidget,
+                containerExists: !!document.querySelector('.email-contact-widget-container')
+            });
+        });
+    </script>
+</body>
+</html>

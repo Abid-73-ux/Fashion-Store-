@@ -7,7 +7,7 @@
 class WhatsAppWidget {
   constructor(options = {}) {
     // Configuration
-    this.businessPhone = options.businessPhone || '923156204745'; // With country code
+    this.businessPhone = options.businessPhone || '923704969460'; // With country code (03704969460)
     this.businessName = options.businessName || 'Takanj';
     this.position = options.position || 'bottom-left';
     this.enableAnalytics = options.enableAnalytics !== false;
@@ -109,7 +109,9 @@ class WhatsAppWidget {
         <div class="whatsapp-tooltip">
           <span class="whatsapp-tooltip-text">
             <strong>Need help?</strong>
-            Chat with us on WhatsApp
+            Chat with us<br>
+            <span style="font-size: 0.85em; margin-top: 4px; display: block;">03704969460</span>
+          </span>
           </span>
         </div>
       </button>
@@ -503,7 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (shouldInitialize) {
     window.whatsappWidget = new WhatsAppWidget({
-      businessPhone: '923156204745',
+      businessPhone: '923704969460',
       businessName: 'Takanj',
       enableAnalytics: true,
       showOnlineStatus: true,

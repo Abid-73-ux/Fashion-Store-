@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Check if whatsapp-widget.js has loaded
   if (typeof WhatsAppWidget !== 'undefined' && !window.whatsappWidget) {
     window.whatsappWidget = new WhatsAppWidget({
-      businessPhone: '923156204745',
+      businessPhone: '923704969460',
       businessName: 'Takanj',
       enableAnalytics: true,
       showOnlineStatus: true,
