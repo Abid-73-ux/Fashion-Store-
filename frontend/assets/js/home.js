@@ -3,6 +3,19 @@
  * Handles dynamic product loading for featured products, new arrivals, bestsellers, and sale products
  */
 
+// Clean up any stuck modals on page load
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    
+    // Load all products
+    loadFeaturedProducts();
+    loadNewArrivals();
+    loadBestSellers();
+    loadSaleProducts();
+});
+
 // Load featured products
 async function loadFeaturedProducts() {
     const container = document.getElementById('featuredProducts');
@@ -237,12 +250,11 @@ function generateStars(rating) {
 
 // Attach event listeners to product cards
 function attachProductCardListeners() {
-    // Quick View buttons
+    // Quick View buttons - DISABLED
     document.querySelectorAll('.quick-view-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
-            const productId = btn.dataset.productId;
-            openQuickView(productId);
+            Toast.info('Quick View feature disabled - use Add to Cart instead');
         });
     });
     
@@ -282,98 +294,8 @@ function attachProductCardListeners() {
 }
 
 // Open quick view modal
-async function openQuickView(productId) {
-    try {
-        const product = await productService.getProductById(productId);
-        const modal = document.getElementById('quickViewModal') || createQuickViewModal();
-        
-        modal.innerHTML = `
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header border-0">
-                        <h5 class="modal-title">${product.name}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <img src="${product.imageUrl || product.image}" alt="${product.name}" style="width: 100%; border-radius: 8px;">
-                            </div>
-                            <div class="col-md-6">
-                                <p class="text-muted">${product.category}</p>
-                                <h3 class="mb-3">${product.name}</h3>
-                                
-                                <div class="mb-3">
-                                    <span class="h4 me-2">PKR ${parseFloat(product.displayPrice || product.price).toFixed(2)}</span>
-                                    ${product.salePrice ? `
-                                        <span class="text-muted text-decoration-line-through">PKR ${parseFloat(product.price).toFixed(2)}</span>
-                                    ` : ''}
-                                </div>
-                                
-                                <p class="text-muted mb-3">${product.description || 'No description available'}</p>
-                                
-                                <div class="mb-3">
-                                    <label class="mb-2">Size:</label>
-                                    <select class="form-select" id="quickViewSize">
-                                        <option value="">Select size</option>
-                                        <option value="XS">XS</option>
-                                        <option value="S">S</option>
-                                        <option value="M">M</option>
-                                        <option value="L">L</option>
-                                        <option value="XL">XL</option>
-                                        <option value="XXL">XXL</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label class="mb-2">Quantity:</label>
-                                    <input type="number" class="form-control" id="quickViewQty" value="1" min="1" style="max-width: 100px;">
-                                </div>
-                                
-                                <button class="btn btn-primary w-100 mb-2" onclick="addToCartFromQuickView(${productId})">
-                                    Add to Cart
-                                </button>
-                                <button class="btn btn-outline-secondary w-100">
-                                    <i class="bi bi-heart me-2"></i>Add to Wishlist
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        const bsModal = new bootstrap.Modal(modal);
-        bsModal.show();
-    } catch (error) {
-        console.error('Error loading quick view:', error);
-        Toast.error('Failed to load product details');
-    }
-}
-
-// Create quick view modal if it doesn't exist
-function createQuickViewModal() {
-    const modal = document.createElement('div');
-    modal.id = 'quickViewModal';
-    modal.className = 'modal fade';
-    modal.setAttribute('tabindex', '-1');
-    document.body.appendChild(modal);
-    return modal;
-}
-
-// Add to cart from quick view
-function addToCartFromQuickView(productId) {
-    const size = document.getElementById('quickViewSize')?.value;
-    const qty = parseInt(document.getElementById('quickViewQty')?.value || 1);
-    
-    if (!size) {
-        Toast.warning('Please select a size');
-        return;
-    }
-    
-    addToCart(productId, qty, size);
-    bootstrap.Modal.getInstance(document.getElementById('quickViewModal'))?.hide();
-}
+// Quick View disabled - too many issues with Bootstrap modals causing page freeze
+// Use Add to Cart instead
 
 // Add to cart
 function addToCart(productId, quantity = 1, size = null) {
