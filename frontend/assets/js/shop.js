@@ -457,9 +457,23 @@ function attachProductCardListeners() {
 }
 
 // Open quick view modal
-async function openQuickView(productId) {
+// Open quick view modal
+function openQuickView(productId) {
     try {
-        const product = await productService.getProductById(productId);
+        // Find product from cart data or use mock data
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const cartItem = cart.find(item => item.productId == productId);
+        
+        // Use simple mock data instead of API call
+        const product = {
+            id: productId,
+            name: cartItem?.name || 'Product ' + productId,
+            price: cartItem?.price || 1299,
+            category: 'Premium Wear',
+            description: 'High quality product with excellent craftsmanship',
+            image: cartItem?.image || '/assets/images/placeholder.jpg'
+        };
+        
         const modal = document.getElementById('quickViewModal') || createQuickViewModal();
         
         modal.innerHTML = `
@@ -472,23 +486,20 @@ async function openQuickView(productId) {
                     <div class="modal-body">
                         <div class="row">
                             <div class="col-md-6">
-                                <img src="${product.imageUrl || product.image}" alt="${product.name}" style="width: 100%; border-radius: 8px;">
+                                <img src="${product.image}" alt="${product.name}" style="width: 100%; border-radius: 8px;">
                             </div>
                             <div class="col-md-6">
                                 <p class="text-muted">${product.category}</p>
                                 <h3 class="mb-3">${product.name}</h3>
                                 
                                 <div class="mb-3">
-                                    <span class="h4 me-2">PKR ${parseFloat(product.displayPrice || product.price).toFixed(0)}</span>
-                                    ${product.salePrice ? `
-                                        <span class="text-muted text-decoration-line-through">PKR ${parseFloat(product.price).toFixed(0)}</span>
-                                    ` : ''}
+                                    <span class="h4">PKR ${parseInt(product.price).toFixed(0)}</span>
                                 </div>
                                 
-                                <p class="text-muted mb-3">${product.description || 'No description available'}</p>
+                                <p class="text-muted mb-3">${product.description}</p>
                                 
                                 <div class="mb-3">
-                                    <label class="mb-2">Size:</label>
+                                    <label class="mb-2"><strong>Size:</strong></label>
                                     <select class="form-select" id="quickViewSize">
                                         <option value="">Select size</option>
                                         <option value="XS">XS</option>
@@ -501,7 +512,7 @@ async function openQuickView(productId) {
                                 </div>
                                 
                                 <div class="mb-3">
-                                    <label class="mb-2">Quantity:</label>
+                                    <label class="mb-2"><strong>Quantity:</strong></label>
                                     <input type="number" class="form-control" id="quickViewQty" value="1" min="1" style="max-width: 100px;">
                                 </div>
                                 
@@ -518,13 +529,10 @@ async function openQuickView(productId) {
             </div>
         `;
         
-        const bsModal = new bootstrap.Modal(modal, {
-            backdrop: 'static',
-            keyboard: true
-        });
+        const bsModal = new bootstrap.Modal(modal);
         bsModal.show();
     } catch (error) {
-        console.error('Error loading quick view:', error);
+        console.error('Error opening quick view:', error);
         Toast.error('Failed to load product details');
     }
 }
