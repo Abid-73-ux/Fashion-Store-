@@ -13,6 +13,8 @@ exports.getProducts = async (req, res) => {
             page = 1,
             minPrice,
             maxPrice,
+            size,
+            color,
             featured,
             newArrival,
             onSale
@@ -41,6 +43,24 @@ exports.getProducts = async (req, res) => {
             if (maxPrice) where.price[Op.lte] = parseFloat(maxPrice);
         }
 
+        // Size filter - check if size string contains the value
+        if (size) {
+            const sizeArray = Array.isArray(size) ? size : [size];
+            const sizeConditions = sizeArray.map(s => ({
+                size: { [Op.like]: `%${s}%` }
+            }));
+            where[Op.or] = where[Op.or] ? [...where[Op.or], ...sizeConditions] : sizeConditions;
+        }
+
+        // Color filter - check if color string contains the value
+        if (color) {
+            const colorArray = Array.isArray(color) ? color : [color];
+            const colorConditions = colorArray.map(c => ({
+                color: { [Op.like]: `%${c}%` }
+            }));
+            where[Op.or] = where[Op.or] ? [...where[Op.or], ...colorConditions] : colorConditions;
+        }
+
         // Featured filter
         if (featured === 'true') {
             where.isFeatured = true;
@@ -62,6 +82,8 @@ exports.getProducts = async (req, res) => {
         if (sortBy === 'price-desc') order = [['price', 'DESC']];
         if (sortBy === 'rating') order = [['rating', 'DESC']];
         if (sortBy === 'newest') order = [['createdAt', 'DESC']];
+
+        console.log('🔍 Filtering with:', { category, search, minPrice, maxPrice, size, color });
 
         const { count, rows } = await Product.findAndCountAll({
             where,

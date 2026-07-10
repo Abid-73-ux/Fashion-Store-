@@ -24,6 +24,8 @@ class ProductService {
         limit = 12,
         minPrice = null,
         maxPrice = null,
+        size = null,
+        color = null,
         featured = false,
         newArrival = false,
         onSale = false
@@ -38,6 +40,25 @@ class ProductService {
       params.append('limit', limit);
       if (minPrice) params.append('minPrice', minPrice);
       if (maxPrice) params.append('maxPrice', maxPrice);
+      
+      // Handle size filter (array or string)
+      if (size) {
+        if (Array.isArray(size)) {
+          size.forEach(s => params.append('size', s));
+        } else {
+          params.append('size', size);
+        }
+      }
+      
+      // Handle color filter (array or string)
+      if (color) {
+        if (Array.isArray(color)) {
+          color.forEach(c => params.append('color', c));
+        } else {
+          params.append('color', color);
+        }
+      }
+      
       if (featured) params.append('featured', 'true');
       if (newArrival) params.append('newArrival', 'true');
       if (onSale) params.append('onSale', 'true');

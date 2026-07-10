@@ -294,16 +294,73 @@ function setupEventListeners() {
             }
         });
     }
+    
+    // Size filter checkboxes
+    const sizeCheckboxes = document.querySelectorAll('input[name="size"]');
+    sizeCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            console.log('📌 Size filter changed');
+        });
+    });
+    
+    // Color filter checkboxes
+    const colorCheckboxes = document.querySelectorAll('input[name="color"]');
+    colorCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            console.log('🎨 Color filter changed');
+        });
+    });
+    
+    // Price range inputs
+    const minPriceInput = document.querySelector('input[name="minPrice"]');
+    const maxPriceInput = document.querySelector('input[name="maxPrice"]');
+    
+    if (minPriceInput && maxPriceInput) {
+        minPriceInput.addEventListener('change', () => {
+            console.log('💰 Min price changed');
+        });
+        maxPriceInput.addEventListener('change', () => {
+            console.log('💰 Max price changed');
+        });
+    }
 }
 
 // Apply filters
 function applyFilters() {
+    console.log('🔍 Applying filters...');
+    
     // Get price range
     const minPriceInput = document.querySelector('input[name="minPrice"]');
     const maxPriceInput = document.querySelector('input[name="maxPrice"]');
     
-    if (minPriceInput) currentFilters.minPrice = minPriceInput.value || null;
-    if (maxPriceInput) currentFilters.maxPrice = maxPriceInput.value || null;
+    if (minPriceInput) {
+        currentFilters.minPrice = minPriceInput.value ? parseInt(minPriceInput.value) : null;
+    }
+    if (maxPriceInput) {
+        currentFilters.maxPrice = maxPriceInput.value ? parseInt(maxPriceInput.value) : null;
+    }
+    
+    console.log('💰 Price range:', currentFilters.minPrice, '-', currentFilters.maxPrice);
+    
+    // Get selected sizes
+    const selectedSizes = Array.from(document.querySelectorAll('input[name="size"]:checked'))
+        .map(cb => cb.value);
+    if (selectedSizes.length > 0) {
+        currentFilters.size = selectedSizes;
+        console.log('📌 Selected sizes:', selectedSizes);
+    } else {
+        currentFilters.size = null;
+    }
+    
+    // Get selected colors
+    const selectedColors = Array.from(document.querySelectorAll('input[name="color"]:checked'))
+        .map(cb => cb.value);
+    if (selectedColors.length > 0) {
+        currentFilters.color = selectedColors;
+        console.log('🎨 Selected colors:', selectedColors);
+    } else {
+        currentFilters.color = null;
+    }
     
     // Reset to page 1 when filters change
     loadProducts(1);
