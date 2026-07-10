@@ -20,6 +20,11 @@ let currentFilters = {
 
 // Load products on page load
 document.addEventListener('DOMContentLoaded', async () => {
+    // Clean up any stuck modals
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    
     // Get URL parameters
     const params = new URLSearchParams(window.location.search);
     
@@ -267,6 +272,11 @@ function updateProductCount(count) {
 
 // Setup event listeners
 function setupEventListeners() {
+    // Clean up any stuck modals on page load
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    
     // Sort dropdown
     const sortSelect = document.getElementById('sortSelect');
     if (sortSelect) {
