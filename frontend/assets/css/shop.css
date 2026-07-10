@@ -35,36 +35,53 @@
 
 /* Size Options */
 .size-options .btn {
-  min-width: 45px;
-  padding: 0.5rem;
+  min-width: 50px;
+  padding: 0.75rem 0.5rem;
+  border: 2px solid var(--gray-300) !important;
+  background-color: var(--white) !important;
+  color: var(--gray-700) !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+}
+
+.size-options .btn:hover {
+  border-color: var(--primary-color) !important;
+  background-color: var(--cream) !important;
 }
 
 .size-options .btn-check:checked + .btn {
-  background-color: var(--primary-color);
-  color: var(--white);
-  border-color: var(--primary-color);
+  background-color: var(--primary-color) !important;
+  color: var(--white) !important;
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.2);
 }
 
 /* Color Options */
 .btn-color {
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   padding: 0;
   border-radius: var(--radius-full);
-  border: 2px solid transparent;
+  border: 2px solid #999;
   position: relative;
   cursor: pointer;
   transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-color:hover {
-  transform: scale(1.1);
-  box-shadow: var(--shadow-md);
+  transform: scale(1.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border-width: 3px;
 }
 
 .btn-check:checked + .btn-color {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.2);
+  border-width: 3px;
+  box-shadow: 0 0 0 4px rgba(44, 62, 80, 0.3), inset 0 0 0 3px rgba(44, 62, 80, 0.1);
 }
 
 .btn-check:checked + .btn-color::after {
@@ -75,8 +92,9 @@
   transform: translate(-50%, -50%);
   color: var(--white);
   font-weight: bold;
-  font-size: 14px;
-  text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+  font-size: 18px;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+  z-index: 1;
 }
 
 /* Price Range */
