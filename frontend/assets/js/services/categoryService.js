@@ -5,7 +5,7 @@
 
 class CategoryService {
   constructor() {
-    this.baseUrl = 'http://localhost:5000/api/categories';
+    this.baseUrl = 'http://127.0.0.1:5000/api/categories';
     this.cache = new Map();
     this.cacheExpiry = 10 * 60 * 1000; // 10 minutes
   }

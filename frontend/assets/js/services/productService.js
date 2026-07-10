@@ -5,7 +5,7 @@
 
 class ProductService {
   constructor() {
-    this.baseUrl = 'http://localhost:5000/api/products';
+    this.baseUrl = 'http://127.0.0.1:5000/api/products';
     this.placeholderImage = '/assets/images/placeholder.jpg';
     this.cache = new Map();
     this.cacheExpiry = 5 * 60 * 1000; // 5 minutes
