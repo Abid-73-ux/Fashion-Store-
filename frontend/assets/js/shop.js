@@ -3,6 +3,11 @@
  * Handles dynamic product loading with filters, sorting, and pagination
  */
 
+// Verify productService is loaded
+if (typeof productService === 'undefined') {
+    console.error('❌ productService is not defined! Check script loading order.');
+}
+
 let currentPage = 1;
 let currentFilters = {
     category: null,
@@ -60,9 +65,12 @@ async function loadProducts(page = 1) {
             maxPrice: currentFilters.maxPrice
         };
         
+        console.log('📦 Calling productService.getProducts with options:', options);
         const response = await productService.getProducts(options);
+        console.log('📦 Response received:', response);
         
         if (!response || !response.data || response.data.length === 0) {
+            console.warn('⚠️ No products in response:', { hasResponse: !!response, hasData: !!response?.data, dataLength: response?.data?.length });
             container.innerHTML = `
                 <div class="col-12 text-center py-5">
                     <p class="text-muted">No products found. Try adjusting your filters.</p>
@@ -88,10 +96,10 @@ async function loadProducts(page = 1) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         
     } catch (error) {
-        console.error('Error loading products:', error);
+        console.error('❌ Error loading products:', error);
         container.innerHTML = `
             <div class="col-12 text-center py-5">
-                <p class="text-danger">Failed to load products. Please try again.</p>
+                <p class="text-danger">Failed to load products. Error: ${error.message}</p>
             </div>
         `;
     }
