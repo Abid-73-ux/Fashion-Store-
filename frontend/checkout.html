@@ -151,7 +151,7 @@
         }
         
         .order-summary {
-            background: var(--white);
+            background: var(--white) !important;
             padding: var(--spacing-2xl);
             border: 2px solid var(--gray-200);
             position: sticky;
@@ -175,6 +175,9 @@
             margin-bottom: var(--spacing-md);
             padding-bottom: var(--spacing-md);
             border-bottom: 1px solid var(--gray-200);
+            background: var(--white);
+            padding: var(--spacing-md);
+            border-radius: 4px;
         }
         
         .order-item:last-child {
@@ -192,11 +195,13 @@
             font-size: var(--font-size-sm);
             font-weight: var(--font-weight-semibold);
             margin-bottom: 0.25rem;
+            color: #000 !important;
+            text-decoration: none;
         }
         
         .order-item-details p {
             font-size: var(--font-size-xs);
-            color: var(--gray-600);
+            color: #000 !important;
             margin-bottom: 0;
         }
         
@@ -205,12 +210,13 @@
             justify-content: space-between;
             margin-bottom: var(--spacing-md);
             font-size: var(--font-size-base);
+            color: #000 !important;
         }
         
         .summary-row.total {
             font-size: var(--font-size-xl);
             font-weight: var(--font-weight-bold);
-            color: var(--primary-color);
+            color: #000 !important;
             padding-top: var(--spacing-md);
             border-top: 2px solid var(--gray-200);
             margin-top: var(--spacing-lg);
