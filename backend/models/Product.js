@@ -77,6 +77,10 @@ const Product = sequelize.define('Product', {
     type: DataTypes.BOOLEAN,
     defaultValue: false
   },
+  isBestseller: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
   isSale: {
     type: DataTypes.BOOLEAN,
     defaultValue: false

@@ -2,6 +2,7 @@ const express = require('express');
 const {
     getCategories,
     getCategory,
+    getCategoryBySlug,
     createCategory,
     updateCategory,
     deleteCategory
@@ -12,6 +13,7 @@ const router = express.Router();
 
 // Public routes
 router.get('/', getCategories);
+router.get('/slug/:slug', getCategoryBySlug);
 router.get('/:id', getCategory);
 
 // Admin only routes

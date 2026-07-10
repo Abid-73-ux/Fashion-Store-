@@ -2,6 +2,10 @@ const express = require('express');
 const {
     getProducts,
     getProduct,
+    getFeaturedProducts,
+    getNewArrivals,
+    getBestSellers,
+    getSaleProducts,
     createProduct,
     updateProduct,
     deleteProduct
@@ -12,6 +16,10 @@ const router = express.Router();
 
 // Public routes
 router.get('/', getProducts);
+router.get('/featured', getFeaturedProducts);
+router.get('/new-arrivals', getNewArrivals);
+router.get('/best-sellers', getBestSellers);
+router.get('/sale', getSaleProducts);
 router.get('/:id', getProduct);
 
 // Admin only routes
