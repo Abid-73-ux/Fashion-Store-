@@ -54,17 +54,31 @@ class ProductService {
         }
       }
 
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Failed to fetch products');
+      console.log('🔗 Fetching from:', url);
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        mode: 'cors',
+        credentials: 'omit'
+      });
+
+      console.log('📊 Response status:', response.status);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
       
       const data = await response.json();
+      console.log('📦 Received data:', data.pagination.total, 'products');
       
       // Cache the data
       this.cache.set(cacheKey, { data, time: Date.now() });
 
       return data;
     } catch (error) {
-      console.error('❌ Get products error:', error);
+      console.error('❌ Get products error:', error.message);
       throw error;
     }
   }

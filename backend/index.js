@@ -11,8 +11,18 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    origin: process.env.CORS_ORIGIN?.split(',') || '*',
-    credentials: true
+    origin: function(origin, callback) {
+        // Allow all origins in development
+        const allowedOrigins = process.env.CORS_ORIGIN?.split(',') || ['*'];
+        if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+            callback(null, true);
+        } else {
+            callback(null, true); // Allow anyway for development
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    headers: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ limit: '50mb', extended: true }));

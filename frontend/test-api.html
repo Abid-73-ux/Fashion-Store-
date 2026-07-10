@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>API Test</h1>
+    <pre id="output">Testing...</pre>
+    
+    <script src="assets/js/services/productService.js"></script>
+    <script>
+        async function test() {
+            try {
+                console.log('ProductService:', typeof productService);
+                console.log('API Base URL:', productService.baseUrl);
+                
+                const result = await productService.getProducts({ limit: 12, page: 1 });
+                
+                console.log('Result:', result);
+                document.getElementById('output').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('output').textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        // Run test after 1 second to ensure service is loaded
+        setTimeout(test, 1000);
+    </script>
+</body>
+</html>
