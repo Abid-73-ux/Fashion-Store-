@@ -131,14 +131,11 @@ function createProductCard(product) {
                         </div>
                     ` : ''}
                     
-                    <!-- Quick View & Wishlist -->
+                    <!-- Wishlist Only (Quick View Disabled) -->
                     <div class="position-absolute bottom-0 start-0 w-100 p-2" style="background: rgba(0,0,0,0.7); transform: translateY(100%); transition: transform 0.3s;">
                         <div class="d-flex gap-2">
-                            <button class="btn btn-sm flex-grow-1 quick-view-btn" data-product-id="${product.id}" style="background: var(--primary-color); color: white; border: none;">
-                                Quick View
-                            </button>
-                            <button class="btn btn-sm wishlist-btn" data-product-id="${product.id}" style="background: transparent; color: white; border: 1px solid white;">
-                                <i class="bi bi-heart"></i>
+                            <button class="btn btn-sm flex-grow-1 wishlist-btn" data-product-id="${product.id}" style="background: var(--primary-color); color: white; border: none;">
+                                <i class="bi bi-heart me-2"></i>Wishlist
                             </button>
                         </div>
                     </div>
@@ -422,14 +419,6 @@ function applyFilters() {
 
 // Attach event listeners to product cards
 function attachProductCardListeners() {
-    // Quick View buttons - DISABLED
-    document.querySelectorAll('.quick-view-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            Toast.info('Quick View feature disabled - use Add to Cart instead');
-        });
-    });
-    
     // Wishlist buttons
     document.querySelectorAll('.wishlist-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
