@@ -43,22 +43,35 @@ exports.getProducts = async (req, res) => {
             if (maxPrice) where.price[Op.lte] = parseFloat(maxPrice);
         }
 
-        // Size filter - check if size string contains the value
+        // Size filter - each selected size must be found in the size column
         if (size) {
             const sizeArray = Array.isArray(size) ? size : [size];
+            // Create OR condition for multiple sizes
+            where[Op.or] = where[Op.or] || [];
             const sizeConditions = sizeArray.map(s => ({
                 size: { [Op.like]: `%${s}%` }
             }));
-            where[Op.or] = where[Op.or] ? [...where[Op.or], ...sizeConditions] : sizeConditions;
+            where[Op.or] = Array.isArray(where[Op.or]) ? [...where[Op.or], ...sizeConditions] : sizeConditions;
         }
 
-        // Color filter - check if color string contains the value
+        // Color filter - each selected color must be found in the color column
         if (color) {
             const colorArray = Array.isArray(color) ? color : [color];
-            const colorConditions = colorArray.map(c => ({
-                color: { [Op.like]: `%${c}%` }
-            }));
-            where[Op.or] = where[Op.or] ? [...where[Op.or], ...colorConditions] : colorConditions;
+            // If we already have OR conditions, we need to combine properly
+            if (where[Op.or]) {
+                // Use AND with a nested OR for colors
+                where[Op.and] = where[Op.and] || [];
+                where[Op.and].push({
+                    [Op.or]: colorArray.map(c => ({
+                        color: { [Op.like]: `%${c}%` }
+                    }))
+                });
+            } else {
+                // First time adding OR, just create color conditions
+                where[Op.or] = colorArray.map(c => ({
+                    color: { [Op.like]: `%${c}%` }
+                }));
+            }
         }
 
         // Featured filter
@@ -78,18 +91,21 @@ exports.getProducts = async (req, res) => {
 
         // Sorting
         let order = [['createdAt', 'DESC']];
-        if (sortBy === 'price-asc') order = [['price', 'ASC']];
-        if (sortBy === 'price-desc') order = [['price', 'DESC']];
+        if (sortBy === 'price_asc' || sortBy === 'price-asc') order = [['price', 'ASC']];
+        if (sortBy === 'price_desc' || sortBy === 'price-desc') order = [['price', 'DESC']];
         if (sortBy === 'rating') order = [['rating', 'DESC']];
         if (sortBy === 'newest') order = [['createdAt', 'DESC']];
+        if (sortBy === 'latest') order = [['createdAt', 'DESC']];
 
         console.log('🔍 Filtering with:', { category, search, minPrice, maxPrice, size, color });
+        console.log('📋 Where clause:', JSON.stringify(where, null, 2));
 
         const { count, rows } = await Product.findAndCountAll({
             where,
             order,
             limit: parseInt(limit),
-            offset
+            offset,
+            subQuery: false
         });
 
         res.status(200).json({

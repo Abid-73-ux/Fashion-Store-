@@ -282,6 +282,41 @@ function setupEventListeners() {
         applyFiltersBtn.addEventListener('click', applyFilters);
     }
     
+    // Clear filters button
+    const clearFiltersBtn = document.getElementById('clearFilters');
+    if (clearFiltersBtn) {
+        clearFiltersBtn.addEventListener('click', () => {
+            console.log('🧹 Clearing all filters...');
+            // Clear price inputs
+            const minPriceInput = document.getElementById('minPrice');
+            const maxPriceInput = document.getElementById('maxPrice');
+            if (minPriceInput) minPriceInput.value = '';
+            if (maxPriceInput) maxPriceInput.value = '';
+            
+            // Uncheck all size checkboxes
+            document.querySelectorAll('input[name="size"]').forEach(cb => cb.checked = false);
+            
+            // Uncheck all color checkboxes
+            document.querySelectorAll('input[name="color"]').forEach(cb => cb.checked = false);
+            
+            // Uncheck all category checkboxes
+            document.querySelectorAll('input[name="category"]').forEach(cb => cb.checked = false);
+            
+            // Reset filters
+            currentFilters = {
+                category: null,
+                search: null,
+                sortBy: 'latest',
+                minPrice: null,
+                maxPrice: null,
+                limit: 12
+            };
+            
+            // Reload products
+            loadProducts(1);
+        });
+    }
+    
     // Search form
     const searchForm = document.getElementById('searchForm');
     if (searchForm) {
@@ -312,8 +347,8 @@ function setupEventListeners() {
     });
     
     // Price range inputs
-    const minPriceInput = document.querySelector('input[name="minPrice"]');
-    const maxPriceInput = document.querySelector('input[name="maxPrice"]');
+    const minPriceInput = document.getElementById('minPrice');
+    const maxPriceInput = document.getElementById('maxPrice');
     
     if (minPriceInput && maxPriceInput) {
         minPriceInput.addEventListener('change', () => {
@@ -329,15 +364,22 @@ function setupEventListeners() {
 function applyFilters() {
     console.log('🔍 Applying filters...');
     
-    // Get price range
-    const minPriceInput = document.querySelector('input[name="minPrice"]');
-    const maxPriceInput = document.querySelector('input[name="maxPrice"]');
+    // Get price range by ID (as defined in HTML)
+    const minPriceInput = document.getElementById('minPrice');
+    const maxPriceInput = document.getElementById('maxPrice');
     
-    if (minPriceInput) {
-        currentFilters.minPrice = minPriceInput.value ? parseInt(minPriceInput.value) : null;
+    if (minPriceInput && minPriceInput.value) {
+        currentFilters.minPrice = parseInt(minPriceInput.value);
+        console.log('💰 Min price:', currentFilters.minPrice);
+    } else {
+        currentFilters.minPrice = null;
     }
-    if (maxPriceInput) {
-        currentFilters.maxPrice = maxPriceInput.value ? parseInt(maxPriceInput.value) : null;
+    
+    if (maxPriceInput && maxPriceInput.value) {
+        currentFilters.maxPrice = parseInt(maxPriceInput.value);
+        console.log('💰 Max price:', currentFilters.maxPrice);
+    } else {
+        currentFilters.maxPrice = null;
     }
     
     console.log('💰 Price range:', currentFilters.minPrice, '-', currentFilters.maxPrice);
@@ -361,6 +403,8 @@ function applyFilters() {
     } else {
         currentFilters.color = null;
     }
+    
+    console.log('✅ Final filters:', currentFilters);
     
     // Reset to page 1 when filters change
     loadProducts(1);
