@@ -10,7 +10,6 @@ const taxRate = 0.10;
 document.addEventListener('DOMContentLoaded', () => {
     loadOrderSummary();
     setupEventListeners();
-    Navigation.updateNavbar();
 });
 
 // Load order summary from cart

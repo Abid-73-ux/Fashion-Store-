@@ -9,7 +9,7 @@ const TAX_RATE = 0.10;
 document.addEventListener('DOMContentLoaded', () => {
     loadCart();
     setupEventListeners();
-    Navigation.updateNavbar();
+    updateCartBadge();
 });
 
 // Load cart from localStorage
