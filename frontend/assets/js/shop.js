@@ -467,7 +467,7 @@ async function openQuickView(productId) {
                 <div class="modal-content">
                     <div class="modal-header border-0">
                         <h5 class="modal-title">${product.name}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <div class="row">
@@ -518,7 +518,10 @@ async function openQuickView(productId) {
             </div>
         `;
         
-        const bsModal = new bootstrap.Modal(modal);
+        const bsModal = new bootstrap.Modal(modal, {
+            backdrop: 'static',
+            keyboard: true
+        });
         bsModal.show();
     } catch (error) {
         console.error('Error loading quick view:', error);
