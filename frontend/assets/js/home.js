@@ -4,10 +4,13 @@
  */
 
 // Clean up any stuck modals on page load
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
     document.body.classList.remove('modal-open');
     document.body.style.overflow = '';
+    
+    // Initialize store settings
+    await storeSettings.initialize();
     
     // Load all products
     loadFeaturedProducts();
@@ -183,14 +186,14 @@ function createProductCard(product) {
                     <div class="mb-2">
                         ${product.salePrice ? `
                             <span class="text-muted" style="font-size: 0.875rem; text-decoration: line-through;">
-                                PKR ${parseFloat(product.price).toFixed(2)}
+                                ${storeSettings.formatCurrency(parseFloat(product.price))}
                             </span>
                             <span class="ms-2 fw-bold" style="color: var(--secondary-color);">
-                                PKR ${parseFloat(displayPrice).toFixed(2)}
+                                ${storeSettings.formatCurrency(parseFloat(displayPrice))}
                             </span>
                         ` : `
                             <span class="fw-bold">
-                                PKR ${parseFloat(product.price).toFixed(2)}
+                                ${storeSettings.formatCurrency(parseFloat(product.price))}
                             </span>
                         `}
                     </div>
@@ -300,6 +303,8 @@ function addToCart(productId, quantity = 1, size = null) {
                 quantity,
                 size: size || 'One Size',
                 addedAt: new Date().toISOString()
+                // Note: price, name, and image NOT stored
+                // Will be fetched from API on checkout
             });
         }
         

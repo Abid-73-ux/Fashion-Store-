@@ -1,0 +1,694 @@
+/* ============================================
+   COMPREHENSIVE INPUT FIELD STYLING
+   All input, textarea, select, number fields
+   set to WHITE backgrounds with BLACK text
+   ============================================ */
+
+/* ============================================
+   BASE INPUT CONTROLS
+   ============================================ */
+
+/* Text Inputs */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="url"],
+input[type="search"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="week"],
+input[type="color"],
+textarea,
+select {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #dcdcdc !important;
+  border-radius: 8px !important;
+  padding: 0.75rem 1rem !important;
+  font-family: inherit !important;
+  font-size: 1rem !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Placeholder styling */
+input::placeholder,
+textarea::placeholder,
+select::placeholder {
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Chrome, Firefox, Edge placeholder */
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+
+input::-moz-placeholder,
+textarea::-moz-placeholder {
+  color: rgba(0, 0, 0, 0.6) !important;
+  opacity: 1 !important;
+}
+
+input:-ms-input-placeholder,
+textarea:-ms-input-placeholder {
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+
+input::-ms-input-placeholder,
+textarea::-ms-input-placeholder {
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+
+/* ============================================
+   FOCUS STATE - No Blue Outline
+   ============================================ */
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+input[type="search"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus,
+input[type="datetime-local"]:focus,
+input[type="month"]:focus,
+input[type="week"]:focus,
+input[type="color"]:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+  border-color: #000000 !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ============================================
+   NUMBER INPUT SPINNER STYLING
+   ============================================ */
+
+/* Chrome, Safari, Edge */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Custom spinner for better visibility */
+input[type="number"] {
+  padding-right: 2.5rem;
+  position: relative;
+}
+
+/* ============================================
+   SELECT/DROPDOWN STYLING
+   ============================================ */
+
+select {
+  cursor: pointer !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23000' d='M6 9L1 4h10z'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 1rem center !important;
+  background-size: 12px !important;
+  padding-right: 2.5rem !important;
+}
+
+select::-ms-expand {
+  display: none;
+}
+
+select option {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  padding: 0.5rem !important;
+}
+
+/* ============================================
+   TEXTAREA STYLING
+   ============================================ */
+
+textarea {
+  resize: vertical !important;
+  min-height: 120px !important;
+  font-family: inherit !important;
+  line-height: 1.5 !important;
+}
+
+textarea:disabled,
+input:disabled,
+select:disabled {
+  background-color: #f5f5f5 !important;
+  cursor: not-allowed !important;
+  opacity: 0.6 !important;
+  color: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* ============================================
+   BOOTSTRAP FORM-CONTROL OVERRIDE
+   ============================================ */
+
+.form-control {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #dcdcdc !important;
+  border-radius: 8px !important;
+}
+
+.form-control:focus {
+  outline: none !important;
+  border-color: #000000 !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+.form-control::placeholder {
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+
+.form-control:disabled {
+  background-color: #f5f5f5 !important;
+  cursor: not-allowed !important;
+  opacity: 0.6 !important;
+}
+
+/* ============================================
+   BOOTSTRAP FORM-SELECT OVERRIDE
+   ============================================ */
+
+.form-select {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #dcdcdc !important;
+  border-radius: 8px !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23000' d='M6 9L1 4h10z'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 1rem center !important;
+  background-size: 12px !important;
+  padding-right: 2.5rem !important;
+}
+
+.form-select:focus {
+  outline: none !important;
+  border-color: #000000 !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ============================================
+   BOOTSTRAP INPUT-GROUP OVERRIDE
+   ============================================ */
+
+.input-group .form-control,
+.input-group .form-select {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #dcdcdc !important;
+}
+
+.input-group .form-control:focus,
+.input-group .form-select:focus {
+  border-color: #000000 !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ============================================
+   CHECKBOX & RADIO
+   ============================================ */
+
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: #3498db !important;
+  cursor: pointer !important;
+}
+
+.form-check-input {
+  background-color: #ffffff !important;
+  border: 1px solid #dcdcdc !important;
+  cursor: pointer !important;
+}
+
+.form-check-input:checked {
+  background-color: #3498db !important;
+  border-color: #3498db !important;
+}
+
+.form-check-input:focus {
+  border-color: #000000 !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+.form-check-input:disabled {
+  background-color: #f5f5f5 !important;
+  cursor: not-allowed !important;
+}
+
+/* ============================================
+   SEARCH INPUTS
+   ============================================ */
+
+input[type="search"],
+.search-input {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #dcdcdc !important;
+  border-radius: 8px !important;
+}
+
+input[type="search"]:focus,
+.search-input:focus {
+  outline: none !important;
+  border-color: #000000 !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ============================================
+   QUANTITY INPUTS
+   ============================================ */
+
+.quantity-input,
+.qty-input {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #dcdcdc !important;
+  border-radius: 8px !important;
+  text-align: center !important;
+}
+
+.quantity-input:focus,
+.qty-input:focus {
+  outline: none !important;
+  border-color: #000000 !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ============================================
+   PRICE FILTER INPUTS
+   ============================================ */
+
+.price-input,
+.min-price,
+.max-price {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #dcdcdc !important;
+  border-radius: 8px !important;
+}
+
+.price-input:focus,
+.min-price:focus,
+.max-price:focus {
+  outline: none !important;
+  border-color: #000000 !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ============================================
+   COUPON CODE INPUTS
+   ============================================ */
+
+.coupon-input,
+.coupon-code {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #dcdcdc !important;
+  border-radius: 8px !important;
+}
+
+.coupon-input:focus,
+.coupon-code:focus {
+  outline: none !important;
+  border-color: #000000 !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ============================================
+   FORM GROUP STYLING
+   ============================================ */
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #000000;
+  font-size: 0.95rem;
+}
+
+.form-label.required::after {
+  content: " *";
+  color: #e74c3c;
+}
+
+/* ============================================
+   ERROR & SUCCESS STATES
+   ============================================ */
+
+input.is-invalid,
+textarea.is-invalid,
+select.is-invalid,
+.form-control.is-invalid {
+  border-color: #e74c3c !important;
+  background-color: #ffffff !important;
+}
+
+input.is-invalid:focus,
+textarea.is-invalid:focus,
+select.is-invalid:focus,
+.form-control.is-invalid:focus {
+  border-color: #e74c3c !important;
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1) !important;
+}
+
+input.is-valid,
+textarea.is-valid,
+select.is-valid,
+.form-control.is-valid {
+  border-color: #27ae60 !important;
+  background-color: #ffffff !important;
+}
+
+input.is-valid:focus,
+textarea.is-valid:focus,
+select.is-valid:focus,
+.form-control.is-valid:focus {
+  border-color: #27ae60 !important;
+  box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1) !important;
+}
+
+/* ============================================
+   RANGE SLIDER
+   ============================================ */
+
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  background: #e0e0e0 !important;
+  outline: none;
+  border-radius: 3px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: #3498db !important;
+  cursor: pointer;
+  border-radius: 50%;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  background: #2980b9 !important;
+  transform: scale(1.1);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: #3498db !important;
+  cursor: pointer;
+  border-radius: 50%;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+  background: #2980b9 !important;
+  transform: scale(1.1);
+}
+
+/* ============================================
+   TOPBAR/NAVBAR SEARCH
+   ============================================ */
+
+.topbar-search input,
+.navbar-search input,
+.search-bar input {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #dcdcdc !important;
+  border-radius: 8px !important;
+  padding: 0.6rem 1rem 0.6rem 2.5rem !important;
+}
+
+.topbar-search input:focus,
+.navbar-search input:focus,
+.search-bar input:focus {
+  border-color: #000000 !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08) !important;
+  outline: none !important;
+}
+
+/* ============================================
+   LOGIN/REGISTRATION FORMS
+   ============================================ */
+
+.login-form input,
+.register-form input,
+.auth-form input {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #dcdcdc !important;
+  border-radius: 8px !important;
+}
+
+.login-form input:focus,
+.register-form input:focus,
+.auth-form input:focus {
+  outline: none !important;
+  border-color: #000000 !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ============================================
+   CHECKOUT FORM INPUTS
+   ============================================ */
+
+.checkout-form input,
+.checkout-form textarea,
+.checkout-form select,
+.shipping-form input,
+.billing-form input {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #dcdcdc !important;
+  border-radius: 8px !important;
+}
+
+.checkout-form input:focus,
+.checkout-form textarea:focus,
+.checkout-form select:focus,
+.shipping-form input:focus,
+.billing-form input:focus {
+  outline: none !important;
+  border-color: #000000 !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ============================================
+   ADMIN FORMS
+   ============================================ */
+
+.admin-form input,
+.admin-form textarea,
+.admin-form select {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #dcdcdc !important;
+  border-radius: 8px !important;
+}
+
+.admin-form input:focus,
+.admin-form textarea:focus,
+.admin-form select:focus {
+  outline: none !important;
+  border-color: #000000 !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ============================================
+   PROFILE/ACCOUNT FORMS
+   ============================================ */
+
+.profile-form input,
+.account-form input,
+.profile-form textarea,
+.account-form textarea {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #dcdcdc !important;
+  border-radius: 8px !important;
+}
+
+.profile-form input:focus,
+.account-form input:focus,
+.profile-form textarea:focus,
+.account-form textarea:focus {
+  outline: none !important;
+  border-color: #000000 !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ============================================
+   CONTACT FORM
+   ============================================ */
+
+.contact-form input,
+.contact-form textarea,
+.contact-form select {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #dcdcdc !important;
+  border-radius: 8px !important;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus,
+.contact-form select:focus {
+  outline: none !important;
+  border-color: #000000 !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ============================================
+   FILTER INPUTS (SHOP PAGE)
+   ============================================ */
+
+.filter-input,
+.price-range-inputs input,
+.search-products-input {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #dcdcdc !important;
+  border-radius: 8px !important;
+}
+
+.filter-input:focus,
+.price-range-inputs input:focus,
+.search-products-input:focus {
+  outline: none !important;
+  border-color: #000000 !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ============================================
+   FLOATING LABELS
+   ============================================ */
+
+.form-floating > .form-control {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #dcdcdc !important;
+  border-radius: 8px !important;
+}
+
+.form-floating > .form-control:focus {
+  border-color: #000000 !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+.form-floating > .form-select {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #dcdcdc !important;
+  border-radius: 8px !important;
+}
+
+.form-floating > .form-select:focus {
+  border-color: #000000 !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ============================================
+   FILE INPUT
+   ============================================ */
+
+input[type="file"] {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #dcdcdc !important;
+  border-radius: 8px !important;
+  background-color: #ffffff !important;
+  cursor: pointer;
+}
+
+input[type="file"]:focus {
+  outline: none !important;
+  border-color: #000000 !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ============================================
+   READONLY INPUTS
+   ============================================ */
+
+input:read-only,
+textarea:read-only,
+.form-control:read-only {
+  background-color: #f5f5f5 !important;
+  color: rgba(0, 0, 0, 0.7) !important;
+  cursor: default !important;
+  border-color: #dcdcdc !important;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.input-white {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #dcdcdc !important;
+  border-radius: 8px !important;
+}
+
+.input-white:focus {
+  outline: none !important;
+  border-color: #000000 !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+.text-input-dark {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="search"],
+  input[type="number"],
+  textarea,
+  select {
+    font-size: 16px !important;
+    padding: 0.75rem 1rem !important;
+  }
+}

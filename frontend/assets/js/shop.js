@@ -25,6 +25,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.body.classList.remove('modal-open');
     document.body.style.overflow = '';
     
+    // Initialize store settings
+    await storeSettings.initialize();
+    
     // Get URL parameters
     const params = new URLSearchParams(window.location.search);
     
@@ -158,14 +161,14 @@ function createProductCard(product) {
                     <div class="mb-2">
                         ${product.salePrice ? `
                             <span class="text-muted" style="font-size: 0.875rem; text-decoration: line-through;">
-                                PKR ${parseFloat(product.price).toFixed(0)}
+                                ${storeSettings.formatCurrency(parseFloat(product.price))}
                             </span>
                             <span class="ms-2 fw-bold" style="color: var(--secondary-color);">
-                                PKR ${parseFloat(displayPrice).toFixed(0)}
+                                ${storeSettings.formatCurrency(parseFloat(displayPrice))}
                             </span>
                         ` : `
                             <span class="fw-bold">
-                                PKR ${parseFloat(product.price).toFixed(0)}
+                                ${storeSettings.formatCurrency(parseFloat(product.price))}
                             </span>
                         `}
                     </div>
@@ -472,6 +475,8 @@ function addToCart(productId, quantity = 1, size = null) {
                 quantity,
                 size: size || 'One Size',
                 addedAt: new Date().toISOString()
+                // Note: price, name, and image NOT stored
+                // Will be fetched from API on checkout
             });
         }
         

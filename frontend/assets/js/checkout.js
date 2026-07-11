@@ -1,13 +1,15 @@
 /**
  * Checkout Page JavaScript
  * Handles checkout flow, order summary, and payment
+ * Uses dynamic store settings for tax, shipping, currency
  */
 
 let currentStep = 1;
-const shippingCost = 10.00;
-const taxRate = 0.10;
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Initialize store settings
+    await storeSettings.initialize();
+    
     loadOrderSummary();
     setupEventListeners();
 });
@@ -25,27 +27,58 @@ function loadOrderSummary() {
             return;
         }
         
+        // Fetch product details to get accurate prices
+        fetchProductDetails(cart, orderItemsContainer, reviewItemsContainer);
+        
+    } catch (error) {
+        console.error('Error loading order summary:', error);
+    }
+}
+
+// Fetch product details from API to get accurate prices
+async function fetchProductDetails(cart, orderItemsContainer, reviewItemsContainer) {
+    try {
         let subtotal = 0;
         let orderHTML = '';
         let reviewHTML = '';
         
-        cart.forEach(item => {
-            const product = productService.cache.get(`/api/products/${item.productId}`);
+        // Fetch product details for each cart item
+        for (const item of cart) {
+            let itemPrice = (item.price || 99.99) * item.quantity;
+            let productName = item.name || 'Product';
+            let productImage = item.image || '/assets/images/placeholder.jpg';
             
-            // For now, just show the item info
-            const itemPrice = (item.price || 99.99) * item.quantity;
+            // Try to fetch product from API to get current price
+            if (item.productId) {
+                try {
+                    const response = await fetch(`http://127.0.0.1:5000/api/products/${item.productId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        const product = data.data || data;
+                        
+                        // Use sale price if available, otherwise regular price
+                        const currentPrice = product.salePrice || product.price || 99.99;
+                        itemPrice = currentPrice * item.quantity;
+                        productName = product.name || item.name || 'Product';
+                        productImage = product.imageUrl || product.image || item.image || '/assets/images/placeholder.jpg';
+                    }
+                } catch (err) {
+                    console.warn(`Could not fetch product ${item.productId}, using cart data`, err);
+                }
+            }
+            
             subtotal += itemPrice;
             
             orderHTML += `
                 <div class="order-item">
-                    <img src="${item.image || '/assets/images/placeholder.jpg'}" alt="${item.name}" class="order-item-image">
+                    <img src="${productImage}" alt="${productName}" class="order-item-image">
                     <div class="order-item-details flex-grow-1">
-                        <h5>${item.name || 'Product'}</h5>
+                        <h5>${productName}</h5>
                         <p>Size: ${item.size}</p>
                         <p>Qty: ${item.quantity}</p>
                     </div>
                     <div class="text-end">
-                        <p class="fw-bold">₨${itemPrice.toFixed(0)}</p>
+                        <p class="fw-bold">${storeSettings.formatCurrency(itemPrice)}</p>
                     </div>
                 </div>
             `;
@@ -54,16 +87,16 @@ function loadOrderSummary() {
                 <div class="mb-3 p-2 border rounded">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <h6>${item.name || 'Product'}</h6>
+                            <h6>${productName}</h6>
                             <small class="text-muted">Size: ${item.size} | Qty: ${item.quantity}</small>
                         </div>
                         <div class="text-end">
-                            <strong>₨${itemPrice.toFixed(0)}</strong>
+                            <strong>${storeSettings.formatCurrency(itemPrice)}</strong>
                         </div>
                     </div>
                 </div>
             `;
-        });
+        }
         
         orderItemsContainer.innerHTML = orderHTML;
         reviewItemsContainer.innerHTML = reviewHTML;
@@ -71,20 +104,78 @@ function loadOrderSummary() {
         updateSummary(subtotal);
         
     } catch (error) {
-        console.error('Error loading order summary:', error);
+        console.error('Error fetching product details:', error);
+        // Fallback: process with available prices
+        procesCartWithPrices(cart, orderItemsContainer, reviewItemsContainer);
     }
 }
 
-// Update order summary totals
-function updateSummary(subtotal) {
-    const shipping = shippingCost;
-    const tax = Math.round(subtotal * taxRate * 100) / 100;
-    const total = subtotal + shipping + tax;
+// Fallback function to process cart with available prices
+function procesCartWithPrices(cart, orderItemsContainer, reviewItemsContainer) {
+    let subtotal = 0;
+    let orderHTML = '';
+    let reviewHTML = '';
     
-    document.getElementById('subtotal').textContent = '₨' + subtotal.toFixed(0);
-    document.getElementById('shipping').textContent = '₨' + shipping.toFixed(0);
-    document.getElementById('tax').textContent = '₨' + tax.toFixed(0);
-    document.getElementById('total').textContent = '₨' + total.toFixed(0);
+    cart.forEach(item => {
+        // Use price from cart, or fallback to 99.99
+        const itemPrice = (item.price || 99.99) * item.quantity;
+        subtotal += itemPrice;
+        
+        orderHTML += `
+            <div class="order-item">
+                <img src="${item.image || '/assets/images/placeholder.jpg'}" alt="${item.name}" class="order-item-image">
+                <div class="order-item-details flex-grow-1">
+                    <h5>${item.name || 'Product'}</h5>
+                    <p>Size: ${item.size}</p>
+                    <p>Qty: ${item.quantity}</p>
+                </div>
+                <div class="text-end">
+                    <p class="fw-bold">${storeSettings.formatCurrency(itemPrice)}</p>
+                </div>
+            </div>
+        `;
+        
+        reviewHTML += `
+            <div class="mb-3 p-2 border rounded">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6>${item.name || 'Product'}</h6>
+                        <small class="text-muted">Size: ${item.size} | Qty: ${item.quantity}</small>
+                    </div>
+                    <div class="text-end">
+                        <strong>${storeSettings.formatCurrency(itemPrice)}</strong>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    orderItemsContainer.innerHTML = orderHTML;
+    reviewItemsContainer.innerHTML = reviewHTML;
+    
+    updateSummary(subtotal);
+}
+
+// Update order summary totals using store settings
+function updateSummary(subtotal) {
+    const shipping = storeSettings.calculateShipping(subtotal);
+    const tax = storeSettings.calculateTax(subtotal);
+    const total = storeSettings.calculateGrandTotal(subtotal, shipping);
+    
+    // Update display
+    document.getElementById('subtotal').textContent = storeSettings.formatCurrency(subtotal);
+    document.getElementById('shipping').textContent = shipping === 0 ? 'Free' : storeSettings.formatCurrency(shipping);
+    
+    // Only show tax row if tax is enabled
+    const taxRow = document.getElementById('taxRow');
+    if (storeSettings.isTaxEnabled()) {
+        document.getElementById('tax').textContent = storeSettings.formatCurrency(tax);
+        if (taxRow) taxRow.style.display = 'table-row';
+    } else {
+        if (taxRow) taxRow.style.display = 'none';
+    }
+    
+    document.getElementById('total').textContent = storeSettings.formatCurrency(total);
 }
 
 // Setup event listeners
@@ -262,15 +353,26 @@ function placeOrder() {
         return;
     }
     
+    // Calculate totals using store settings
+    let subtotal = 0;
+    cart.forEach(item => {
+        subtotal += (item.price || 99.99) * item.quantity;
+    });
+    
+    const shipping = storeSettings.calculateShipping(subtotal);
+    const tax = storeSettings.calculateTax(subtotal);
+    const total = storeSettings.calculateGrandTotal(subtotal, shipping);
+    
     // Create order object
     const order = {
         shippingInfo,
         items: cart,
         paymentMethod,
-        subtotal: parseFloat(document.getElementById('subtotal').textContent.replace('₨', '')),
-        shipping: shippingCost,
-        tax: parseFloat(document.getElementById('tax').textContent.replace('₨', '')),
-        total: parseFloat(document.getElementById('total').textContent.replace('₨', '')),
+        currency: storeSettings.settings.currency,
+        subtotal: subtotal,
+        shipping: shipping,
+        tax: tax,
+        total: total,
         status: 'pending',
         createdAt: new Date().toISOString()
     };

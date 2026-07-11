@@ -1,12 +1,13 @@
 /**
  * Shopping Cart Page JavaScript
  * Handles cart display, quantity changes, and checkout flow
+ * Uses dynamic store settings for tax, shipping, currency
  */
 
-const SHIPPING_COST = 5.00;
-const TAX_RATE = 0.10;
-
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Initialize store settings
+    await storeSettings.initialize();
+    
     loadCart();
     setupEventListeners();
     updateCartBadge();
@@ -31,21 +32,54 @@ function loadCart() {
         document.getElementById('cartSummary').style.display = 'block';
         document.getElementById('continueShoppingSection').style.display = 'block';
         
+        // Fetch product details for each item to get accurate prices
+        fetchCartProductDetails(cart, cartItemsContainer);
+        
+    } catch (error) {
+        console.error('Error loading cart:', error);
+    }
+}
+
+// Fetch product details from API to get accurate prices for cart items
+async function fetchCartProductDetails(cart, cartItemsContainer) {
+    try {
         let subtotal = 0;
         cartItemsContainer.innerHTML = '';
         
-        cart.forEach((item, index) => {
-            // For demo, use placeholder price if not set
-            const itemPrice = item.price || 1299;
+        for (const item of cart) {
+            let itemPrice = 1299; // Default fallback
+            let productName = item.name || 'Product';
+            let productImage = item.image || 'assets/images/placeholder.jpg';
+            let productSku = item.sku || 'N/A';
+            
+            // Fetch product from API to get current price
+            if (item.productId) {
+                try {
+                    const response = await fetch(`http://127.0.0.1:5000/api/products/${item.productId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        const product = data.data || data;
+                        
+                        // Use sale price if available, otherwise regular price
+                        itemPrice = product.salePrice || product.price || 1299;
+                        productName = product.name || item.name || 'Product';
+                        productImage = product.imageUrl || product.image || item.image || 'assets/images/placeholder.jpg';
+                        productSku = product.sku || item.sku || 'N/A';
+                    }
+                } catch (err) {
+                    console.warn(`Could not fetch product ${item.productId}, using fallback`, err);
+                }
+            }
+            
             const itemTotal = itemPrice * item.quantity;
             subtotal += itemTotal;
             
             const cartItemHTML = `
-                <div class="cart-item" data-index="${index}">
+                <div class="cart-item" data-index="${cart.indexOf(item)}">
                     <div class="row g-3">
                         <div class="col-md-3 text-center">
-                            <img src="${item.image || 'assets/images/placeholder.jpg'}" 
-                                 alt="${item.name}" 
+                            <img src="${productImage}" 
+                                 alt="${productName}" 
                                  class="cart-item-image"
                                  style="cursor: pointer;"
                                  onclick="window.location.href='product.html?id=${item.productId}'">
@@ -53,20 +87,20 @@ function loadCart() {
                         
                         <div class="col-md-4">
                             <h5 class="cart-item-title" style="cursor: pointer;" onclick="window.location.href='product.html?id=${item.productId}'">
-                                ${item.name || 'Product'}
+                                ${productName}
                             </h5>
                             <div class="cart-item-details mb-3">
                                 <p style="margin-bottom: 0.25rem;">Size: <strong>${item.size}</strong></p>
-                                <p style="margin-bottom: 0.25rem;">SKU: <strong>${item.sku || 'N/A'}</strong></p>
+                                <p style="margin-bottom: 0.25rem;">SKU: <strong>${productSku}</strong></p>
                             </div>
                             
                             <div class="quantity-control">
-                                <button class="quantity-btn qty-decrease" onclick="updateQuantity(${index}, ${item.quantity - 1})">
+                                <button class="quantity-btn qty-decrease" onclick="updateQuantity(${cart.indexOf(item)}, ${item.quantity - 1})">
                                     <i class="bi bi-dash"></i>
                                 </button>
                                 <input type="number" class="quantity-input" value="${item.quantity}" 
-                                       data-index="${index}" onchange="updateQuantityInput(${index}, this.value)">
-                                <button class="quantity-btn qty-increase" onclick="updateQuantity(${index}, ${item.quantity + 1})">
+                                       data-index="${cart.indexOf(item)}" onchange="updateQuantityInput(${cart.indexOf(item)}, this.value)">
+                                <button class="quantity-btn qty-increase" onclick="updateQuantity(${cart.indexOf(item)}, ${item.quantity + 1})">
                                     <i class="bi bi-plus"></i>
                                 </button>
                             </div>
@@ -74,15 +108,15 @@ function loadCart() {
                         
                         <div class="col-md-3 text-end d-flex flex-column justify-content-center">
                             <div class="cart-item-price">
-                                ₨${itemTotal.toFixed(0)}
+                                ${storeSettings.formatCurrency(itemTotal)}
                             </div>
                             <small class="text-muted">
-                                ₨${itemPrice.toFixed(0)} × ${item.quantity}
+                                ${storeSettings.formatCurrency(itemPrice)} × ${item.quantity}
                             </small>
                         </div>
                         
                         <div class="col-md-2 text-end d-flex align-items-center justify-content-end">
-                            <button class="btn-remove" onclick="removeFromCart(${index})" title="Remove item">
+                            <button class="btn-remove" onclick="removeFromCart(${cart.indexOf(item)})" title="Remove item">
                                 <i class="bi bi-trash3"></i>
                             </button>
                         </div>
@@ -91,12 +125,12 @@ function loadCart() {
             `;
             
             cartItemsContainer.innerHTML += cartItemHTML;
-        });
+        }
         
         updateCartSummary(subtotal);
         
     } catch (error) {
-        console.error('Error loading cart:', error);
+        console.error('Error fetching cart product details:', error);
     }
 }
 
@@ -143,15 +177,24 @@ function removeFromCart(index) {
 
 // Update cart summary
 function updateCartSummary(subtotal) {
-    const shipping = subtotal > 150 ? 0 : SHIPPING_COST;
-    const tax = Math.round(subtotal * TAX_RATE * 100) / 100;
+    const shipping = storeSettings.calculateShipping(subtotal);
+    const tax = storeSettings.calculateTax(subtotal);
     const discount = 0;
-    const total = subtotal + shipping + tax - discount;
+    const total = storeSettings.calculateGrandTotal(subtotal, shipping, discount);
     
-    document.getElementById('subtotal').textContent = '₨' + subtotal.toFixed(0);
-    document.getElementById('shipping').textContent = shipping === 0 ? 'Free' : '₨' + shipping.toFixed(0);
-    document.getElementById('tax').textContent = '₨' + tax.toFixed(0);
-    document.getElementById('total').textContent = '₨' + total.toFixed(0);
+    document.getElementById('subtotal').textContent = storeSettings.formatCurrency(subtotal);
+    document.getElementById('shipping').textContent = shipping === 0 ? 'Free' : storeSettings.formatCurrency(shipping);
+    
+    // Only show tax row if tax is enabled
+    const taxRow = document.getElementById('taxRow');
+    if (storeSettings.isTaxEnabled()) {
+        document.getElementById('tax').textContent = storeSettings.formatCurrency(tax);
+        if (taxRow) taxRow.style.display = 'table-row';
+    } else {
+        if (taxRow) taxRow.style.display = 'none';
+    }
+    
+    document.getElementById('total').textContent = storeSettings.formatCurrency(total);
 }
 
 // Setup event listeners
@@ -214,13 +257,13 @@ function applyCoupon() {
         // Update display
         const discountRow = document.getElementById('discountRow');
         discountRow.style.display = 'flex';
-        document.getElementById('discount').textContent = '-₨' + discountAmount.toFixed(0);
+        document.getElementById('discount').textContent = `-${storeSettings.formatCurrency(discountAmount)}`;
         
         // Update total
-        const shipping = subtotal > 150 ? 0 : SHIPPING_COST;
-        const tax = Math.round(subtotal * TAX_RATE * 100) / 100;
-        const total = subtotal + shipping + tax - discountAmount;
-        document.getElementById('total').textContent = '₨' + total.toFixed(0);
+        const shipping = storeSettings.calculateShipping(subtotal);
+        const tax = storeSettings.calculateTax(subtotal);
+        const total = storeSettings.calculateGrandTotal(subtotal, shipping, discountAmount);
+        document.getElementById('total').textContent = storeSettings.formatCurrency(total);
         
         successMsg.textContent = `Coupon applied! ${coupon.label}`;
         successMsg.classList.remove('d-none');
