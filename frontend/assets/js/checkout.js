@@ -51,7 +51,7 @@ async function fetchProductDetails(cart, orderItemsContainer, reviewItemsContain
             // Try to fetch product from API to get current price
             if (item.productId) {
                 try {
-                    const response = await fetch(`http://127.0.0.1:5000/api/products/${item.productId}`);
+                    const response = await fetch(`${API_CONFIG.getEndpoint('/products')}/${item.productId}`);
                     if (response.ok) {
                         const data = await response.json();
                         const product = data.data || data;

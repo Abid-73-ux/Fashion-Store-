@@ -7,8 +7,8 @@ const storeSettings = {
   // Store current settings
   settings: null,
   
-  // API endpoint
-  API_URL: 'http://127.0.0.1:5000/api/settings',
+  // API endpoint - use config for environment detection
+  API_URL: API_CONFIG.getEndpoint('/settings'),
   
   /**
    * Initialize - fetch settings from API

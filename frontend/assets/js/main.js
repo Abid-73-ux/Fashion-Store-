@@ -2,8 +2,8 @@
  * Main JavaScript - Global utilities, constants, and helpers
  */
 
-// API Configuration
-const API_BASE_URL = 'http://127.0.0.1:5000/api';
+// API Configuration - uses environment-aware config
+const API_BASE_URL = API_CONFIG.getBaseUrl();
 
 // Global State
 const AppState = {
