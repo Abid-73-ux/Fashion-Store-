@@ -15,9 +15,8 @@ const API_CONFIG = {
       // Local development
       return 'http://127.0.0.1:5000/api';
     } else {
-      // Production (change this to your actual backend URL)
-      // Example: https://your-backend-domain.com/api
-      return 'https://takanj-backend.onrender.com/api'; // UPDATE THIS WITH YOUR BACKEND URL
+      // Production - Render backend
+      return 'https://fashion-store-p5m9.onrender.com/api';
     }
   },
   
