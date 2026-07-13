@@ -31,8 +31,8 @@ exports.getProducts = async (req, res) => {
         // Search filter
         if (search) {
             where[Op.or] = [
-                { name: { [Op.like]: `%${search}%` } },
-                { description: { [Op.like]: `%${search}%` } }
+                { name: { [Op.iLike]: `%${search}%` } },
+                { description: { [Op.iLike]: `%${search}%` } }
             ];
         }
 
@@ -49,7 +49,7 @@ exports.getProducts = async (req, res) => {
             // Create OR condition for multiple sizes
             where[Op.or] = where[Op.or] || [];
             const sizeConditions = sizeArray.map(s => ({
-                size: { [Op.like]: `%${s}%` }
+                size: { [Op.iLike]: `%${s}%` }
             }));
             where[Op.or] = Array.isArray(where[Op.or]) ? [...where[Op.or], ...sizeConditions] : sizeConditions;
         }
@@ -63,13 +63,13 @@ exports.getProducts = async (req, res) => {
                 where[Op.and] = where[Op.and] || [];
                 where[Op.and].push({
                     [Op.or]: colorArray.map(c => ({
-                        color: { [Op.like]: `%${c}%` }
+                        color: { [Op.iLike]: `%${c}%` }
                     }))
                 });
             } else {
                 // First time adding OR, just create color conditions
                 where[Op.or] = colorArray.map(c => ({
-                    color: { [Op.like]: `%${c}%` }
+                    color: { [Op.iLike]: `%${c}%` }
                 }));
             }
         }
