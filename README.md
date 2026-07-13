@@ -34,7 +34,7 @@ A modern, fully-featured e-commerce platform built with HTML5, CSS3, and vanilla
 - **Icons**: Bootstrap Icons
 - **Fonts**: Google Fonts (Montserrat, Cormorant Garamond, Cinzel)
 - **Deployment**: Netlify (Frontend)
-- **Backend**: Node.js, Express, PostgreSQL (coming soon)
+- **Backend**: Node.js, Express, PostgreSQL 
 
 ## Project Structure
 
@@ -63,9 +63,9 @@ A modern, fully-featured e-commerce platform built with HTML5, CSS3, and vanilla
 
 ### Backend (Coming Soon)
 - Target: Render.com or Railway
-- Database: MySQL
+- Database: Neon PostgreSql
 - Backend API integration (Node.js/Express,)
-- Database integration ( MySQL)
+- Database integration (PostgreSql)
 
 ### Admin Dashboard Features
 - **Dashboard**: Real-time statistics and recent orders
