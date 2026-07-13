@@ -47,7 +47,7 @@ app.use('/api/settings', require('./routes/storeSettings'));
 
 // Health check
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'OK', message: 'Server is running', database: 'MySQL' });
+    res.json({ status: 'OK', message: 'Server is running', database: 'PostgreSQL' });
 });
 
 // 404 handler
@@ -67,7 +67,7 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`✅ Server running on http://localhost:${PORT}`);
-    console.log(`📝 Database: MySQL`);
-    console.log(`🔗 Host: ${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`);
+    console.log(`📝 Database: PostgreSQL (Neon)`);
+    console.log(`🔗 Connection: DATABASE_URL configured`);
 });
 
