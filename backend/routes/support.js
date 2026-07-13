@@ -193,14 +193,14 @@ router.get('/emails', async (req, res) => {
       where.priority = priority;
     }
 
-    // Search
+    // Search (using Op.iLike for PostgreSQL case-insensitive search)
     if (search) {
       where[Op.or] = [
-        { full_name: { [Op.like]: `%${search}%` } },
-        { email: { [Op.like]: `%${search}%` } },
-        { subject: { [Op.like]: `%${search}%` } },
-        { message: { [Op.like]: `%${search}%` } },
-        { order_number: { [Op.like]: `%${search}%` } }
+        { full_name: { [Op.iLike]: `%${search}%` } },
+        { email: { [Op.iLike]: `%${search}%` } },
+        { subject: { [Op.iLike]: `%${search}%` } },
+        { message: { [Op.iLike]: `%${search}%` } },
+        { order_number: { [Op.iLike]: `%${search}%` } }
       ];
     }
 

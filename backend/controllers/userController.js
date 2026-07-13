@@ -3,24 +3,24 @@ const User = require('../models/User');
 // Get all users (admin only)
 exports.getUsers = async (req, res) => {
     try {
-        const { role, limit = 10, skip = 0 } = req.query;
-        let query = {};
+        const { role, limit = 10, offset = 0 } = req.query;
+        const where = {};
 
         if (role) {
-            query.role = role;
+            where.role = role;
         }
 
-        const users = await User.find(query)
-            .select('-password')
-            .limit(parseInt(limit))
-            .skip(parseInt(skip))
-            .sort({ createdAt: -1 });
-
-        const total = await User.countDocuments(query);
+        const { count, rows: users } = await User.findAndCountAll({
+            where,
+            attributes: { exclude: ['password'] },
+            limit: parseInt(limit),
+            offset: parseInt(offset),
+            order: [['createdAt', 'DESC']]
+        });
 
         res.status(200).json({
             success: true,
-            total,
+            total: count,
             count: users.length,
             users
         });
@@ -32,14 +32,16 @@ exports.getUsers = async (req, res) => {
 // Get single user
 exports.getUser = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id).select('-password');
+        const user = await User.findByPk(req.params.id, {
+            attributes: { exclude: ['password'] }
+        });
 
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
         // Check if user is requesting their own profile or is admin
-        if (user._id.toString() !== req.user.id && req.user.role !== 'admin') {
+        if (user.id !== req.user.id && req.user.role !== 'admin') {
             return res.status(403).json({ error: 'Not authorized to view this user' });
         }
 
@@ -52,9 +54,9 @@ exports.getUser = async (req, res) => {
 // Update user profile
 exports.updateProfile = async (req, res) => {
     try {
-        const { name, phone, address, image } = req.body;
+        const { name, phone, address, profileImage } = req.body;
 
-        let user = await User.findById(req.user.id);
+        let user = await User.findByPk(req.user.id);
 
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
@@ -63,21 +65,20 @@ exports.updateProfile = async (req, res) => {
         // Update allowed fields only
         if (name) user.name = name;
         if (phone) user.phone = phone;
-        if (image) user.image = image;
+        if (profileImage) user.profileImage = profileImage;
         if (address) user.address = address;
 
-        user.updatedAt = new Date();
         await user.save();
 
         res.status(200).json({
             success: true,
             message: 'Profile updated successfully',
             user: {
-                id: user._id,
+                id: user.id,
                 name: user.name,
                 email: user.email,
                 phone: user.phone,
-                image: user.image,
+                profileImage: user.profileImage,
                 address: user.address
             }
         });
@@ -95,7 +96,7 @@ exports.changePassword = async (req, res) => {
             return res.status(400).json({ error: 'Please provide current and new password' });
         }
 
-        const user = await User.findById(req.user.id).select('+password');
+        const user = await User.findByPk(req.user.id);
 
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
@@ -108,7 +109,6 @@ exports.changePassword = async (req, res) => {
         }
 
         user.password = newPassword;
-        user.updatedAt = new Date();
         await user.save();
 
         res.status(200).json({
@@ -123,13 +123,13 @@ exports.changePassword = async (req, res) => {
 // Delete user (admin only)
 exports.deleteUser = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id);
+        const user = await User.findByPk(req.params.id);
 
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        await User.findByIdAndDelete(req.params.id);
+        await user.destroy();
 
         res.status(200).json({ success: true, message: 'User deleted successfully' });
     } catch (error) {
@@ -146,17 +146,19 @@ exports.updateUserRole = async (req, res) => {
             return res.status(400).json({ error: 'Invalid role' });
         }
 
-        const user = await User.findByIdAndUpdate(
-            req.params.id,
-            { role },
-            { new: true }
-        ).select('-password');
+        const user = await User.findByPk(req.params.id);
 
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        res.status(200).json({ success: true, user });
+        user.role = role;
+        await user.save();
+
+        const userResponse = user.toJSON();
+        delete userResponse.password;
+
+        res.status(200).json({ success: true, user: userResponse });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -165,11 +167,14 @@ exports.updateUserRole = async (req, res) => {
 // Deactivate user account
 exports.deactivateAccount = async (req, res) => {
     try {
-        const user = await User.findByIdAndUpdate(
-            req.user.id,
-            { isActive: false, updatedAt: new Date() },
-            { new: true }
-        ).select('-password');
+        const user = await User.findByPk(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        user.isActive = false;
+        await user.save();
 
         res.status(200).json({
             success: true,

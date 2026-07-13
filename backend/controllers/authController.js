@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 // Generate JWT token
 const generateToken = (user) => {
     return jwt.sign(
-        { id: user._id, email: user.email, role: user.role },
+        { id: user.id, email: user.email, role: user.role },
         process.env.JWT_SECRET,
         { expiresIn: process.env.JWT_EXPIRE }
     );
@@ -20,7 +20,7 @@ exports.register = async (req, res) => {
         }
 
         // Check if user exists
-        const userExists = await User.findOne({ email });
+        const userExists = await User.findOne({ where: { email } });
         if (userExists) {
             return res.status(400).json({ error: 'User already exists' });
         }
@@ -39,7 +39,7 @@ exports.register = async (req, res) => {
             success: true,
             token,
             user: {
-                id: user._id,
+                id: user.id,
                 name: user.name,
                 email: user.email,
                 role: user.role
@@ -60,7 +60,7 @@ exports.login = async (req, res) => {
         }
 
         // Check for user
-        const user = await User.findOne({ email }).select('+password');
+        const user = await User.findOne({ where: { email } });
         if (!user) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
@@ -77,7 +77,7 @@ exports.login = async (req, res) => {
             success: true,
             token,
             user: {
-                id: user._id,
+                id: user.id,
                 name: user.name,
                 email: user.email,
                 role: user.role
@@ -91,7 +91,7 @@ exports.login = async (req, res) => {
 // Get current user
 exports.getMe = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id);
+        const user = await User.findByPk(req.user.id);
         res.status(200).json({ success: true, user });
     } catch (error) {
         res.status(500).json({ error: error.message });
