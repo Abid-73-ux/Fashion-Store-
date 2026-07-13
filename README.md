@@ -63,7 +63,7 @@ A modern, fully-featured e-commerce platform built with HTML5, CSS3, and vanilla
 
 ### Backend (Coming Soon)
 - Target: Render.com or Railway
-- Database: MySQL
+- Database: Neon PostgreSql
 - Backend API integration (Node.js/Express,)
 - Database integration ( MySQL)
 
