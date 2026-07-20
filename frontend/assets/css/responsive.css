@@ -443,11 +443,17 @@
   }
   
   .dropdown-menu {
-    background-color: var(--gray-800);
+    background-color: var(--white);
+    border: 1px solid var(--gray-200);
+  }
+  
+  .dropdown-item {
+    color: var(--gray-700);
   }
   
   .dropdown-item:hover {
-    background-color: var(--gray-700);
+    background-color: var(--cream);
+    color: var(--primary-color);
   }
 }
 
