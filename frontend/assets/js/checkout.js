@@ -322,24 +322,38 @@ function loadStep1Data() {
  * STEP 2: Order Review
  */
 async function displayOrderReview() {
-  saveStep1Data();
+  try {
+    console.log('📋 displayOrderReview called');
+    
+    saveStep1Data();
 
-  const reviewAddress = document.getElementById('reviewAddress');
-  const info = checkoutData.customerInfo;
-  const addr = info.shippingAddress;
+    const reviewAddress = document.getElementById('reviewAddress');
+    if (!reviewAddress) {
+      console.error('❌ reviewAddress element not found');
+      return;
+    }
 
-  reviewAddress.innerHTML = `
-    <p><strong>${info.firstName} ${info.lastName}</strong></p>
-    <p>${addr.street}</p>
-    <p>${addr.city}, ${addr.state} ${addr.postalCode}</p>
-    <p>📧 ${info.email} | 📱 ${info.whatsappNumber}</p>
-  `;
+    const info = checkoutData.customerInfo;
+    const addr = info.shippingAddress;
 
-  // Display order items in review section (like cart)
-  await displayReviewItems();
-  
-  // Show the summary sidebar on Step 2
-  document.getElementById('summaryCol').style.display = 'block';
+    reviewAddress.innerHTML = `
+      <p><strong>${info.firstName} ${info.lastName}</strong></p>
+      <p>${addr.street}</p>
+      <p>${addr.city}, ${addr.state} ${addr.postalCode}</p>
+      <p>📧 ${info.email} | 📱 ${info.whatsappNumber}</p>
+    `;
+
+    // Display order items in review section (like cart)
+    console.log('📦 Displaying review items...');
+    await displayReviewItems();
+    
+    // Show the summary sidebar on Step 2
+    document.getElementById('summaryCol').style.display = 'block';
+    
+    console.log('✅ Order review displayed successfully');
+  } catch (error) {
+    console.error('❌ Error in displayOrderReview:', error);
+  }
 }
 
 /**
@@ -696,29 +710,87 @@ function setStep(step) {
  * Event Listeners
  */
 function setupEventListeners() {
-  document.getElementById('toReview')?.addEventListener('click', validateAndGoToStep2);
-  document.getElementById('backToShipping')?.addEventListener('click', () => setStep(1));
-  document.getElementById('toPayment')?.addEventListener('click', validateAndGoToStep3);
-  document.getElementById('backToReview')?.addEventListener('click', () => setStep(2));
-  document.getElementById('editShipping')?.addEventListener('click', () => setStep(1));
-  
-  document.getElementById('placeOrderBtn')?.addEventListener('click', placeOrder);
+  const toReviewBtn = document.getElementById('toReview');
+  const backToShippingBtn = document.getElementById('backToShipping');
+  const toPaymentBtn = document.getElementById('toPayment');
+  const backToReviewBtn = document.getElementById('backToReview');
+  const editShippingBtn = document.getElementById('editShipping');
+  const placeOrderBtn = document.getElementById('placeOrderBtn');
+
+  console.log('🔗 Setting up event listeners...');
+  console.log('toReviewBtn found:', !!toReviewBtn);
+  console.log('backToShippingBtn found:', !!backToShippingBtn);
+  console.log('toPaymentBtn found:', !!toPaymentBtn);
+
+  if (toReviewBtn) {
+    toReviewBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      console.log('✅ Continue to Review clicked');
+      validateAndGoToStep2();
+    });
+  }
+
+  if (backToShippingBtn) {
+    backToShippingBtn.addEventListener('click', () => {
+      console.log('⬅️ Back to Shipping clicked');
+      setStep(1);
+    });
+  }
+
+  if (toPaymentBtn) {
+    toPaymentBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      console.log('✅ Continue to Payment clicked');
+      validateAndGoToStep3();
+    });
+  }
+
+  if (backToReviewBtn) {
+    backToReviewBtn.addEventListener('click', () => {
+      console.log('⬅️ Back to Review clicked');
+      setStep(2);
+    });
+  }
+
+  if (editShippingBtn) {
+    editShippingBtn.addEventListener('click', () => {
+      console.log('✏️ Edit Shipping clicked');
+      setStep(1);
+    });
+  }
+
+  if (placeOrderBtn) {
+    placeOrderBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      console.log('✅ Place Order clicked');
+      placeOrder();
+    });
+  }
+
+  console.log('✅ Event listeners setup complete');
 }
 
 function validateAndGoToStep2() {
+  console.log('🔍 validateAndGoToStep2 called');
+  
   const requiredFields = ['firstName', 'lastName', 'email', 'whatsappNumber', 'street', 'city', 'state', 'postalCode'];
   let allValid = true;
   const errors = {};
 
   requiredFields.forEach(fieldId => {
     const field = document.getElementById(fieldId);
-    if (!field) return;
+    if (!field) {
+      console.warn(`⚠️ Field not found: ${fieldId}`);
+      return;
+    }
     
     const value = field.value;
+    console.log(`📝 ${fieldId}: "${value}"`);
     
     if (!value || value.trim() === '') {
       allValid = false;
       errors[fieldId] = 'This field is required';
+      console.error(`❌ ${fieldId} is empty`);
       return;
     }
     
@@ -728,16 +800,24 @@ function validateAndGoToStep2() {
       if (!result.isValid) {
         allValid = false;
         errors[fieldId] = result.message;
+        console.error(`❌ ${fieldId} validation failed: ${result.message}`);
+      } else {
+        console.log(`✅ ${fieldId} is valid`);
       }
+    } else if (fieldId === 'state') {
+      console.log(`✅ ${fieldId} is valid (state field)`);
     }
   });
 
+  console.log('📊 Validation complete. All valid?', allValid);
+  console.log('❌ Errors:', errors);
+
   if (!allValid) {
     Toast.warning('Please fix all errors in the form');
-    console.log('Form errors:', errors);
     return;
   }
 
+  console.log('✅ Form validation passed, moving to step 2');
   displayOrderReview();
   setStep(2);
 }
