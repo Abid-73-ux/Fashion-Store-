@@ -11,13 +11,14 @@ let checkoutData = {
 };
 let paymentProofFile = null;
 
-// Use global Toast if available, otherwise create fallback
-const Toast = window.Toast || {
-  success: (msg) => console.log('✅', msg),
-  error: (msg) => console.error('❌', msg),
-  warning: (msg) => console.warn('⚠️', msg),
-  info: (msg) => console.info('ℹ️', msg)
-};
+// Toast notification helper
+function showNotification(type, message) {
+  if (window.Toast && window.Toast[type]) {
+    window.Toast[type](message);
+  } else {
+    console.log(`[${type.toUpperCase()}] ${message}`);
+  }
+}
 
 /**
  * Main initialization - runs when page loads
@@ -382,7 +383,7 @@ function setupPaymentMethods() {
       const accountNumber = document.getElementById('accountNumber')?.textContent;
       if (accountNumber) {
         navigator.clipboard.writeText(accountNumber).then(() => {
-          Toast.success('Account number copied!');
+          showNotification('success', 'Account number copied!');
         });
       }
     });
@@ -530,12 +531,12 @@ async function placeOrder() {
   const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value;
 
   if (!paymentMethod) {
-    Toast.warning('Please select a payment method');
+    showNotification('warning', 'Please select a payment method');
     return;
   }
 
   if (paymentMethod === 'Bank_Transfer' && !paymentProofFile) {
-    Toast.error('Please upload payment proof');
+    showNotification('error', 'Please upload payment proof');
     return;
   }
 
@@ -547,14 +548,14 @@ async function placeOrder() {
   try {
     const user = getCurrentUser();
     if (!user) {
-      Toast.error('User not logged in');
+      showNotification('error', 'User not logged in');
       window.location.href = 'login.html?redirect=checkout.html';
       return;
     }
 
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
     if (cart.length === 0) {
-      Toast.error('Your cart is empty');
+      showNotification('error', 'Your cart is empty');
       return;
     }
 
@@ -653,7 +654,7 @@ async function placeOrder() {
     localStorage.removeItem('cart');
     localStorage.removeItem('checkout_step1_data');
 
-    Toast.success('Order placed successfully!');
+    showNotification('success', 'Order placed successfully!');
 
     setTimeout(() => {
       window.location.href = `checkout-confirmation.html?orderId=${orderId}`;
@@ -661,7 +662,7 @@ async function placeOrder() {
 
   } catch (error) {
     console.error('Error placing order:', error);
-    Toast.error(error.message || 'Failed to place order. Please try again.');
+    showNotification('error', error.message || 'Failed to place order. Please try again.');
     
     if (placeOrderBtn) {
       placeOrderBtn.disabled = false;
@@ -814,7 +815,7 @@ function validateAndGoToStep2() {
   console.log('❌ Errors:', errors);
 
   if (!allValid) {
-    Toast.warning('Please fix all errors in the form');
+    showNotification('warning', 'Please fix all errors in the form');
     return;
   }
 
@@ -826,7 +827,7 @@ function validateAndGoToStep2() {
 function validateAndGoToStep3() {
   const cart = JSON.parse(localStorage.getItem('cart')) || [];
   if (cart.length === 0) {
-    Toast.error('Your cart is empty');
+    showNotification('error', 'Your cart is empty');
     return;
   }
 
