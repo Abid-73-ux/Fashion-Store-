@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Verification - Admin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@300;400;500;600;700&family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../assets/css/variables.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="../assets/css/inputs.css">
+    <style>
+        .thumbnail-preview {
+            max-width: 150px;
+            max-height: 150px;
+            object-fit: cover;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .modal-body img {
+            max-width: 100%;
+            max-height: 500px;
+            object-fit: contain;
+        }
+        .payment-proof-section {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+        }
+        .proof-thumbnail {
+            max-width: 200px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .badge-pending {
+            background-color: #ffc107;
+            color: #000;
+        }
+        .badge-verified {
+            background-color: #28a745;
+        }
+        .badge-failed {
+            background-color: #dc3545;
+        }
+        
+        /* Enhanced order detail modal styles */
+        .order-details .card {
+            border: 1px solid #e0e0e0;
+            box-shadow: none;
+        }
+        
+        .order-details .card-header {
+            background-color: #f5f5f5;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: 600;
+        }
+        
+        .order-details .card-body {
+            padding: 1rem;
+        }
+        
+        .order-details p {
+            margin-bottom: 0.5rem;
+        }
+        
+        .order-details .table-sm th,
+        .order-details .table-sm td {
+            padding: 0.5rem;
+            vertical-align: middle;
+        }
+        
+        .payment-proof-section img {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .payment-proof-section img:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body class="admin-body">
+
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">TAKANJ<span style="color: var(--white);"></span></div>
+                <small class="sidebar-subtitle">Admin Panel</small>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <div class="menu-section-title">Main</div>
+                <a href="dashboard.html" class="menu-item">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+                
+                <div class="menu-section-title">E-Commerce</div>
+                <a href="products.html" class="menu-item">
+                    <i class="bi bi-box-seam"></i>
+                    <span>Products</span>
+                </a>
+                <a href="categories.html" class="menu-item">
+                    <i class="bi bi-grid"></i>
+                    <span>Categories</span>
+                </a>
+                <a href="orders.html" class="menu-item">
+                    <i class="bi bi-cart-check"></i>
+                    <span>Orders</span>
+                </a>
+                <a href="customers.html" class="menu-item">
+                    <i class="bi bi-people"></i>
+                    <span>Customers</span>
+                </a>
+                <a href="reviews.html" class="menu-item">
+                    <i class="bi bi-star"></i>
+                    <span>Reviews</span>
+                </a>
+                
+                <div class="menu-section-title">Management</div>
+                <a href="payment-verification.html" class="menu-item active">
+                    <i class="bi bi-check-circle"></i>
+                    <span>Payment Verification</span>
+                </a>
+                <a href="inventory.html" class="menu-item">
+                    <i class="bi bi-boxes"></i>
+                    <span>Inventory</span>
+                </a>
+                <a href="coupons.html" class="menu-item">
+                    <i class="bi bi-ticket-perforated"></i>
+                    <span>Coupons</span>
+                </a>
+                <a href="analytics.html" class="menu-item">
+                    <i class="bi bi-bar-chart"></i>
+                    <span>Analytics</span>
+                </a>
+                
+                <div class="menu-section-title">System</div>
+                <a href="settings.html" class="menu-item">
+                    <i class="bi bi-gear"></i>
+                    <span>Settings</span>
+                </a>
+                <a href="#" class="menu-item" id="adminLogout">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Logout</span>
+                </a>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Topbar -->
+            <header class="admin-topbar">
+                <div class="topbar-search position-relative">
+                    <i class="bi bi-search position-absolute" style="left: 1rem; top: 50%; transform: translateY(-50%); color: var(--gray-500);"></i>
+                    <input type="text" class="form-control" placeholder="Search orders..." id="topbarSearch">
+                </div>
+                
+                <div class="topbar-actions">
+                    <div class="topbar-icon"><i class="bi bi-bell"></i><span class="notification-badge">5</span></div>
+                    <div class="topbar-icon"><i class="bi bi-envelope"></i><span class="notification-badge">3</span></div>
+                    <div class="dropdown">
+                        <button class="btn btn-link p-0 dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100" alt="Admin" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
+                            <span style="font-size: 0.9rem; color: var(--gray-800);">Admin</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm">
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
+                            <li><a class="dropdown-item" href="settings.html"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" id="topbarLogout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Content -->
+            <div class="admin-content">
+                <div class="page-header d-flex justify-content-between align-items-start">
+                    <div>
+                        <nav class="breadcrumb-nav mb-3">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="dashboard.html">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Payment Verification</li>
+                            </ol>
+                        </nav>
+                        <h1 class="page-title">Payment Verification</h1>
+                        <p class="page-subtitle">Review and verify pending bank transfer orders</p>
+                    </div>
+                    <div>
+                        <span class="badge bg-warning me-2" id="pendingBadge">Pending: 0</span>
+                    </div>
+                </div>
+                
+                <!-- Quick Stats -->
+                <div class="row g-3 mb-4">
+                    <div class="col-lg-4 col-md-6">
+                        <div class="stat-card">
+                            <div class="stat-icon primary" style="width: 50px; height: 50px;">
+                                <i class="bi bi-hourglass-split"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Pending Verification</div>
+                                <div class="stat-value" id="pendingCount">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: rgba(39, 174, 96, 0.1); color: #27ae60; width: 50px; height: 50px;">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Verified</div>
+                                <div class="stat-value" id="verifiedCount">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: rgba(231, 76, 60, 0.1); color: #e74c3c; width: 50px; height: 50px;">
+                                <i class="bi bi-x-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Failed</div>
+                                <div class="stat-value" id="failedCount">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Filters -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Customer Name</label>
+                                <input type="text" class="form-control" id="customerNameFilter" placeholder="Search customer...">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Status</label>
+                                <select class="form-select" id="statusFilter">
+                                    <option value="">All Status</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="verified">Verified</option>
+                                    <option value="failed">Failed</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">From Date</label>
+                                <input type="date" class="form-control" id="startDateFilter">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">To Date</label>
+                                <input type="date" class="form-control" id="endDateFilter">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Orders Table -->
+                <div class="card">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Customer Name</th>
+                                        <th>Total</th>
+                                        <th>Payment Status</th>
+                                        <th>Upload Date</th>
+                                        <th style="width: 100px;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ordersTableBody">
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-5">
+                                            <i class="bi bi-hourglass"></i> Loading orders...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pagination -->
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center" id="paginationContainer">
+                        <!-- Pagination controls will be added here by JavaScript -->
+                    </ul>
+                </nav>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Order Detail Modal -->
+    <div class="modal fade" id="orderDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Order Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="orderDetailContent">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/config.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/admin-common.js"></script>
+    <script src="../assets/js/components/paymentProofLightbox.js"></script>
+    <script src="../assets/js/components/orderDetailModal.js"></script>
+    <script src="../assets/js/toast.js"></script>
+    <script>
+        /**
+         * Payment Verification Module
+         * Handles bank transfer payment verification orders
+         */
+        const PaymentVerification = (() => {
+            let allOrders = [];
+            let filteredOrders = [];
+            let currentPage = 1;
+            const itemsPerPage = 20;
+            let totalPages = 1;
+            
+            // State for filters
+            let filters = {
+                customerName: '',
+                status: '',
+                startDate: '',
+                endDate: ''
+            };
+
+            /**
+             * Initialize the module
+             */
+            const init = () => {
+                if (!Auth.isAdmin()) {
+                    Toast.error('Access denied. Admin authentication required.');
+                    setTimeout(() => { window.location.href = '../login.html'; }, 2000);
+                    return;
+                }
+
+                setupEventListeners();
+                loadOrders();
+            };
+
+            /**
+             * Setup event listeners for filters and pagination
+             */
+            const setupEventListeners = () => {
+                // Search/filter inputs
+                document.getElementById('customerNameFilter').addEventListener('input', (e) => {
+                    filters.customerName = e.target.value;
+                    currentPage = 1;
+                    applyFilters();
+                });
+
+                document.getElementById('statusFilter').addEventListener('change', (e) => {
+                    filters.status = e.target.value;
+                    currentPage = 1;
+                    applyFilters();
+                });
+
+                document.getElementById('startDateFilter').addEventListener('change', (e) => {
+                    filters.startDate = e.target.value;
+                    currentPage = 1;
+                    applyFilters();
+                });
+
+                document.getElementById('endDateFilter').addEventListener('change', (e) => {
+                    filters.endDate = e.target.value;
+                    currentPage = 1;
+                    applyFilters();
+                });
+
+                document.getElementById('topbarSearch').addEventListener('input', (e) => {
+                    filters.customerName = e.target.value;
+                    currentPage = 1;
+                    applyFilters();
+                });
+
+                // Logout handlers
+                document.getElementById('adminLogout').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    handleLogout();
+                });
+
+                document.getElementById('topbarLogout').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    handleLogout();
+                });
+            };
+
+            /**
+             * Fetch orders from API
+             */
+            const loadOrders = async () => {
+                try {
+                    const endpoint = `${API_CONFIG.getEndpoint('/v1/admin/orders/pending-verification')}?page=1&limit=1000`;
+                    const token = Auth.getToken();
+
+                    const response = await fetch(endpoint, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            Toast.error('Unauthorized. Please login again.');
+                            setTimeout(() => { window.location.href = '../admin/login.html'; }, 2000);
+                            return;
+                        }
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
+                    const data = await response.json();
+
+                    if (data.success && data.data && data.data.orders) {
+                        allOrders = data.data.orders;
+                        updateStats();
+                        applyFilters();
+                    } else {
+                        throw new Error(data.message || 'Failed to load orders');
+                    }
+                } catch (error) {
+                    console.error('Error loading orders:', error);
+                    Toast.error('Failed to load orders: ' + error.message);
+                    document.getElementById('ordersTableBody').innerHTML = `
+                        <tr>
+                            <td colspan="6" class="text-center text-danger py-5">
+                                <i class="bi bi-exclamation-circle"></i> Failed to load orders
+                            </td>
+                        </tr>
+                    `;
+                }
+            };
+
+            /**
+             * Apply filters to orders
+             */
+            const applyFilters = () => {
+                filteredOrders = allOrders.filter(order => {
+                    // Customer name filter
+                    if (filters.customerName) {
+                        const search = filters.customerName.toLowerCase();
+                        if (!order.customerName.toLowerCase().includes(search) && 
+                            !order.customerEmail.toLowerCase().includes(search)) {
+                            return false;
+                        }
+                    }
+
+                    // Status filter
+                    if (filters.status) {
+                        if (order.paymentStatus !== filters.status) {
+                            return false;
+                        }
+                    }
+
+                    // Start date filter
+                    if (filters.startDate) {
+                        const orderDate = new Date(order.createdAt);
+                        const filterDate = new Date(filters.startDate);
+                        if (orderDate < filterDate) {
+                            return false;
+                        }
+                    }
+
+                    // End date filter
+                    if (filters.endDate) {
+                        const orderDate = new Date(order.createdAt);
+                        const filterDate = new Date(filters.endDate);
+                        filterDate.setHours(23, 59, 59, 999);
+                        if (orderDate > filterDate) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                });
+
+                totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+                if (totalPages === 0) totalPages = 1;
+                currentPage = 1;
+
+                renderOrders();
+                renderPagination();
+            };
+
+            /**
+             * Render orders in the table
+             */
+            const renderOrders = () => {
+                const start = (currentPage - 1) * itemsPerPage;
+                const end = start + itemsPerPage;
+                const pageOrders = filteredOrders.slice(start, end);
+                const tbody = document.getElementById('ordersTableBody');
+
+                if (pageOrders.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-5">
+                                <i class="bi bi-inbox"></i> No orders found
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = pageOrders.map(order => `
+                    <tr>
+                        <td><strong>${order.orderId}</strong></td>
+                        <td>
+                            <div>${order.customerName}</div>
+                            <small class="text-muted">${order.customerEmail}</small>
+                        </td>
+                        <td><strong>₨${parseFloat(order.total).toFixed(2)}</strong></td>
+                        <td>
+                            <span class="badge badge-${order.paymentStatus}">
+                                ${capitalizeFirst(order.paymentStatus)}
+                            </span>
+                        </td>
+                        <td>
+                            <small>${formatDate(order.createdAt)}</small>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="PaymentVerification.viewOrderDetail('${order.orderId}')">
+                                <i class="bi bi-eye"></i> View
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            };
+
+            /**
+             * Render pagination controls
+             */
+            const renderPagination = () => {
+                const container = document.getElementById('paginationContainer');
+                const pages = [];
+
+                if (totalPages <= 1) {
+                    container.innerHTML = '';
+                    return;
+                }
+
+                // Previous button
+                pages.push(`
+                    <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="#" onclick="PaymentVerification.goToPage(${currentPage - 1}); return false;">
+                            Previous
+                        </a>
+                    </li>
+                `);
+
+                // Page numbers
+                for (let i = 1; i <= totalPages; i++) {
+                    if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+                        pages.push(`
+                            <li class="page-item ${i === currentPage ? 'active' : ''}">
+                                <a class="page-link" href="#" onclick="PaymentVerification.goToPage(${i}); return false;">
+                                    ${i}
+                                </a>
+                            </li>
+                        `);
+                    } else if (i === 2 && currentPage > 3) {
+                        pages.push('<li class="page-item disabled"><span class="page-link">...</span></li>');
+                    } else if (i === totalPages - 1 && currentPage < totalPages - 2) {
+                        pages.push('<li class="page-item disabled"><span class="page-link">...</span></li>');
+                    }
+                }
+
+                // Next button
+                pages.push(`
+                    <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                        <a class="page-link" href="#" onclick="PaymentVerification.goToPage(${currentPage + 1}); return false;">
+                            Next
+                        </a>
+                    </li>
+                `);
+
+                container.innerHTML = pages.join('');
+            };
+
+            /**
+             * Update statistics
+             */
+            const updateStats = () => {
+                const pending = allOrders.filter(o => o.paymentStatus === 'pending').length;
+                const verified = allOrders.filter(o => o.paymentStatus === 'verified').length;
+                const failed = allOrders.filter(o => o.paymentStatus === 'failed').length;
+
+                document.getElementById('pendingCount').textContent = pending;
+                document.getElementById('verifiedCount').textContent = verified;
+                document.getElementById('failedCount').textContent = failed;
+                document.getElementById('pendingBadge').textContent = `Pending: ${pending}`;
+            };
+
+            /**
+             * Go to a specific page
+             */
+            const goToPage = (page) => {
+                if (page >= 1 && page <= totalPages) {
+                    currentPage = page;
+                    renderOrders();
+                    renderPagination();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+
+            /**
+             * View order details in modal
+             */
+            const viewOrderDetail = async (orderId) => {
+                try {
+                    const order = allOrders.find(o => o.orderId === orderId);
+                    if (!order) {
+                        Toast.error('Order not found');
+                        return;
+                    }
+
+                    // Show the order detail modal using the OrderDetailModal component
+                    OrderDetailModal.show(order, () => {
+                        // Callback to refresh orders after approval/rejection
+                        loadOrders();
+                    });
+                } catch (error) {
+                    console.error('Error viewing order detail:', error);
+                    Toast.error('Failed to load order details');
+                }
+            };
+
+            /**
+             * Approve order payment
+             */
+            const approveOrder = async (orderId) => {
+                if (!confirm('Are you sure you want to approve this payment?')) {
+                    return;
+                }
+
+                try {
+                    const token = Auth.getToken();
+                    const endpoint = `${API_CONFIG.getEndpoint('/v1/admin/orders')}/${orderId}/verify-payment`;
+
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ paymentStatus: 'verified' })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
+                    Toast.success('Payment approved successfully');
+                    bootstrap.Modal.getInstance(document.getElementById('orderDetailModal')).hide();
+                    loadOrders();
+                } catch (error) {
+                    console.error('Error approving order:', error);
+                    Toast.error('Failed to approve order: ' + error.message);
+                }
+            };
+
+            /**
+             * Reject order payment
+             */
+            const rejectOrder = async (orderId) => {
+                if (!confirm('Are you sure you want to reject this payment?')) {
+                    return;
+                }
+
+                try {
+                    const token = Auth.getToken();
+                    const endpoint = `${API_CONFIG.getEndpoint('/v1/admin/orders')}/${orderId}/verify-payment`;
+
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ paymentStatus: 'failed' })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
+                    Toast.success('Payment rejected successfully');
+                    bootstrap.Modal.getInstance(document.getElementById('orderDetailModal')).hide();
+                    loadOrders();
+                } catch (error) {
+                    console.error('Error rejecting order:', error);
+                    Toast.error('Failed to reject order: ' + error.message);
+                }
+            };
+
+            /**
+             * Handle logout
+             */
+            const handleLogout = () => {
+                if (confirm('Are you sure you want to logout?')) {
+                    localStorage.removeItem('adminToken');
+                    window.location.href = '../admin/login.html';
+                }
+            };
+
+            return {
+                init,
+                goToPage,
+                viewOrderDetail
+            };
+        })();
+
+        /**
+         * Utility functions
+         */
+        const formatDate = (dateString) => {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        };
+
+        const capitalizeFirst = (str) => {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        };
+
+        /**
+         * Initialize on page load
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            PaymentVerification.init();
+        });
+    </script>
+</body>
+</html>

@@ -308,6 +308,114 @@
         .checkout-step.active {
             display: block;
         }
+        
+        .form-error {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: block;
+        }
+        
+        .invalid-feedback {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: block;
+        }
+        
+        .is-invalid {
+            border-color: #dc3545 !important;
+        }
+        
+        .bank-details-card {
+            background: var(--cream);
+            border: 2px solid var(--gray-300);
+            padding: var(--spacing-xl);
+            border-radius: 4px;
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .bank-details-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-md);
+            font-size: var(--font-size-sm);
+        }
+        
+        .bank-details-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .bank-details-label {
+            font-weight: var(--font-weight-semibold);
+            color: var(--gray-700);
+        }
+        
+        .bank-details-value {
+            font-family: var(--font-accent);
+            font-size: var(--font-size-base);
+            color: #000;
+        }
+        
+        .btn-copy {
+            background: transparent;
+            border: 1px solid var(--gray-400);
+            color: var(--gray-700);
+            padding: 0.25rem 0.75rem;
+            font-size: var(--font-size-xs);
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wider);
+            transition: all var(--transition-fast);
+        }
+        
+        .btn-copy:hover {
+            border-color: var(--secondary-color);
+            color: var(--secondary-color);
+        }
+        
+        .file-upload-container {
+            border: 2px dashed var(--gray-300);
+            padding: var(--spacing-2xl);
+            text-align: center;
+            border-radius: 4px;
+            transition: all var(--transition-fast);
+            cursor: pointer;
+        }
+        
+        .file-upload-container.drag-over {
+            border-color: var(--secondary-color);
+            background: var(--cream);
+        }
+        
+        .file-upload-icon {
+            font-size: 3rem;
+            color: var(--gray-400);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .file-upload-text {
+            color: var(--gray-600);
+            font-size: var(--font-size-sm);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .file-upload-hint {
+            color: var(--gray-500);
+            font-size: var(--font-size-xs);
+        }
+        
+        .payment-status-message {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            font-size: var(--font-size-sm);
+            color: #0c3474;
+        }
+        
+        .provinces-select {
+            max-height: 300px;
+        }
     </style>
 </head>
 <body>
@@ -361,84 +469,86 @@
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label for="firstName" class="form-label">First Name</label>
-                                            <input type="text" class="form-control" id="firstName" required>
+                                            <label for="firstName" class="form-label">First Name *</label>
+                                            <input type="text" class="form-control" id="firstName" name="firstName" required>
+                                            <small class="form-error"></small>
                                         </div>
                                     </div>
                                     
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label for="lastName" class="form-label">Last Name</label>
-                                            <input type="text" class="form-control" id="lastName" required>
+                                            <label for="lastName" class="form-label">Last Name *</label>
+                                            <input type="text" class="form-control" id="lastName" name="lastName" required>
+                                            <small class="form-error"></small>
                                         </div>
                                     </div>
                                     
                                     <div class="col-12">
                                         <div class="mb-3">
-                                            <label for="email" class="form-label">Email Address</label>
-                                            <input type="email" class="form-control" id="email" required>
+                                            <label for="email" class="form-label">Email Address *</label>
+                                            <input type="email" class="form-control" id="email" name="email" required>
+                                            <small class="form-error"></small>
                                         </div>
                                     </div>
                                     
                                     <div class="col-12">
                                         <div class="mb-3">
-                                            <label for="phone" class="form-label">Phone Number</label>
-                                            <input type="tel" class="form-control" id="phone" required>
+                                            <label for="whatsappNumber" class="form-label">WhatsApp Number *</label>
+                                            <input type="tel" class="form-control" id="whatsappNumber" name="whatsappNumber" placeholder="+923001234567 or 03001234567" required>
+                                            <small class="form-text text-muted" style="font-size: 0.75rem;">Format: +923001234567 or 03001234567</small>
+                                            <small class="form-error"></small>
                                         </div>
                                     </div>
                                     
                                     <div class="col-12">
                                         <div class="mb-3">
-                                            <label for="address" class="form-label">Street Address</label>
-                                            <input type="text" class="form-control" id="address" required>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="col-12">
-                                        <div class="mb-3">
-                                            <label for="apartment" class="form-label">Apartment, Suite, etc. (Optional)</label>
-                                            <input type="text" class="form-control" id="apartment">
+                                            <label for="street" class="form-label">Street Address *</label>
+                                            <input type="text" class="form-control" id="street" name="street" required>
+                                            <small class="form-error"></small>
                                         </div>
                                     </div>
                                     
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label for="city" class="form-label">City</label>
-                                            <input type="text" class="form-control" id="city" required>
+                                            <label for="city" class="form-label">City *</label>
+                                            <input type="text" class="form-control" id="city" name="city" required>
+                                            <small class="form-error"></small>
                                         </div>
                                     </div>
                                     
-                                    <div class="col-md-3">
+                                    <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label for="state" class="form-label">State</label>
-                                            <select class="form-select" id="state" required>
-                                                <option value="">Choose...</option>
-                                                <option>New York</option>
-                                                <option>California</option>
-                                                <option>Texas</option>
-                                                <option>Florida</option>
+                                            <label for="state" class="form-label">Province/State *</label>
+                                            <select class="form-select" id="state" name="state" required>
+                                                <option value="">Select Province...</option>
+                                                <option value="Balochistan">Balochistan</option>
+                                                <option value="Gilgit-Baltistan">Gilgit-Baltistan</option>
+                                                <option value="Khyber Pakhtunkhwa">Khyber Pakhtunkhwa</option>
+                                                <option value="Punjab">Punjab</option>
+                                                <option value="Sindh">Sindh</option>
+                                                <option value="Other">Other</option>
                                             </select>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label for="zip" class="form-label">ZIP Code</label>
-                                            <input type="text" class="form-control" id="zip" required>
+                                            <small class="form-error"></small>
                                         </div>
                                     </div>
                                     
                                     <div class="col-12">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="saveAddress">
-                                            <label class="form-check-label" for="saveAddress" style="text-transform: none; letter-spacing: normal; font-size: 0.875rem;">
-                                                Save this address for future orders
-                                            </label>
+                                        <div class="mb-3">
+                                            <label for="postalCode" class="form-label">Postal Code (5 digits) *</label>
+                                            <input type="text" class="form-control" id="postalCode" name="postalCode" placeholder="12345" maxlength="5" required>
+                                            <small class="form-error"></small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <div class="mb-3">
+                                            <label for="notes" class="form-label">Special Instructions (Optional)</label>
+                                            <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Any special delivery instructions..."></textarea>
                                         </div>
                                     </div>
                                 </div>
                                 
-                                <div class="d-flex justify-content-between mt-4">
+                                <div class="d-flex justify-content-between mt-4 gap-2">
                                     <a href="cart.html" class="btn btn-back">
                                         <i class="bi bi-arrow-left me-2"></i> Back to Cart
                                     </a>
@@ -484,84 +594,91 @@
                         <div class="checkout-card">
                             <h3>Payment Method</h3>
                             
-                            <div class="payment-methods">
-                                <div class="payment-method selected" data-method="card">
+                            <div class="payment-methods mb-4">
+                                <!-- Cash on Delivery Option -->
+                                <div class="payment-method" data-method="COD">
                                     <div class="d-flex align-items-center">
-                                        <input type="radio" name="payment" value="card" checked class="me-3">
+                                        <input type="radio" name="paymentMethod" value="COD" class="me-3">
                                         <div class="flex-grow-1">
-                                            <h5 class="mb-1" style="font-size: 1rem; font-weight: 600;">Credit / Debit Card</h5>
-                                            <p class="mb-0 text-muted" style="font-size: 0.875rem;">Pay securely with your card</p>
+                                            <h5 class="mb-1" style="font-size: 1rem; font-weight: 600;">Cash on Delivery (COD)</h5>
+                                            <p class="mb-0 text-muted" style="font-size: 0.875rem;"><strong id="codAmount">₨0</strong> when you receive your order</p>
                                         </div>
                                         <div>
-                                            <i class="bi bi-credit-card" style="font-size: 2rem; color: var(--gray-400);"></i>
+                                            <i class="bi bi-cash-coin" style="font-size: 2rem; color: var(--gray-400);"></i>
                                         </div>
                                     </div>
                                 </div>
                                 
-                                <div class="payment-method" data-method="paypal">
+                                <!-- Bank Transfer Option -->
+                                <div class="payment-method" data-method="Bank_Transfer">
                                     <div class="d-flex align-items-center">
-                                        <input type="radio" name="payment" value="paypal" class="me-3">
+                                        <input type="radio" name="paymentMethod" value="Bank_Transfer" class="me-3">
                                         <div class="flex-grow-1">
-                                            <h5 class="mb-1" style="font-size: 1rem; font-weight: 600;">PayPal</h5>
-                                            <p class="mb-0 text-muted" style="font-size: 0.875rem;">Fast and secure payment</p>
+                                            <h5 class="mb-1" style="font-size: 1rem; font-weight: 600;">Bank Transfer</h5>
+                                            <p class="mb-0 text-muted" style="font-size: 0.875rem;">Transfer payment and upload proof</p>
                                         </div>
                                         <div>
-                                            <i class="bi bi-paypal" style="font-size: 2rem; color: var(--gray-400);"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="payment-method" data-method="cod">
-                                    <div class="d-flex align-items-center">
-                                        <input type="radio" name="payment" value="cod" class="me-3">
-                                        <div class="flex-grow-1">
-                                            <h5 class="mb-1" style="font-size: 1rem; font-weight: 600;">Cash on Delivery</h5>
-                                            <p class="mb-0 text-muted" style="font-size: 0.875rem;">Pay when you receive</p>
-                                        </div>
-                                        <div>
-                                            <i class="bi bi-cash" style="font-size: 2rem; color: var(--gray-400);"></i>
+                                            <i class="bi bi-bank" style="font-size: 2rem; color: var(--gray-400);"></i>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div id="cardForm" class="mt-4">
-                                <div class="row g-3">
-                                    <div class="col-12">
-                                        <div class="mb-3">
-                                            <label for="cardNumber" class="form-label">Card Number</label>
-                                            <input type="text" class="form-control" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
-                                        </div>
+                            <!-- Bank Transfer Details (Hidden by default) -->
+                            <div id="bankTransferDetails" style="display: none;">
+                                <div class="payment-status-message">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Please transfer the exact amount to the account below and upload your payment proof.
+                                </div>
+                                
+                                <div class="bank-details-card">
+                                    <div class="bank-details-row">
+                                        <span class="bank-details-label">Bank Name:</span>
+                                        <span class="bank-details-value">United Bank Limited (UBL)</span>
                                     </div>
-                                    
-                                    <div class="col-12">
-                                        <div class="mb-3">
-                                            <label for="cardName" class="form-label">Cardholder Name</label>
-                                            <input type="text" class="form-control" id="cardName" placeholder="John Doe">
-                                        </div>
+                                    <div class="bank-details-row">
+                                        <span class="bank-details-label">Account Holder:</span>
+                                        <span class="bank-details-value">Ali Ahmad</span>
                                     </div>
-                                    
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="cardExpiry" class="form-label">Expiry Date</label>
-                                            <input type="text" class="form-control" id="cardExpiry" placeholder="MM/YY" maxlength="5">
-                                        </div>
+                                    <div class="bank-details-row">
+                                        <span class="bank-details-label">Account Number:</span>
+                                        <span class="bank-details-value" id="accountNumber">0321320277986</span>
                                     </div>
-                                    
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="cardCVV" class="form-label">CVV</label>
-                                            <input type="text" class="form-control" id="cardCVV" placeholder="123" maxlength="4">
-                                        </div>
+                                    <div class="text-center mt-3">
+                                        <button type="button" class="btn btn-copy" id="copyAccountBtn">
+                                            <i class="bi bi-clipboard me-1"></i> Copy Account Number
+                                        </button>
                                     </div>
+                                </div>
+                                
+                                <!-- Payment Proof Upload -->
+                                <h5 class="text-uppercase mb-3" style="font-size: 0.875rem; letter-spacing: 0.1em; color: var(--gray-700);">Upload Payment Proof</h5>
+                                
+                                <div class="file-upload-container" id="fileUploadContainer">
+                                    <input type="file" id="paymentProofFile" name="paymentProof" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" style="display: none;">
+                                    <div class="file-upload-icon">
+                                        <i class="bi bi-cloud-arrow-up"></i>
+                                    </div>
+                                    <p class="file-upload-text"><strong>Click to upload</strong> or drag and drop</p>
+                                    <p class="file-upload-hint">JPG, PNG or WebP • Max 5MB</p>
+                                </div>
+                                
+                                <div id="filePreviewContainer" style="margin-top: var(--spacing-xl); display: none;">
+                                    <!-- File preview will be displayed here -->
                                 </div>
                             </div>
                             
-                            <div class="d-flex justify-content-between mt-4">
+                            <!-- COD Message -->
+                            <div id="codMessage" class="payment-status-message" style="display: none;">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Your order is awaiting confirmation by our team.
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4 gap-2">
                                 <button type="button" class="btn btn-back" id="backToReview">
                                     <i class="bi bi-arrow-left me-2"></i> Back
                                 </button>
-                                <button type="button" class="btn btn-place-order" id="placeOrderBtn">
+                                <button type="button" class="btn btn-place-order" id="placeOrderBtn" disabled>
                                     Place Order <i class="bi bi-lock ms-2"></i>
                                 </button>
                             </div>
@@ -626,6 +743,8 @@
     <script src="assets/js/main.js"></script>
     <script src="assets/js/services/productService.js"></script>
     <script src="assets/js/services/storeSettings.js"></script>
+    <script src="assets/js/validation.js"></script>
+    <script src="assets/js/components/fileUpload.js"></script>
     <script src="assets/js/checkout.js"></script>
     
     <!-- WhatsApp Widget -->

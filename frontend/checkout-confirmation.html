@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Order Confirmation - Takanj">
+    <title>Order Confirmation - Takanj</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@300;400;500;600;700&family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/animations.css">
+    <link rel="stylesheet" href="assets/css/responsive.css">
+    
+    <style>
+        .confirmation-section {
+            padding: var(--spacing-5xl) 0;
+            background: var(--off-white);
+            min-height: 100vh;
+        }
+
+        .success-message {
+            text-align: center;
+            margin-bottom: var(--spacing-4xl);
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success-icon {
+            font-size: 5rem;
+            color: var(--success);
+            margin-bottom: var(--spacing-md);
+            animation: scaleIn 0.6s ease-out 0.2s both;
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .success-message h1 {
+            font-family: var(--font-secondary);
+            font-size: var(--font-size-5xl);
+            font-weight: var(--font-weight-light);
+            color: var(--primary-color);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .success-message p {
+            font-size: var(--font-size-lg);
+            color: var(--gray-600);
+            margin-bottom: 0;
+        }
+
+        .order-id {
+            background: var(--primary-color);
+            color: var(--white);
+            padding: var(--spacing-lg) var(--spacing-2xl);
+            border-radius: 4px;
+            font-family: var(--font-accent);
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
+            letter-spacing: 0.1em;
+            text-align: center;
+            margin-bottom: var(--spacing-3xl);
+        }
+
+        .confirmation-card {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            padding: var(--spacing-2xl);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .confirmation-card h3 {
+            font-family: var(--font-primary);
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-semibold);
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wider);
+            margin-bottom: var(--spacing-md);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 2px solid var(--gray-200);
+        }
+
+        .confirmation-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-sm) 0;
+            border-bottom: 1px solid var(--gray-100);
+            font-size: var(--font-size-sm);
+        }
+
+        .confirmation-row:last-child {
+            border-bottom: none;
+        }
+
+        .confirmation-label {
+            color: var(--gray-600);
+            font-weight: var(--font-weight-semibold);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .confirmation-value {
+            color: #000;
+            font-weight: var(--font-weight-semibold);
+            text-align: right;
+        }
+
+        .payment-status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            font-size: var(--font-size-xs);
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wider);
+            font-weight: var(--font-weight-semibold);
+            border-radius: 4px;
+            background: #e7f3ff;
+            color: #0c3474;
+        }
+
+        .status-message {
+            background: #f0f8ff;
+            border-left: 4px solid var(--secondary-color);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            font-size: var(--font-size-sm);
+            color: var(--gray-700);
+        }
+
+        .status-message strong {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .address-block {
+            background: var(--cream);
+            padding: var(--spacing-lg);
+            border-radius: 4px;
+            line-height: 1.8;
+            font-size: var(--font-size-sm);
+            color: #000;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: center;
+            margin-top: var(--spacing-3xl);
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            padding: 1rem 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wider);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            transition: all var(--transition-base);
+            text-decoration: none;
+            display: inline-block;
+            border: 2px solid;
+            cursor: pointer;
+        }
+
+        .btn-primary-action {
+            background: var(--primary-color);
+            color: var(--white);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary-action:hover {
+            background: transparent;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .btn-secondary-action {
+            background: transparent;
+            color: var(--gray-700);
+            border-color: var(--gray-300);
+        }
+
+        .btn-secondary-action:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+        }
+
+        .loading-spinner .spinner-border {
+            color: var(--secondary-color);
+            width: 3rem;
+            height: 3rem;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: var(--spacing-lg);
+            border-radius: 4px;
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm" id="mainNavbar" style="padding: 1.5rem 0;">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <h3 class="mb-0 fw-bold" style="font-family: var(--font-accent); letter-spacing: 0.1em; font-size: 1.5rem;">
+                    Takanj<span style="color: var(--secondary-color);"></span>
+                </h3>
+            </a>
+        </div>
+    </nav>
+    
+    <!-- Confirmation Section -->
+    <section class="confirmation-section">
+        <div class="container">
+            <!-- Loading State -->
+            <div id="loadingState" class="loading-spinner">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+
+            <!-- Error State -->
+            <div id="errorState" style="display: none;">
+                <div class="error-message">
+                    <i class="bi bi-exclamation-circle me-2" style="font-size: 1.5rem;"></i>
+                    <strong>Unable to Load Order</strong>
+                    <p class="mb-0 mt-2">The order could not be found. Please check your email or contact support.</p>
+                </div>
+                <div class="text-center">
+                    <a href="orders.html" class="btn btn-primary-action">View My Orders</a>
+                </div>
+            </div>
+
+            <!-- Success State -->
+            <div id="successState" style="display: none;">
+                <!-- Success Message -->
+                <div class="success-message">
+                    <div class="success-icon">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <h1>Thank You!</h1>
+                    <p>Your Order Has Been Placed Successfully</p>
+                </div>
+
+                <!-- Order ID -->
+                <div id="orderIdContainer" class="order-id"></div>
+
+                <!-- Order Summary -->
+                <div class="row g-3">
+                    <div class="col-lg-8">
+                        <!-- Payment Status -->
+                        <div class="confirmation-card">
+                            <h3>Order Status</h3>
+                            
+                            <div class="confirmation-row">
+                                <span class="confirmation-label">Order Number</span>
+                                <span class="confirmation-value" id="orderNumber">-</span>
+                            </div>
+                            
+                            <div class="confirmation-row">
+                                <span class="confirmation-label">Order Date</span>
+                                <span class="confirmation-value" id="orderDate">-</span>
+                            </div>
+                            
+                            <div class="confirmation-row">
+                                <span class="confirmation-label">Payment Method</span>
+                                <span class="confirmation-value" id="paymentMethod">-</span>
+                            </div>
+                            
+                            <div class="confirmation-row">
+                                <span class="confirmation-label">Order Amount</span>
+                                <span class="confirmation-value" id="orderAmount">-</span>
+                            </div>
+                        </div>
+
+                        <!-- Payment Status Message -->
+                        <div id="paymentStatusMessage" class="status-message">
+                            <!-- Dynamic message based on payment method -->
+                        </div>
+
+                        <!-- Customer Details -->
+                        <div class="confirmation-card">
+                            <h3>Customer Information</h3>
+                            
+                            <div class="confirmation-row">
+                                <span class="confirmation-label">Name</span>
+                                <span class="confirmation-value" id="customerName">-</span>
+                            </div>
+                            
+                            <div class="confirmation-row">
+                                <span class="confirmation-label">Email</span>
+                                <span class="confirmation-value" id="customerEmail">-</span>
+                            </div>
+                            
+                            <div class="confirmation-row">
+                                <span class="confirmation-label">WhatsApp</span>
+                                <span class="confirmation-value" id="customerPhone">-</span>
+                            </div>
+                        </div>
+
+                        <!-- Shipping Address -->
+                        <div class="confirmation-card">
+                            <h3>Shipping Address</h3>
+                            <div id="shippingAddress" class="address-block">
+                                <!-- Address content loaded here -->
+                            </div>
+                        </div>
+
+                        <!-- Order Items -->
+                        <div class="confirmation-card">
+                            <h3>Order Items</h3>
+                            <div id="orderItems">
+                                <!-- Items loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Summary Sidebar -->
+                    <div class="col-lg-4">
+                        <div class="confirmation-card" style="position: sticky; top: 100px;">
+                            <h3>Order Summary</h3>
+                            
+                            <div class="confirmation-row">
+                                <span class="confirmation-label">Subtotal</span>
+                                <span class="confirmation-value" id="summarySubtotal">-</span>
+                            </div>
+                            
+                            <div class="confirmation-row">
+                                <span class="confirmation-label">Shipping</span>
+                                <span class="confirmation-value" id="summaryShipping">-</span>
+                            </div>
+                            
+                            <div class="confirmation-row">
+                                <span class="confirmation-label">Tax</span>
+                                <span class="confirmation-value" id="summaryTax">-</span>
+                            </div>
+                            
+                            <div class="confirmation-row" style="border-top: 2px solid var(--gray-200); margin-top: var(--spacing-md); padding-top: var(--spacing-md); font-size: var(--font-size-lg); font-weight: var(--font-weight-bold);">
+                                <span class="confirmation-label">Total</span>
+                                <span class="confirmation-value" id="summaryTotal">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <a href="orders.html" class="btn btn-action btn-primary-action">
+                        <i class="bi bi-box-seam me-2"></i> View My Orders
+                    </a>
+                    <a href="shop.html" class="btn btn-action btn-secondary-action">
+                        <i class="bi bi-shop me-2"></i> Continue Shopping
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="footer bg-dark text-white pt-5 pb-3">
+        <div class="container">
+            <div class="border-top border-secondary pt-3 text-center">
+                <p class="text-white-50 mb-0">&copy; 2026 Takanj. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/services/storeSettings.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Initialize store settings
+            await storeSettings.initialize();
+            
+            // Get order ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('orderId');
+
+            if (!orderId) {
+                showError();
+                return;
+            }
+
+            // Fetch order details
+            await loadOrderDetails(orderId);
+        });
+
+        async function loadOrderDetails(orderId) {
+            try {
+                const response = await fetch(API_CONFIG.getEndpoint(`/v1/orders/${orderId}`), {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    showError();
+                    return;
+                }
+
+                const result = await response.json();
+                const order = result.data || result;
+
+                displayOrderConfirmation(order);
+            } catch (error) {
+                console.error('Error loading order:', error);
+                showError();
+            }
+        }
+
+        function displayOrderConfirmation(order) {
+            const loadingState = document.getElementById('loadingState');
+            const successState = document.getElementById('successState');
+
+            // Hide loading
+            loadingState.style.display = 'none';
+            successState.style.display = 'block';
+
+            // Order ID
+            document.getElementById('orderIdContainer').textContent = order.orderId || order.id;
+            document.getElementById('orderNumber').textContent = order.orderId || 'N/A';
+
+            // Order date
+            const orderDate = new Date(order.createdAt);
+            document.getElementById('orderDate').textContent = orderDate.toLocaleDateString('en-PK', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            // Payment method
+            document.getElementById('paymentMethod').textContent = formatPaymentMethod(order.paymentMethod);
+
+            // Order amount
+            document.getElementById('orderAmount').textContent = storeSettings.formatCurrency(order.total || 0);
+
+            // Payment status message
+            displayPaymentStatusMessage(order.paymentMethod);
+
+            // Customer info
+            const addr = order.shippingAddress || {};
+            const customerName = `${addr.firstName || ''} ${addr.lastName || ''}`.trim() || 'N/A';
+            document.getElementById('customerName').textContent = customerName;
+            document.getElementById('customerEmail').textContent = addr.email || 'N/A';
+            document.getElementById('customerPhone').textContent = addr.whatsappNumber || 'N/A';
+
+            // Shipping address
+            displayShippingAddress(addr);
+
+            // Order items
+            displayOrderItems(order.items || []);
+
+            // Order summary
+            document.getElementById('summarySubtotal').textContent = storeSettings.formatCurrency(order.subtotal || 0);
+            document.getElementById('summaryShipping').textContent = storeSettings.formatCurrency(order.shipping || 0);
+            document.getElementById('summaryTax').textContent = storeSettings.formatCurrency(order.tax || 0);
+            document.getElementById('summaryTotal').textContent = storeSettings.formatCurrency(order.total || 0);
+        }
+
+        function displayPaymentStatusMessage(paymentMethod) {
+            const messageDiv = document.getElementById('paymentStatusMessage');
+            
+            if (paymentMethod === 'Bank_Transfer') {
+                messageDiv.innerHTML = `
+                    <strong>Payment Verification Pending</strong>
+                    Your payment proof has been submitted. Our team will verify your payment shortly.
+                `;
+            } else if (paymentMethod === 'COD') {
+                messageDiv.innerHTML = `
+                    <strong>Awaiting Confirmation</strong>
+                    Your order is awaiting confirmation by our team. You will receive an update via email and WhatsApp.
+                `;
+            }
+        }
+
+        function displayShippingAddress(address) {
+            const addr = address || {};
+            const addressHtml = `
+                <p style="margin-bottom: 0.5rem;"><strong>${addr.firstName || ''} ${addr.lastName || ''}</strong></p>
+                <p style="margin-bottom: 0.5rem;">${addr.street || ''}</p>
+                <p style="margin-bottom: 0.5rem;">${addr.city || ''}, ${addr.state || ''} ${addr.postalCode || ''}</p>
+            `;
+            document.getElementById('shippingAddress').innerHTML = addressHtml;
+        }
+
+        function displayOrderItems(items) {
+            const container = document.getElementById('orderItems');
+            let itemsHtml = '';
+
+            items.forEach(item => {
+                itemsHtml += `
+                    <div class="d-flex gap-3 mb-3 pb-3 border-bottom">
+                        <img src="${item.image || '/assets/images/placeholder.jpg'}" alt="${item.name}" style="width: 80px; height: 100px; object-fit: cover; border: 1px solid var(--gray-300);">
+                        <div class="flex-grow-1" style="font-size: 0.875rem;">
+                            <p class="mb-1" style="font-weight: 600; color: #000;">${item.name || 'Product'}</p>
+                            <p class="mb-1 text-muted">Size: ${item.size || 'N/A'} | Qty: ${item.quantity}</p>
+                            <p class="mb-0" style="font-weight: 600; color: #000;">${storeSettings.formatCurrency(item.lineTotal || item.price * item.quantity)}</p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = itemsHtml || '<p class="text-muted">No items</p>';
+        }
+
+        function formatPaymentMethod(method) {
+            if (method === 'Bank_Transfer') return 'Bank Transfer';
+            if (method === 'COD') return 'Cash on Delivery';
+            return method;
+        }
+
+        function showError() {
+            const loadingState = document.getElementById('loadingState');
+            const errorState = document.getElementById('errorState');
+
+            loadingState.style.display = 'none';
+            errorState.style.display = 'block';
+        }
+    </script>
+
+    <!-- WhatsApp Widget -->
+    <script src="assets/js/whatsapp-widget.js"></script>
+
+    <!-- Email Contact Widget -->
+    <script src="assets/js/email-contact.js"></script>
+
+</body>
+</html>

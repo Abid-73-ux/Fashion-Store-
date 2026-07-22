@@ -61,6 +61,11 @@
                     <i class="bi bi-ticket-perforated"></i>
                     <span>Coupons</span>
                 </a>
+                <a href="payment-verification.html" class="menu-item">
+                    <i class="bi bi-check-circle"></i>
+                    <span>Payment Verification</span>
+                    <span class="notification-badge" id="paymentVerificationBadge" style="display: none; background-color: #ffc107; color: #000;">0</span>
+                </a>
                 <a href="analytics.html" class="menu-item">
                     <i class="bi bi-bar-chart"></i>
                     <span>Analytics</span>
@@ -202,12 +207,12 @@
                     </div>
                     <div class="col-lg-3 col-md-6">
                         <div class="stat-card">
-                            <div class="stat-icon" style="background: rgba(52, 152, 219, 0.1); color: #3498db; width: 50px; height: 50px;">
-                                <i class="bi bi-star-fill"></i>
+                            <div class="stat-icon" style="background: rgba(241, 196, 15, 0.1); color: #f1c40f; width: 50px; height: 50px;">
+                                <i class="bi bi-check-circle"></i>
                             </div>
                             <div class="stat-content">
-                                <div class="stat-label">Avg Rating</div>
-                                <div class="stat-value">0</div>
+                                <div class="stat-label">Pending Payments</div>
+                                <div class="stat-value" id="pendingPaymentsCount">0</div>
                             </div>
                         </div>
                     </div>
@@ -249,8 +254,9 @@
                                 <div class="d-grid gap-2">
                                     <a href="products.html" class="btn btn-outline-primary"><i class="bi bi-plus-circle me-2"></i>Add Product</a>
                                     <a href="orders.html" class="btn btn-outline-success"><i class="bi bi-cart-plus me-2"></i>View Orders</a>
+                                    <a href="payment-verification.html" class="btn btn-outline-warning position-relative"><i class="bi bi-check-circle me-2"></i>Payment Verification <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="paymentBadge" style="display:none;">0</span></a>
                                     <a href="customers.html" class="btn btn-outline-info"><i class="bi bi-person-plus me-2"></i>Customers</a>
-                                    <a href="coupons.html" class="btn btn-outline-warning"><i class="bi bi-ticket-perforated me-2"></i>Coupons</a>
+                                    <a href="coupons.html" class="btn btn-outline-secondary"><i class="bi bi-ticket-perforated me-2"></i>Coupons</a>
                                     <a href="analytics.html" class="btn btn-outline-secondary"><i class="bi bi-file-text me-2"></i>Analytics</a>
                                 </div>
                             </div>
@@ -354,15 +360,14 @@
     <script src="../assets/js/modal.js"></script>
     <script src="../assets/js/auth.js"></script>
     <script src="../assets/js/admin-storage.js"></script>
+    <script src="../assets/js/config.js"></script>
+    <script src="../assets/js/admin-common.js"></script>
     <script src="../assets/js/admin-dashboard.js"></script>
     <script>
         // Check admin access
         console.log('Dashboard loaded');
         console.log('Current user:', Auth.getCurrentUser());
         console.log('Is admin?', Auth.isAdmin());
-        
-        // For testing: Allow access if not admin (since localStorage may not work with file:// protocol)
-        // In production, this check will work properly
         
         // Initialize dashboard module
         document.addEventListener('DOMContentLoaded', () => {
@@ -372,6 +377,9 @@
             } else {
                 console.error('AdminDashboard module not loaded');
             }
+
+            // AdminCommon will handle polling automatically
+            // The payment verification badge will be updated every 30 seconds
         });
         
         // Logout handlers

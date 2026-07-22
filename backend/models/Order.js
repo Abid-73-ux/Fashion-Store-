@@ -45,12 +45,20 @@ const Order = sequelize.define('Order', {
     type: DataTypes.ENUM('pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'),
     defaultValue: 'pending'
   },
+  orderStatus: {
+    type: DataTypes.ENUM('pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'),
+    defaultValue: 'pending'
+  },
   paymentStatus: {
-    type: DataTypes.ENUM('pending', 'paid', 'failed'),
+    type: DataTypes.ENUM('pending', 'verified', 'failed'),
     defaultValue: 'pending'
   },
   paymentMethod: {
-    type: DataTypes.STRING(50),
+    type: DataTypes.ENUM('COD', 'Bank_Transfer'),
+    defaultValue: 'COD'
+  },
+  verifiedAt: {
+    type: DataTypes.DATE,
     allowNull: true
   },
   shippingAddress: {
@@ -80,5 +88,17 @@ const Order = sequelize.define('Order', {
 
 // Association with User
 Order.belongsTo(User, { foreignKey: 'userId', allowNull: false });
+
+// Associations for payment verification (loaded after model definition to avoid circular dependencies)
+Order.associate = function(models) {
+  Order.hasOne(models.PaymentProof, { 
+    foreignKey: 'orderId',
+    onDelete: 'CASCADE'
+  });
+  Order.hasMany(models.OrderStatusChange, { 
+    foreignKey: 'orderId',
+    onDelete: 'CASCADE'
+  });
+};
 
 module.exports = Order;
