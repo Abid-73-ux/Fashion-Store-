@@ -81,33 +81,57 @@ async function setupMigrations() {
 
     // Add paymentMethod column if it doesn't exist
     if (!columnNames.includes('paymentMethod')) {
-      await sequelize.query(`
-        ALTER TABLE orders 
-        ADD COLUMN paymentMethod VARCHAR(50) DEFAULT 'COD'
-      `);
-      console.log('✅ Added paymentMethod column');
+      try {
+        await sequelize.query(`
+          ALTER TABLE orders 
+          ADD COLUMN paymentMethod VARCHAR(50) DEFAULT 'COD'
+        `);
+        console.log('✅ Added paymentMethod column');
+      } catch (err) {
+        if (err.message.includes('already exists')) {
+          console.log('✅ paymentMethod column already exists');
+        } else {
+          throw err;
+        }
+      }
     } else {
       console.log('✅ paymentMethod column already exists');
     }
 
     // Add orderStatus column if it doesn't exist
     if (!columnNames.includes('orderStatus')) {
-      await sequelize.query(`
-        ALTER TABLE orders 
-        ADD COLUMN orderStatus VARCHAR(50) DEFAULT 'pending'
-      `);
-      console.log('✅ Added orderStatus column');
+      try {
+        await sequelize.query(`
+          ALTER TABLE orders 
+          ADD COLUMN orderStatus VARCHAR(50) DEFAULT 'pending'
+        `);
+        console.log('✅ Added orderStatus column');
+      } catch (err) {
+        if (err.message.includes('already exists')) {
+          console.log('✅ orderStatus column already exists');
+        } else {
+          throw err;
+        }
+      }
     } else {
       console.log('✅ orderStatus column already exists');
     }
 
     // Update paymentStatus ENUM if needed (Sequelize may have created it with different values)
     if (!columnNames.includes('verifiedAt')) {
-      await sequelize.query(`
-        ALTER TABLE orders 
-        ADD COLUMN verifiedAt TIMESTAMP NULL
-      `);
-      console.log('✅ Added verifiedAt column');
+      try {
+        await sequelize.query(`
+          ALTER TABLE orders 
+          ADD COLUMN verifiedAt TIMESTAMP NULL
+        `);
+        console.log('✅ Added verifiedAt column');
+      } catch (err) {
+        if (err.message.includes('already exists')) {
+          console.log('✅ verifiedAt column already exists');
+        } else {
+          throw err;
+        }
+      }
     } else {
       console.log('✅ verifiedAt column already exists');
     }
