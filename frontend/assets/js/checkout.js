@@ -581,14 +581,14 @@ function setStep(step) {
  * Checkout Data Loading
  */
 
-function loadCheckoutData() {
+async function loadCheckoutData() {
   console.log('📝 Loading checkout data...');
   loadStep1Data();
-  loadOrderSummary();
+  await loadOrderSummary();
   console.log('✅ Checkout data loaded');
 }
 
-function loadOrderSummary() {
+async function loadOrderSummary() {
   try {
     console.log('📋 loadOrderSummary: Getting cart from localStorage');
     const cartJson = localStorage.getItem('cart');
@@ -623,8 +623,8 @@ function loadOrderSummary() {
     }
 
     console.log('📋 loadOrderSummary: Processing cart items');
-    // Fetch product details for accurate prices
-    fetchCheckoutProductDetails(cart, orderItemsContainer);
+    // Fetch product details for accurate prices and WAIT for it to complete
+    await fetchCheckoutProductDetails(cart, orderItemsContainer);
 
   } catch (error) {
     console.error('❌ Error loading order summary:', error);

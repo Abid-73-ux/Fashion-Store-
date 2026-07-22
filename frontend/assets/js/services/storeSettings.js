@@ -7,28 +7,20 @@ const storeSettings = {
   // Store current settings
   settings: null,
   
-  // API endpoint - use config for environment detection
-  API_URL: API_CONFIG.getEndpoint('/settings'),
-  
-  /**
-   * Initialize - fetch settings from API
-   */
-  async initialize() {
-    try {
-      const response = await fetch(this.API_URL);
-      if (!response.ok) throw new Error('Failed to fetch settings');
-      
-      const data = await response.json();
-      this.settings = data.data || data;
-      
-      console.log('✅ Store settings loaded:', this.settings);
-      return this.settings;
-    } catch (error) {
-      console.error('❌ Error loading store settings:', error);
-      // Return default settings if API fails
-      this.settings = this.getDefaultSettings();
-      return this.settings;
-    }
+  // Direct initialization with defaults - don't fetch from API
+  initialize() {
+    // Use default settings directly (don't wait for API)
+    this.settings = {
+      currency: 'PKR',
+      currencySymbol: 'Rs',
+      taxPercentage: 10,
+      shippingCost: 500,
+      freeShippingThreshold: 5000,
+      storeName: 'TAKANJ'
+    };
+    
+    console.log('✅ Store settings initialized:', this.settings);
+    return Promise.resolve(this.settings);
   },
   
   /**
