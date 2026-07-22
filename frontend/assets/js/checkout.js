@@ -575,8 +575,10 @@ function setStep(step) {
  */
 
 function loadCheckoutData() {
+  console.log('📝 Loading checkout data...');
   loadStep1Data();
   loadOrderSummary();
+  console.log('✅ Checkout data loaded');
 }
 
 function loadOrderSummary() {
