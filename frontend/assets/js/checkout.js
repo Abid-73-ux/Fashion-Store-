@@ -34,19 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const cart = JSON.parse(localStorage.getItem('cart')) || [];
   console.log('🛒 Cart loaded:', cart);
   
-  // Check user is logged in FIRST
-  const token = localStorage.getItem('token');
-  const user = localStorage.getItem('user');
-  console.log('🔐 Auth check - token:', !!token, 'user:', !!user);
-  
-  if (!token || !user) {
-    console.log('❌ User not logged in, redirecting to login');
-    window.location.href = 'login.html?redirect=checkout.html';
-    return;
-  }
-  
-  console.log('✅ User authenticated, proceeding with checkout');
-  
   // Setup form and payment handlers
   setupEventListeners();
   setupFieldValidation();
