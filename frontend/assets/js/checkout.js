@@ -1,7 +1,5 @@
 /**
- * Checkout Page JavaScript - Phase 3 Implementation
- * Handles 3-step checkout: Shipping Info, Order Review, Payment Method
- * Features: Form validation, API integration, localStorage persistence, payment proof upload
+ * Checkout Page JavaScript - Simplified & Fixed
  */
 
 let currentStep = 1;
@@ -13,7 +11,6 @@ let checkoutData = {
 };
 let paymentProofFile = null;
 
-// Toast utility (fallback if main.js not loaded)
 const Toast = window.Toast || {
   success: (msg) => alert(msg),
   error: (msg) => alert('Error: ' + msg),
@@ -22,33 +19,122 @@ const Toast = window.Toast || {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
-  console.log('🔄 Checkout: DOMContentLoaded started');
+  console.log('🔄 Checkout: Starting initialization');
   
-  // Initialize store settings FIRST
-  console.log('📊 Checkout: Initializing store settings...');
-  await storeSettings.initialize();
-  console.log('✅ Checkout: Store settings initialized:', storeSettings.settings);
+  // Step 1: Load cart from localStorage
+  console.log('📦 Checkout: Loading cart');
+  const cart = JSON.parse(localStorage.getItem('cart')) || [];
+  console.log('📦 Checkout: Cart items:', cart);
   
-  // Check if user is logged in
+  // Step 2: Ensure store settings are ready (uses defaults immediately)
+  storeSettings.initialize();
+  console.log('✅ Store settings ready:', storeSettings.settings);
+  
+  // Step 3: Display order summary using cart data
+  console.log('📋 Checkout: Displaying order summary');
+  displayOrderSummary(cart);
+  
+  // Step 4: Setup form handlers
+  setupEventListeners();
+  setupFieldValidation();
+  
+  // Step 5: Check user is logged in
   if (!isUserLoggedIn()) {
     window.location.href = 'login.html?redirect=checkout.html';
     return;
   }
   
-  // Load cart and initialize checkout AFTER settings are ready
-  console.log('📦 Checkout: Loading checkout data...');
-  loadCheckoutData();
-  setupEventListeners();
-  setupFieldValidation();
+  // Load saved form data if exists
+  loadStep1Data();
+  
   console.log('✅ Checkout: Initialization complete');
 });
+
+/**
+ * Display order summary - USES SAME LOGIC AS CART PAGE
+ */
+function displayOrderSummary(cart) {
+  try {
+    const orderItemsContainer = document.getElementById('orderItems');
+    
+    if (!cart || cart.length === 0) {
+      console.log('⚠️ Cart is empty');
+      orderItemsContainer.innerHTML = '<p class="text-muted">No items in cart</p>';
+      updateOrderSummaryDisplay(0);
+      return;
+    }
+    
+    // Calculate subtotal from cart (same as cart.js does)
+    let subtotal = 0;
+    let orderHTML = '';
+    
+    cart.forEach((item, index) => {
+      const itemPrice = parseFloat(item.price) || 99.99;
+      const quantity = parseInt(item.quantity) || 1;
+      const lineTotal = itemPrice * quantity;
+      subtotal += lineTotal;
+      
+      console.log(`📦 Item ${index}: ${itemPrice} × ${quantity} = ${lineTotal}`);
+      
+      orderHTML += `
+        <div class="order-item">
+          <img src="${item.image || '/assets/images/placeholder.jpg'}" alt="${item.name}" class="order-item-image" style="max-width: 80px; height: auto;">
+          <div class="order-item-details flex-grow-1">
+            <h5>${item.name || 'Product'}</h5>
+            <p>Size: ${item.size || 'N/A'}</p>
+            <p>Qty: ${quantity}</p>
+          </div>
+          <div class="text-end">
+            <p class="fw-bold">${storeSettings.formatCurrency(lineTotal)}</p>
+          </div>
+        </div>
+      `;
+    });
+    
+    console.log('💰 Total subtotal:', subtotal);
+    orderItemsContainer.innerHTML = orderHTML;
+    updateOrderSummaryDisplay(subtotal);
+    
+  } catch (error) {
+    console.error('❌ Error displaying order summary:', error);
+  }
+}
+
+/**
+ * Update order summary display - SAME LOGIC AS CART PAGE
+ */
+function updateOrderSummaryDisplay(subtotal) {
+  try {
+    // Calculate using same formulas as cart page
+    const shipping = storeSettings.calculateShipping(subtotal);
+    const tax = storeSettings.calculateTax(subtotal);
+    const discount = 0;
+    const total = storeSettings.calculateGrandTotal(subtotal, shipping, discount);
+    
+    console.log('💰 Calculations:', { subtotal, shipping, tax, total });
+    
+    // Update display
+    const subtotalEl = document.getElementById('subtotal');
+    const shippingEl = document.getElementById('shipping');
+    const taxEl = document.getElementById('tax');
+    const totalEl = document.getElementById('total');
+    
+    if (subtotalEl) subtotalEl.textContent = storeSettings.formatCurrency(subtotal);
+    if (shippingEl) shippingEl.textContent = shipping === 0 ? 'Free' : storeSettings.formatCurrency(shipping);
+    if (taxEl) taxEl.textContent = storeSettings.formatCurrency(tax);
+    if (totalEl) totalEl.textContent = storeSettings.formatCurrency(total);
+    
+    console.log('✅ Order summary updated');
+  } catch (error) {
+    console.error('❌ Error updating order summary:', error);
+  }
+}
 
 /**
  * TASK 3.1: Step 1 - Customer Information Form
  */
 
 function setupFieldValidation() {
-  // Setup real-time validation for Step 1 fields
   const fieldMappings = {
     'firstName': 'firstName',
     'lastName': 'lastName',
@@ -61,27 +147,23 @@ function setupFieldValidation() {
 
   Object.entries(fieldMappings).forEach(([elementId, fieldName]) => {
     const element = document.getElementById(elementId);
-    if (element) {
-      Validation.setupFieldValidation(element, fieldName, true, (isValid, message) => {
-        updateFormButtonState();
-      }, 300);
+    if (element && typeof Validation !== 'undefined') {
+      Validation.setupFieldValidation(element, fieldName, true, () => updateFormButtonState(), 300);
     }
   });
 }
 
 function updateFormButtonState() {
-  const form = document.getElementById('shippingForm');
   const toReviewBtn = document.getElementById('toReview');
+  if (!toReviewBtn) return;
   
-  // Validate all required fields
   const requiredFields = ['firstName', 'lastName', 'email', 'whatsappNumber', 'street', 'city', 'state', 'postalCode'];
   let allValid = true;
 
   requiredFields.forEach(fieldId => {
     const field = document.getElementById(fieldId);
-    if (field) {
-      const fieldName = field.name || fieldId;
-      const result = Validation.validateField(fieldName, field.value, true);
+    if (field && typeof Validation !== 'undefined') {
+      const result = Validation.validateField(field.name || fieldId, field.value, true);
       if (!result.isValid) {
         allValid = false;
       }
@@ -92,33 +174,29 @@ function updateFormButtonState() {
 }
 
 function saveStep1Data() {
-  // Get form data
   checkoutData.customerInfo = {
-    firstName: document.getElementById('firstName').value,
-    lastName: document.getElementById('lastName').value,
-    email: document.getElementById('email').value,
-    whatsappNumber: document.getElementById('whatsappNumber').value,
+    firstName: document.getElementById('firstName')?.value || '',
+    lastName: document.getElementById('lastName')?.value || '',
+    email: document.getElementById('email')?.value || '',
+    whatsappNumber: document.getElementById('whatsappNumber')?.value || '',
     shippingAddress: {
-      street: document.getElementById('street').value,
-      city: document.getElementById('city').value,
-      state: document.getElementById('state').value,
-      postalCode: document.getElementById('postalCode').value
+      street: document.getElementById('street')?.value || '',
+      city: document.getElementById('city')?.value || '',
+      state: document.getElementById('state')?.value || '',
+      postalCode: document.getElementById('postalCode')?.value || ''
     },
-    notes: document.getElementById('notes').value || ''
+    notes: document.getElementById('notes')?.value || ''
   };
 
-  // Save to localStorage
   localStorage.setItem('checkout_step1_data', JSON.stringify(checkoutData.customerInfo));
 }
 
 function loadStep1Data() {
-  // Try to load from localStorage
   const saved = localStorage.getItem('checkout_step1_data');
   if (saved) {
     try {
       checkoutData.customerInfo = JSON.parse(saved);
       
-      // Populate form fields
       document.getElementById('firstName').value = checkoutData.customerInfo.firstName || '';
       document.getElementById('lastName').value = checkoutData.customerInfo.lastName || '';
       document.getElementById('email').value = checkoutData.customerInfo.email || '';
@@ -129,7 +207,7 @@ function loadStep1Data() {
       document.getElementById('postalCode').value = checkoutData.customerInfo.shippingAddress?.postalCode || '';
       document.getElementById('notes').value = checkoutData.customerInfo.notes || '';
     } catch (e) {
-      console.warn('Could not load saved Step 1 data', e);
+      console.warn('Could not load saved form data', e);
     }
   }
 }
