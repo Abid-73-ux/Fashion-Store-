@@ -11,11 +11,12 @@ let checkoutData = {
 };
 let paymentProofFile = null;
 
+// Use global Toast if available, otherwise create fallback
 const Toast = window.Toast || {
-  success: (msg) => alert(msg),
-  error: (msg) => alert('Error: ' + msg),
-  warning: (msg) => alert('Warning: ' + msg),
-  info: (msg) => alert(msg)
+  success: (msg) => console.log('✅', msg),
+  error: (msg) => console.error('❌', msg),
+  warning: (msg) => console.warn('⚠️', msg),
+  info: (msg) => console.info('ℹ️', msg)
 };
 
 /**
