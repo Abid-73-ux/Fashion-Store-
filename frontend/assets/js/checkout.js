@@ -46,6 +46,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load any previously saved form data
   loadStep1Data();
   
+  // Enable button initially
+  const toReviewBtn = document.getElementById('toReview');
+  if (toReviewBtn) {
+    toReviewBtn.disabled = false;
+  }
+  
   console.log('✅ Checkout initialized');
 });
 
@@ -225,13 +231,19 @@ function setupFieldValidation() {
     'whatsappNumber': 'whatsappNumber',
     'street': 'street',
     'city': 'city',
-    'postalCode': 'postalCode'
+    'postalCode': 'postalCode',
+    'state': 'state'
   };
 
   Object.entries(fieldMappings).forEach(([elementId, fieldName]) => {
     const element = document.getElementById(elementId);
     if (element && typeof Validation !== 'undefined') {
-      Validation.setupFieldValidation(element, fieldName, true, () => updateFormButtonState(), 300);
+      if (fieldName === 'state') {
+        // For state/select field, just watch for changes
+        element.addEventListener('change', updateFormButtonState);
+      } else {
+        Validation.setupFieldValidation(element, fieldName, true, () => updateFormButtonState(), 300);
+      }
     }
   });
 }
@@ -245,8 +257,19 @@ function updateFormButtonState() {
 
   requiredFields.forEach(fieldId => {
     const field = document.getElementById(fieldId);
-    if (field && typeof Validation !== 'undefined') {
-      const result = Validation.validateField(field.name || fieldId, field.value, true);
+    if (!field) return;
+    
+    const value = field.value;
+    
+    // Check if field is empty
+    if (!value || value.trim() === '') {
+      allValid = false;
+      return;
+    }
+    
+    // For text fields, validate with pattern
+    if (fieldId !== 'state' && typeof Validation !== 'undefined') {
+      const result = Validation.validateField(fieldId, value, true);
       if (!result.isValid) {
         allValid = false;
       }
@@ -683,26 +706,40 @@ function setupEventListeners() {
 }
 
 function validateAndGoToStep2() {
-  const form = document.getElementById('shippingForm');
-  if (!form || !Validation) return;
-  
-  const result = Validation.validateForm(form, {
-    'firstName': { isRequired: true },
-    'lastName': { isRequired: true },
-    'email': { isRequired: true },
-    'whatsappNumber': { isRequired: true },
-    'street': { isRequired: true },
-    'city': { isRequired: true },
-    'state': { isRequired: true },
-    'postalCode': { isRequired: true }
+  const requiredFields = ['firstName', 'lastName', 'email', 'whatsappNumber', 'street', 'city', 'state', 'postalCode'];
+  let allValid = true;
+  const errors = {};
+
+  requiredFields.forEach(fieldId => {
+    const field = document.getElementById(fieldId);
+    if (!field) return;
+    
+    const value = field.value;
+    
+    if (!value || value.trim() === '') {
+      allValid = false;
+      errors[fieldId] = 'This field is required';
+      return;
+    }
+    
+    // Validate using Validation service
+    if (fieldId !== 'state' && typeof Validation !== 'undefined') {
+      const result = Validation.validateField(fieldId, value, true);
+      if (!result.isValid) {
+        allValid = false;
+        errors[fieldId] = result.message;
+      }
+    }
   });
 
-  if (result.isValid) {
-    displayOrderReview();
-    setStep(2);
-  } else {
-    Toast.warning('Please fix errors in the form');
+  if (!allValid) {
+    Toast.warning('Please fix all errors in the form');
+    console.log('Form errors:', errors);
+    return;
   }
+
+  displayOrderReview();
+  setStep(2);
 }
 
 function validateAndGoToStep3() {
