@@ -30,10 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Get cart from localStorage
   const cart = JSON.parse(localStorage.getItem('cart')) || [];
-  console.log('� Cart loaded:', cart);
-  
-  // Display order summary
-  displayOrderSummary(cart);
+  console.log('🛒 Cart loaded:', cart);
   
   // Setup form and payment handlers
   setupEventListeners();
@@ -53,7 +50,76 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * Display order summary - FETCH PRICES FROM API EXACTLY LIKE CART.JS
+ * Display review items - replica of cart items with prices
+ */
+async function displayReviewItems() {
+  try {
+    const reviewItems = document.getElementById('reviewItems');
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    
+    if (!cart || cart.length === 0) {
+      reviewItems.innerHTML = '<p class="text-muted">No items in cart.</p>';
+      return;
+    }
+    
+    let subtotal = 0;
+    reviewItems.innerHTML = '';
+    
+    // Fetch current prices from API and display items
+    for (const item of cart) {
+      let itemPrice = 1299;
+      let productName = item.name || 'Product';
+      let productImage = item.image || 'assets/images/placeholder.jpg';
+      
+      if (item.productId) {
+        try {
+          const response = await fetch(`${API_CONFIG.getEndpoint('/products')}/${item.productId}`);
+          if (response.ok) {
+            const data = await response.json();
+            const product = data.data || data;
+            
+            itemPrice = product.salePrice || product.price || 1299;
+            productName = product.name || item.name || 'Product';
+            productImage = product.imageUrl || product.image || item.image || 'assets/images/placeholder.jpg';
+          }
+        } catch (err) {
+          console.warn(`Could not fetch product ${item.productId}`, err);
+        }
+      }
+      
+      const quantity = parseInt(item.quantity) || 1;
+      const lineTotal = itemPrice * quantity;
+      subtotal += lineTotal;
+      
+      const itemHTML = `
+        <div class="order-item">
+          <img src="${productImage}" alt="${productName}" class="order-item-image">
+          <div class="order-item-details flex-grow-1">
+            <h5>${productName}</h5>
+            <p>Size: ${item.size || 'N/A'}</p>
+            <p>Qty: ${quantity}</p>
+          </div>
+          <div class="text-end">
+            <p class="fw-bold">${storeSettings.formatCurrency(lineTotal)}</p>
+            <small class="text-muted">${storeSettings.formatCurrency(itemPrice)} × ${quantity}</small>
+          </div>
+        </div>
+      `;
+      
+      reviewItems.innerHTML += itemHTML;
+    }
+    
+    // Update summary with correct calculations
+    updateOrderSummaryDisplay(subtotal);
+    
+  } catch (error) {
+    console.error('Error displaying review items:', error);
+  }
+}
+
+/**
+ * Display order summary - REMOVED FROM BEING CALLED AT INIT
+ * Now only called from Step 2 review and Step 3 payment
  */
 async function displayOrderSummary(cart) {
   try {
@@ -66,16 +132,15 @@ async function displayOrderSummary(cart) {
       return;
     }
     
-    // Calculate subtotal by fetching CURRENT prices from API (same as cart.js)
+    // Calculate subtotal by fetching CURRENT prices from API
     let subtotal = 0;
     orderItemsContainer.innerHTML = '';
     
     for (const item of cart) {
-      let itemPrice = 1299; // Default fallback (same as cart.js)
+      let itemPrice = 1299;
       let productName = item.name || 'Product';
       let productImage = item.image || 'assets/images/placeholder.jpg';
       
-      // Fetch product from API to get CURRENT price (SAME AS CART.JS)
       if (item.productId) {
         try {
           const response = await fetch(`${API_CONFIG.getEndpoint('/products')}/${item.productId}`);
@@ -83,21 +148,18 @@ async function displayOrderSummary(cart) {
             const data = await response.json();
             const product = data.data || data;
             
-            // Use sale price if available, otherwise regular price (SAME AS CART.JS)
             itemPrice = product.salePrice || product.price || 1299;
             productName = product.name || item.name || 'Product';
             productImage = product.imageUrl || product.image || item.image || 'assets/images/placeholder.jpg';
           }
         } catch (err) {
-          console.warn(`Could not fetch product ${item.productId}, using fallback`, err);
+          console.warn(`Could not fetch product ${item.productId}`, err);
         }
       }
       
       const quantity = parseInt(item.quantity) || 1;
       const lineTotal = itemPrice * quantity;
       subtotal += lineTotal;
-      
-      console.log(`📦 Item: price=${itemPrice}, qty=${quantity}, total=${lineTotal}`);
       
       const orderHTML = `
         <div class="order-item">
@@ -116,7 +178,6 @@ async function displayOrderSummary(cart) {
       orderItemsContainer.innerHTML += orderHTML;
     }
     
-    console.log('💰 Subtotal:', subtotal);
     updateOrderSummaryDisplay(subtotal);
     
   } catch (error) {
@@ -237,7 +298,7 @@ function loadStep1Data() {
 /**
  * STEP 2: Order Review
  */
-function displayOrderReview() {
+async function displayOrderReview() {
   saveStep1Data();
 
   const reviewAddress = document.getElementById('reviewAddress');
@@ -250,6 +311,12 @@ function displayOrderReview() {
     <p>${addr.city}, ${addr.state} ${addr.postalCode}</p>
     <p>📧 ${info.email} | 📱 ${info.whatsappNumber}</p>
   `;
+
+  // Display order items in review section (like cart)
+  await displayReviewItems();
+  
+  // Show the summary sidebar on Step 2
+  document.getElementById('summaryCol').style.display = 'block';
 }
 
 /**
@@ -588,6 +655,16 @@ function setStep(step) {
       s.classList.add('active');
     }
   });
+
+  // Show/hide summary sidebar based on step
+  // Step 1: Hide summary
+  // Step 2 & 3: Show summary
+  const summaryCol = document.getElementById('summaryCol');
+  if (step === 1) {
+    summaryCol.style.display = 'none';
+  } else {
+    summaryCol.style.display = 'block';
+  }
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
