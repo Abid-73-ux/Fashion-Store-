@@ -9,6 +9,15 @@ async function setupMigrations() {
   try {
     console.log('🔧 Starting database migrations...');
 
+    // Step 0: Sync Sequelize models to create/update tables
+    console.log('📝 Syncing Sequelize models...');
+    try {
+      await sequelize.sync({ alter: true });
+      console.log('✅ Sequelize models synced successfully');
+    } catch (err) {
+      console.warn('⚠️ Sequelize sync warning:', err.message);
+    }
+
     // Step 1: Create ENUM types if they don't exist
     console.log('📝 Setting up ENUM types...');
 
