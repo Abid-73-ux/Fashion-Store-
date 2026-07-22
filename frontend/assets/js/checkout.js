@@ -1,11 +1,11 @@
 /**
- * Checkout Page JavaScript - Simplified & Fixed
+ * Checkout Page JavaScript - SIMPLIFIED & WORKING
+ * Handles 3-step checkout: Shipping Info, Order Review, Payment Method
  */
 
 let currentStep = 1;
 let checkoutData = {
   customerInfo: {},
-  orderItems: [],
   paymentMethod: null,
   paymentProof: null
 };
@@ -18,40 +18,42 @@ const Toast = window.Toast || {
   info: (msg) => alert(msg)
 };
 
-document.addEventListener('DOMContentLoaded', async () => {
+/**
+ * Main initialization - runs when page loads
+ */
+document.addEventListener('DOMContentLoaded', () => {
   console.log('🔄 Checkout: Starting initialization');
   
-  // Step 1: Load cart from localStorage
-  console.log('📦 Checkout: Loading cart');
-  const cart = JSON.parse(localStorage.getItem('cart')) || [];
-  console.log('📦 Checkout: Cart items:', cart);
-  
-  // Step 2: Ensure store settings are ready (uses defaults immediately)
+  // Initialize store settings (uses defaults immediately, no API call)
   storeSettings.initialize();
-  console.log('✅ Store settings ready:', storeSettings.settings);
+  console.log('✅ Store settings ready');
   
-  // Step 3: Display order summary using cart data
-  console.log('📋 Checkout: Displaying order summary');
+  // Get cart from localStorage
+  const cart = JSON.parse(localStorage.getItem('cart')) || [];
+  console.log('� Cart loaded:', cart);
+  
+  // Display order summary
   displayOrderSummary(cart);
   
-  // Step 4: Setup form handlers
+  // Setup form and payment handlers
   setupEventListeners();
   setupFieldValidation();
+  setupPaymentMethods();
   
-  // Step 5: Check user is logged in
+  // Check user is logged in
   if (!isUserLoggedIn()) {
     window.location.href = 'login.html?redirect=checkout.html';
     return;
   }
   
-  // Load saved form data if exists
+  // Load any previously saved form data
   loadStep1Data();
   
-  console.log('✅ Checkout: Initialization complete');
+  console.log('✅ Checkout initialized');
 });
 
 /**
- * Display order summary - USES SAME LOGIC AS CART PAGE
+ * Display order summary using EXACT same logic as cart page
  */
 function displayOrderSummary(cart) {
   try {
@@ -59,12 +61,12 @@ function displayOrderSummary(cart) {
     
     if (!cart || cart.length === 0) {
       console.log('⚠️ Cart is empty');
-      orderItemsContainer.innerHTML = '<p class="text-muted">No items in cart</p>';
+      orderItemsContainer.innerHTML = '<p class="text-muted">No items in cart. Add items to proceed.</p>';
       updateOrderSummaryDisplay(0);
       return;
     }
     
-    // Calculate subtotal from cart (same as cart.js does)
+    // Calculate subtotal from cart items
     let subtotal = 0;
     let orderHTML = '';
     
@@ -74,11 +76,11 @@ function displayOrderSummary(cart) {
       const lineTotal = itemPrice * quantity;
       subtotal += lineTotal;
       
-      console.log(`📦 Item ${index}: ${itemPrice} × ${quantity} = ${lineTotal}`);
+      console.log(`📦 Item ${index}: price=${itemPrice}, qty=${quantity}, total=${lineTotal}`);
       
       orderHTML += `
         <div class="order-item">
-          <img src="${item.image || '/assets/images/placeholder.jpg'}" alt="${item.name}" class="order-item-image" style="max-width: 80px; height: auto;">
+          <img src="${item.image || '/assets/images/placeholder.jpg'}" alt="${item.name}" class="order-item-image" style="max-width: 80px;">
           <div class="order-item-details flex-grow-1">
             <h5>${item.name || 'Product'}</h5>
             <p>Size: ${item.size || 'N/A'}</p>
@@ -91,29 +93,28 @@ function displayOrderSummary(cart) {
       `;
     });
     
-    console.log('💰 Total subtotal:', subtotal);
+    console.log('💰 Subtotal:', subtotal);
     orderItemsContainer.innerHTML = orderHTML;
     updateOrderSummaryDisplay(subtotal);
     
   } catch (error) {
-    console.error('❌ Error displaying order summary:', error);
+    console.error('❌ Error in displayOrderSummary:', error);
   }
 }
 
 /**
- * Update order summary display - SAME LOGIC AS CART PAGE
+ * Update order summary totals - SAME LOGIC AS CART PAGE
  */
 function updateOrderSummaryDisplay(subtotal) {
   try {
-    // Calculate using same formulas as cart page
+    // Calculate using same formulas as cart.js
     const shipping = storeSettings.calculateShipping(subtotal);
     const tax = storeSettings.calculateTax(subtotal);
-    const discount = 0;
-    const total = storeSettings.calculateGrandTotal(subtotal, shipping, discount);
+    const total = storeSettings.calculateGrandTotal(subtotal, shipping);
     
-    console.log('💰 Calculations:', { subtotal, shipping, tax, total });
+    console.log('💰 Calculations - Subtotal:', subtotal, 'Shipping:', shipping, 'Tax:', tax, 'Total:', total);
     
-    // Update display
+    // Update DOM elements
     const subtotalEl = document.getElementById('subtotal');
     const shippingEl = document.getElementById('shipping');
     const taxEl = document.getElementById('tax');
@@ -124,16 +125,15 @@ function updateOrderSummaryDisplay(subtotal) {
     if (taxEl) taxEl.textContent = storeSettings.formatCurrency(tax);
     if (totalEl) totalEl.textContent = storeSettings.formatCurrency(total);
     
-    console.log('✅ Order summary updated');
+    console.log('✅ Order summary updated successfully');
   } catch (error) {
-    console.error('❌ Error updating order summary:', error);
+    console.error('❌ Error updating summary:', error);
   }
 }
 
 /**
- * TASK 3.1: Step 1 - Customer Information Form
+ * STEP 1: Customer Information Form
  */
-
 function setupFieldValidation() {
   const fieldMappings = {
     'firstName': 'firstName',
@@ -213,31 +213,27 @@ function loadStep1Data() {
 }
 
 /**
- * TASK 3.2: Step 2 - Order Review
+ * STEP 2: Order Review
  */
-
 function displayOrderReview() {
   saveStep1Data();
 
-  // Display shipping address
   const reviewAddress = document.getElementById('reviewAddress');
   const info = checkoutData.customerInfo;
   const addr = info.shippingAddress;
 
   reviewAddress.innerHTML = `
-    <p style="margin-bottom: 0.5rem;"><strong>${info.firstName} ${info.lastName}</strong></p>
-    <p style="margin-bottom: 0.5rem;">${addr.street}</p>
-    <p style="margin-bottom: 0.5rem;">${addr.city}, ${addr.state} ${addr.postalCode}</p>
-    <p style="margin-bottom: 0;">📧 ${info.email} | 📱 ${info.whatsappNumber}</p>
+    <p><strong>${info.firstName} ${info.lastName}</strong></p>
+    <p>${addr.street}</p>
+    <p>${addr.city}, ${addr.state} ${addr.postalCode}</p>
+    <p>📧 ${info.email} | 📱 ${info.whatsappNumber}</p>
   `;
 }
 
 /**
- * TASK 3.3: Step 3 - Payment Method Selection
+ * STEP 3: Payment Method
  */
-
 function setupPaymentMethods() {
-  // Payment method click handlers
   document.querySelectorAll('.payment-method').forEach(method => {
     method.addEventListener('click', (e) => {
       if (!e.target.matches('input[type="radio"]')) {
@@ -247,51 +243,47 @@ function setupPaymentMethods() {
     });
   });
 
-  // Radio button change
   document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
     radio.addEventListener('change', (e) => {
       selectPaymentMethod(e.target.value);
     });
   });
 
-  // Copy account number
   const copyBtn = document.getElementById('copyAccountBtn');
   if (copyBtn) {
     copyBtn.addEventListener('click', () => {
-      const accountNumber = document.getElementById('accountNumber').textContent;
-      navigator.clipboard.writeText(accountNumber).then(() => {
-        Toast.success('Account number copied to clipboard!');
-      });
+      const accountNumber = document.getElementById('accountNumber')?.textContent;
+      if (accountNumber) {
+        navigator.clipboard.writeText(accountNumber).then(() => {
+          Toast.success('Account number copied!');
+        });
+      }
     });
   }
 
-  // Setup file upload
   setupFileUpload();
 }
 
 function selectPaymentMethod(method) {
   checkoutData.paymentMethod = method;
 
-  // Update UI
   document.querySelectorAll('.payment-method').forEach(m => {
     m.classList.remove('selected');
   });
-  document.querySelector(`[data-method="${method}"]`).classList.add('selected');
+  document.querySelector(`[data-method="${method}"]`)?.classList.add('selected');
 
-  // Show/hide bank transfer details
   const bankDetails = document.getElementById('bankTransferDetails');
   const codMessage = document.getElementById('codMessage');
   const placeOrderBtn = document.getElementById('placeOrderBtn');
 
   if (method === 'Bank_Transfer') {
-    bankDetails.style.display = 'block';
-    codMessage.style.display = 'none';
-    // Enable button only if file is uploaded
-    placeOrderBtn.disabled = !paymentProofFile;
+    if (bankDetails) bankDetails.style.display = 'block';
+    if (codMessage) codMessage.style.display = 'none';
+    if (placeOrderBtn) placeOrderBtn.disabled = !paymentProofFile;
   } else if (method === 'COD') {
-    bankDetails.style.display = 'none';
-    codMessage.style.display = 'block';
-    placeOrderBtn.disabled = false;
+    if (bankDetails) bankDetails.style.display = 'none';
+    if (codMessage) codMessage.style.display = 'block';
+    if (placeOrderBtn) placeOrderBtn.disabled = false;
   }
 }
 
@@ -303,12 +295,10 @@ function setupFileUpload() {
 
   if (!fileContainer || !fileInput) return;
 
-  // Click to upload
   fileContainer.addEventListener('click', () => {
     fileInput.click();
   });
 
-  // File selection
   fileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -316,7 +306,6 @@ function setupFileUpload() {
     }
   });
 
-  // Drag and drop
   ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
     fileContainer.addEventListener(eventName, (e) => {
       e.preventDefault();
@@ -346,7 +335,8 @@ function setupFileUpload() {
 }
 
 function handlePaymentProofUpload(file, previewContainer, placeOrderBtn) {
-  // Validate file
+  if (!Validation) return;
+  
   const validation = Validation.validateFile(file, {
     maxSize: 5 * 1024 * 1024,
     allowedMimes: ['image/jpeg', 'image/png', 'image/webp']
@@ -355,11 +345,10 @@ function handlePaymentProofUpload(file, previewContainer, placeOrderBtn) {
   if (!validation.isValid) {
     displayPaymentProofError(previewContainer, validation.message);
     paymentProofFile = null;
-    placeOrderBtn.disabled = true;
+    if (placeOrderBtn) placeOrderBtn.disabled = true;
     return;
   }
 
-  // Display preview
   const reader = new FileReader();
   reader.onload = (e) => {
     const fileSizeMb = (file.size / (1024 * 1024)).toFixed(2);
@@ -383,18 +372,17 @@ function handlePaymentProofUpload(file, previewContainer, placeOrderBtn) {
 
     previewContainer.style.display = 'block';
 
-    // Remove button
     document.getElementById('removeProofBtn').addEventListener('click', () => {
       previewContainer.innerHTML = '';
       previewContainer.style.display = 'none';
       paymentProofFile = null;
-      placeOrderBtn.disabled = true;
+      if (placeOrderBtn) placeOrderBtn.disabled = true;
     });
   };
 
   reader.readAsDataURL(file);
   paymentProofFile = file;
-  placeOrderBtn.disabled = false;
+  if (placeOrderBtn) placeOrderBtn.disabled = false;
 }
 
 function displayPaymentProofError(container, message) {
@@ -408,9 +396,8 @@ function displayPaymentProofError(container, message) {
 }
 
 /**
- * TASK 3.4: Order Creation and API Integration
+ * Place Order
  */
-
 async function placeOrder() {
   const placeOrderBtn = document.getElementById('placeOrderBtn');
   const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value;
@@ -421,16 +408,16 @@ async function placeOrder() {
   }
 
   if (paymentMethod === 'Bank_Transfer' && !paymentProofFile) {
-    Toast.error('Please upload payment proof for bank transfer');
+    Toast.error('Please upload payment proof');
     return;
   }
 
-  // Disable button and show loading
-  placeOrderBtn.disabled = true;
-  placeOrderBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Placing Order...';
+  if (placeOrderBtn) {
+    placeOrderBtn.disabled = true;
+    placeOrderBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Placing Order...';
+  }
 
   try {
-    // Get current user
     const user = getCurrentUser();
     if (!user) {
       Toast.error('User not logged in');
@@ -438,37 +425,18 @@ async function placeOrder() {
       return;
     }
 
-    // Get cart
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
     if (cart.length === 0) {
       Toast.error('Your cart is empty');
       return;
     }
 
-    // Calculate totals
     let subtotal = 0;
     const items = [];
 
     for (const cartItem of cart) {
       let itemPrice = cartItem.price || 99.99;
       let productName = cartItem.name || 'Product';
-      let productImage = cartItem.image || '/assets/images/placeholder.jpg';
-
-      // Try to get current price from API
-      if (cartItem.productId) {
-        try {
-          const response = await fetch(`${API_CONFIG.getEndpoint('/v1/products')}/${cartItem.productId}`);
-          if (response.ok) {
-            const data = await response.json();
-            const product = data.data || data;
-            itemPrice = product.salePrice || product.price || cartItem.price || 99.99;
-            productName = product.name || cartItem.name || 'Product';
-            productImage = product.imageUrl || product.image || cartItem.image || '/assets/images/placeholder.jpg';
-          }
-        } catch (err) {
-          console.warn(`Could not fetch current price for product ${cartItem.productId}`, err);
-        }
-      }
 
       const lineTotal = itemPrice * cartItem.quantity;
       subtotal += lineTotal;
@@ -479,8 +447,6 @@ async function placeOrder() {
         price: itemPrice,
         quantity: cartItem.quantity,
         size: cartItem.size,
-        color: cartItem.color,
-        image: productImage,
         lineTotal: lineTotal
       });
     }
@@ -489,7 +455,6 @@ async function placeOrder() {
     const shipping = storeSettings.calculateShipping(subtotal);
     const total = storeSettings.calculateGrandTotal(subtotal, shipping);
 
-    // Create order object
     const orderData = {
       userId: user.id,
       items: items,
@@ -505,7 +470,6 @@ async function placeOrder() {
       notes: checkoutData.customerInfo.notes
     };
 
-    // Create order via API
     const response = await fetch(API_CONFIG.getEndpoint('/v1/orders/create'), {
       method: 'POST',
       headers: {
@@ -523,33 +487,26 @@ async function placeOrder() {
     const result = await response.json();
     const orderId = result.data?.orderId || result.data?.id;
 
-    // Upload payment proof if bank transfer
     if (paymentMethod === 'Bank_Transfer' && paymentProofFile) {
       try {
         const formData = new FormData();
         formData.append('file', paymentProofFile);
 
-        const uploadResponse = await fetch(API_CONFIG.getEndpoint(`/v1/orders/${orderId}/payment-proof`), {
+        await fetch(API_CONFIG.getEndpoint(`/v1/orders/${orderId}/payment-proof`), {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           },
           body: formData
         });
-
-        if (!uploadResponse.ok) {
-          console.warn('Payment proof upload failed, but order was created', uploadResponse.status);
-        }
       } catch (err) {
-        console.warn('Error uploading payment proof:', err);
+        console.warn('Payment proof upload failed:', err);
       }
     }
 
-    // Clear cart and checkout data
     localStorage.removeItem('cart');
     localStorage.removeItem('checkout_step1_data');
 
-    // Show success and redirect
     Toast.success('Order placed successfully!');
 
     setTimeout(() => {
@@ -560,33 +517,57 @@ async function placeOrder() {
     console.error('Error placing order:', error);
     Toast.error(error.message || 'Failed to place order. Please try again.');
     
-    placeOrderBtn.disabled = false;
-    placeOrderBtn.innerHTML = 'Place Order <i class="bi bi-lock ms-2"></i>';
+    if (placeOrderBtn) {
+      placeOrderBtn.disabled = false;
+      placeOrderBtn.innerHTML = 'Place Order <i class="bi bi-lock ms-2"></i>';
+    }
   }
 }
 
 /**
- * Event Listeners Setup
+ * Step Navigation
  */
+function setStep(step) {
+  currentStep = step;
 
+  document.querySelectorAll('.checkout-step').forEach(s => {
+    s.classList.remove('active');
+  });
+
+  const stepEl = document.getElementById(`step${step}`);
+  if (stepEl) stepEl.classList.add('active');
+
+  document.querySelectorAll('.step').forEach((s, index) => {
+    const stepNum = index + 1;
+    s.classList.remove('active', 'completed');
+
+    if (stepNum < step) {
+      s.classList.add('completed');
+    } else if (stepNum === step) {
+      s.classList.add('active');
+    }
+  });
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/**
+ * Event Listeners
+ */
 function setupEventListeners() {
-  // Step navigation
-  document.getElementById('toReview').addEventListener('click', validateAndGoToStep2);
-  document.getElementById('backToShipping').addEventListener('click', () => setStep(1));
-  document.getElementById('toPayment').addEventListener('click', validateAndGoToStep3);
-  document.getElementById('backToReview').addEventListener('click', () => setStep(2));
-  document.getElementById('editShipping').addEventListener('click', () => setStep(1));
+  document.getElementById('toReview')?.addEventListener('click', validateAndGoToStep2);
+  document.getElementById('backToShipping')?.addEventListener('click', () => setStep(1));
+  document.getElementById('toPayment')?.addEventListener('click', validateAndGoToStep3);
+  document.getElementById('backToReview')?.addEventListener('click', () => setStep(2));
+  document.getElementById('editShipping')?.addEventListener('click', () => setStep(1));
   
-  // Place order
-  document.getElementById('placeOrderBtn').addEventListener('click', placeOrder);
-
-  // Payment method setup
-  setupPaymentMethods();
+  document.getElementById('placeOrderBtn')?.addEventListener('click', placeOrder);
 }
 
 function validateAndGoToStep2() {
-  // Validate Step 1 form
   const form = document.getElementById('shippingForm');
+  if (!form || !Validation) return;
+  
   const result = Validation.validateForm(form, {
     'firstName': { isRequired: true },
     'lastName': { isRequired: true },
@@ -607,7 +588,6 @@ function validateAndGoToStep2() {
 }
 
 function validateAndGoToStep3() {
-  // Check inventory before proceeding
   const cart = JSON.parse(localStorage.getItem('cart')) || [];
   if (cart.length === 0) {
     Toast.error('Your cart is empty');
@@ -619,207 +599,14 @@ function validateAndGoToStep3() {
 }
 
 function updatePaymentSummary() {
-  // Update COD amount
-  const total = document.getElementById('total').textContent;
-  document.getElementById('codAmount').textContent = total;
-}
-
-/**
- * Step Navigation
- */
-
-function setStep(step) {
-  currentStep = step;
-
-  // Hide all steps
-  document.querySelectorAll('.checkout-step').forEach(s => {
-    s.classList.remove('active');
-  });
-
-  // Show current step
-  document.getElementById(`step${step}`).classList.add('active');
-
-  // Update progress indicators
-  document.querySelectorAll('.step').forEach((s, index) => {
-    const stepNum = index + 1;
-    s.classList.remove('active', 'completed');
-
-    if (stepNum < step) {
-      s.classList.add('completed');
-    } else if (stepNum === step) {
-      s.classList.add('active');
-    }
-  });
-
-  // Scroll to top
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-/**
- * Checkout Data Loading
- */
-
-async function loadCheckoutData() {
-  console.log('📝 Loading checkout data...');
-  loadStep1Data();
-  await loadOrderSummary();
-  console.log('✅ Checkout data loaded');
-}
-
-async function loadOrderSummary() {
-  try {
-    console.log('📋 loadOrderSummary: Getting cart from localStorage');
-    const cartJson = localStorage.getItem('cart');
-    console.log('📋 loadOrderSummary: Cart JSON:', cartJson);
-    
-    const cart = cartJson ? JSON.parse(cartJson) : [];
-    console.log('📋 loadOrderSummary: Parsed cart:', cart);
-    console.log('📋 loadOrderSummary: Cart length:', cart.length);
-    
-    const orderItemsContainer = document.getElementById('orderItems');
-
-    if (cart.length === 0) {
-      console.log('📋 loadOrderSummary: Cart is empty - showing placeholder');
-      // Show message if cart is empty
-      orderItemsContainer.innerHTML = '<p class="text-muted">No items in cart. Add items from the shop to proceed.</p>';
-      
-      // Set zero values
-      const elements = {
-        subtotal: document.getElementById('subtotal'),
-        shipping: document.getElementById('shipping'),
-        tax: document.getElementById('tax'),
-        total: document.getElementById('total')
-      };
-      
-      // Check if elements exist before updating
-      if (elements.subtotal) elements.subtotal.textContent = storeSettings.formatCurrency(0);
-      if (elements.shipping) elements.shipping.textContent = storeSettings.formatCurrency(0);
-      if (elements.tax) elements.tax.textContent = storeSettings.formatCurrency(0);
-      if (elements.total) elements.total.textContent = storeSettings.formatCurrency(0);
-      
-      return;
-    }
-
-    console.log('📋 loadOrderSummary: Processing cart items');
-    // Fetch product details for accurate prices and WAIT for it to complete
-    await fetchCheckoutProductDetails(cart, orderItemsContainer);
-
-  } catch (error) {
-    console.error('❌ Error loading order summary:', error);
-    // Show error message
-    const orderItemsContainer = document.getElementById('orderItems');
-    if (orderItemsContainer) {
-      orderItemsContainer.innerHTML = '<p class="text-danger">Error loading cart</p>';
-    }
-  }
-}
-
-/**
- * Fetch product details from API to get accurate prices for checkout items
- */
-async function fetchCheckoutProductDetails(cart, orderItemsContainer) {
-  try {
-    let subtotal = 0;
-    orderItemsContainer.innerHTML = '';
-    
-    for (const item of cart) {
-      let itemPrice = 99.99; // Default fallback
-      let productName = 'Product';
-      let productImage = '/assets/images/placeholder.jpg';
-      
-      console.log(`📋 Fetching details for product ${item.productId}`);
-      
-      // Fetch product from API to get current price
-      if (item.productId) {
-        try {
-          const response = await fetch(`${API_CONFIG.getEndpoint('/v1/products')}/${item.productId}`);
-          if (response.ok) {
-            const data = await response.json();
-            const product = data.data || data;
-            
-            // Use sale price if available, otherwise regular price
-            itemPrice = product.salePrice || product.price || 99.99;
-            productName = product.name || 'Product';
-            productImage = product.imageUrl || product.image || '/assets/images/placeholder.jpg';
-            
-            console.log(`✅ Got price for ${productName}: ${itemPrice}`);
-          } else {
-            console.warn(`⚠️ Product API returned status ${response.status}`);
-          }
-        } catch (err) {
-          console.warn(`⚠️ Could not fetch product ${item.productId}, using fallback price`, err);
-        }
-      }
-      
-      const quantity = parseInt(item.quantity || 1);
-      const lineTotal = itemPrice * quantity;
-      subtotal += lineTotal;
-
-      console.log(`📋 Item: ${productName} - ${itemPrice} × ${quantity} = ${lineTotal}`);
-
-      const orderHTML = `
-        <div class="order-item">
-          <img src="${productImage}" alt="${productName}" class="order-item-image">
-          <div class="order-item-details flex-grow-1">
-            <h5>${productName}</h5>
-            <p>Size: ${item.size || 'N/A'}</p>
-            <p>Qty: ${quantity}</p>
-          </div>
-          <div class="text-end">
-            <p class="fw-bold">${storeSettings.formatCurrency(lineTotal)}</p>
-          </div>
-        </div>
-      `;
-      
-      orderItemsContainer.innerHTML += orderHTML;
-    }
-
-    console.log('📋 fetchCheckoutProductDetails: Total subtotal:', subtotal);
-    updateSummary(subtotal);
-
-  } catch (error) {
-    console.error('❌ Error fetching checkout product details:', error);
-    orderItemsContainer.innerHTML = '<p class="text-danger">Error loading cart items</p>';
-  }
-}
-
-function updateSummary(subtotal) {
-  console.log('💰 updateSummary: Starting calculation');
-  console.log('💰 updateSummary: Subtotal:', subtotal);
-  console.log('💰 updateSummary: Store settings:', storeSettings.settings);
-  
-  const shipping = storeSettings.calculateShipping(subtotal);
-  const tax = storeSettings.calculateTax(subtotal);
-  const total = storeSettings.calculateGrandTotal(subtotal, shipping);
-
-  console.log('💰 updateSummary: Shipping:', shipping);
-  console.log('💰 updateSummary: Tax:', tax);
-  console.log('💰 updateSummary: Total:', total);
-
-  // Update display
-  const subtotalEl = document.getElementById('subtotal');
-  const shippingEl = document.getElementById('shipping');
-  const taxEl = document.getElementById('tax');
-  const totalEl = document.getElementById('total');
-  
-  // Check if elements exist
-  if (!subtotalEl || !shippingEl || !taxEl || !totalEl) {
-    console.error('❌ updateSummary: Missing DOM elements');
-    return;
-  }
-  
-  subtotalEl.textContent = storeSettings.formatCurrency(subtotal);
-  shippingEl.textContent = shipping === 0 ? 'Free' : storeSettings.formatCurrency(shipping);
-  taxEl.textContent = storeSettings.formatCurrency(tax);
-  totalEl.textContent = storeSettings.formatCurrency(total);
-  
-  console.log('✅ updateSummary: DOM updated successfully');
+  const total = document.getElementById('total')?.textContent || 'Rs 0';
+  const codAmount = document.getElementById('codAmount');
+  if (codAmount) codAmount.textContent = total;
 }
 
 /**
  * Utility Functions
  */
-
 function isUserLoggedIn() {
   return !!localStorage.getItem('token') && !!localStorage.getItem('user');
 }
