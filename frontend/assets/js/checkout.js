@@ -22,18 +22,25 @@ const Toast = window.Toast || {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Initialize store settings
-  await storeSettings.initialize();
+  console.log('🔄 Checkout: DOMContentLoaded started');
   
-  // Load cart and initialize checkout
-  loadCheckoutData();
-  setupEventListeners();
-  setupFieldValidation();
+  // Initialize store settings FIRST
+  console.log('📊 Checkout: Initializing store settings...');
+  await storeSettings.initialize();
+  console.log('✅ Checkout: Store settings initialized:', storeSettings.settings);
   
   // Check if user is logged in
   if (!isUserLoggedIn()) {
     window.location.href = 'login.html?redirect=checkout.html';
+    return;
   }
+  
+  // Load cart and initialize checkout AFTER settings are ready
+  console.log('📦 Checkout: Loading checkout data...');
+  loadCheckoutData();
+  setupEventListeners();
+  setupFieldValidation();
+  console.log('✅ Checkout: Initialization complete');
 });
 
 /**
@@ -583,27 +590,49 @@ function loadCheckoutData() {
 
 function loadOrderSummary() {
   try {
-    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    console.log('📋 loadOrderSummary: Getting cart from localStorage');
+    const cartJson = localStorage.getItem('cart');
+    console.log('📋 loadOrderSummary: Cart JSON:', cartJson);
+    
+    const cart = cartJson ? JSON.parse(cartJson) : [];
+    console.log('📋 loadOrderSummary: Parsed cart:', cart);
+    console.log('📋 loadOrderSummary: Cart length:', cart.length);
+    
     const orderItemsContainer = document.getElementById('orderItems');
 
     if (cart.length === 0) {
-      // Show test data if cart is empty
+      console.log('📋 loadOrderSummary: Cart is empty - showing placeholder');
+      // Show message if cart is empty
       orderItemsContainer.innerHTML = '<p class="text-muted">No items in cart. Add items from the shop to proceed.</p>';
       
-      // Set default summary with zero values
-      document.getElementById('subtotal').textContent = storeSettings.formatCurrency(0);
-      document.getElementById('shipping').textContent = storeSettings.formatCurrency(0);
-      document.getElementById('tax').textContent = storeSettings.formatCurrency(0);
-      document.getElementById('total').textContent = storeSettings.formatCurrency(0);
+      // Set zero values
+      const elements = {
+        subtotal: document.getElementById('subtotal'),
+        shipping: document.getElementById('shipping'),
+        tax: document.getElementById('tax'),
+        total: document.getElementById('total')
+      };
+      
+      // Check if elements exist before updating
+      if (elements.subtotal) elements.subtotal.textContent = storeSettings.formatCurrency(0);
+      if (elements.shipping) elements.shipping.textContent = storeSettings.formatCurrency(0);
+      if (elements.tax) elements.tax.textContent = storeSettings.formatCurrency(0);
+      if (elements.total) elements.total.textContent = storeSettings.formatCurrency(0);
+      
       return;
     }
 
+    console.log('📋 loadOrderSummary: Processing cart items');
     let subtotal = 0;
     let orderHTML = '';
 
-    cart.forEach(item => {
-      const itemPrice = (item.price || 99.99) * item.quantity;
-      subtotal += itemPrice;
+    cart.forEach((item, index) => {
+      const itemPrice = parseFloat(item.price || 99.99);
+      const quantity = parseInt(item.quantity || 1);
+      const lineTotal = itemPrice * quantity;
+      subtotal += lineTotal;
+
+      console.log(`📋 Item ${index}: ${item.name} - ${itemPrice} × ${quantity} = ${lineTotal}`);
 
       orderHTML += `
         <div class="order-item">
@@ -611,45 +640,60 @@ function loadOrderSummary() {
           <div class="order-item-details flex-grow-1">
             <h5>${item.name || 'Product'}</h5>
             <p>Size: ${item.size || 'N/A'}</p>
-            <p>Qty: ${item.quantity}</p>
+            <p>Qty: ${quantity}</p>
           </div>
           <div class="text-end">
-            <p class="fw-bold">${storeSettings.formatCurrency(itemPrice)}</p>
+            <p class="fw-bold">${storeSettings.formatCurrency(lineTotal)}</p>
           </div>
         </div>
       `;
     });
 
+    console.log('📋 loadOrderSummary: Total subtotal:', subtotal);
     orderItemsContainer.innerHTML = orderHTML;
     updateSummary(subtotal);
 
   } catch (error) {
-    console.error('Error loading order summary:', error);
-    // Show error in summary
-    document.getElementById('subtotal').textContent = 'Error';
-    document.getElementById('total').textContent = 'Error';
+    console.error('❌ Error loading order summary:', error);
+    // Show error message
+    const orderItemsContainer = document.getElementById('orderItems');
+    if (orderItemsContainer) {
+      orderItemsContainer.innerHTML = '<p class="text-danger">Error loading cart</p>';
+    }
   }
 }
 
 function updateSummary(subtotal) {
+  console.log('💰 updateSummary: Starting calculation');
+  console.log('💰 updateSummary: Subtotal:', subtotal);
+  console.log('💰 updateSummary: Store settings:', storeSettings.settings);
+  
   const shipping = storeSettings.calculateShipping(subtotal);
   const tax = storeSettings.calculateTax(subtotal);
   const total = storeSettings.calculateGrandTotal(subtotal, shipping);
 
-  // Debug logging
-  console.log('💰 Calculation:', {
-    subtotal,
-    tax,
-    shipping,
-    total,
-    settings: storeSettings.settings
-  });
+  console.log('💰 updateSummary: Shipping:', shipping);
+  console.log('💰 updateSummary: Tax:', tax);
+  console.log('💰 updateSummary: Total:', total);
 
   // Update display
-  document.getElementById('subtotal').textContent = storeSettings.formatCurrency(subtotal);
-  document.getElementById('shipping').textContent = shipping === 0 ? 'Free' : storeSettings.formatCurrency(shipping);
-  document.getElementById('tax').textContent = storeSettings.formatCurrency(tax);
-  document.getElementById('total').textContent = storeSettings.formatCurrency(total);
+  const subtotalEl = document.getElementById('subtotal');
+  const shippingEl = document.getElementById('shipping');
+  const taxEl = document.getElementById('tax');
+  const totalEl = document.getElementById('total');
+  
+  // Check if elements exist
+  if (!subtotalEl || !shippingEl || !taxEl || !totalEl) {
+    console.error('❌ updateSummary: Missing DOM elements');
+    return;
+  }
+  
+  subtotalEl.textContent = storeSettings.formatCurrency(subtotal);
+  shippingEl.textContent = shipping === 0 ? 'Free' : storeSettings.formatCurrency(shipping);
+  taxEl.textContent = storeSettings.formatCurrency(tax);
+  totalEl.textContent = storeSettings.formatCurrency(total);
+  
+  console.log('✅ updateSummary: DOM updated successfully');
 }
 
 /**
