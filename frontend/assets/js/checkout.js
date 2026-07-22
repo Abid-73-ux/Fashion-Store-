@@ -42,10 +42,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load any previously saved form data
   loadStep1Data();
   
-  // Enable button initially
+  // Enable button - always allow user to proceed to validation on click
   const toReviewBtn = document.getElementById('toReview');
   if (toReviewBtn) {
     toReviewBtn.disabled = false;
+    toReviewBtn.style.display = 'block';
   }
   
   console.log('✅ Checkout initialized');
@@ -231,48 +232,18 @@ function setupFieldValidation() {
     'state': 'state'
   };
 
-  Object.entries(fieldMappings).forEach(([elementId, fieldName]) => {
-    const element = document.getElementById(elementId);
-    if (element && typeof Validation !== 'undefined') {
-      if (fieldName === 'state') {
-        // For state/select field, just watch for changes
-        element.addEventListener('change', updateFormButtonState);
-      } else {
-        Validation.setupFieldValidation(element, fieldName, true, () => updateFormButtonState(), 300);
-      }
-    }
-  });
+  // Don't setup real-time validation - just do it on button click
+  // This prevents button flickering and disappearing issues
+  console.log('✅ Field validation setup skipped - will validate on submit');
 }
 
 function updateFormButtonState() {
+  // Button is always enabled - user will see validation errors on submit
   const toReviewBtn = document.getElementById('toReview');
-  if (!toReviewBtn) return;
-  
-  const requiredFields = ['firstName', 'lastName', 'email', 'whatsappNumber', 'street', 'city', 'state', 'postalCode'];
-  let allValid = true;
-
-  requiredFields.forEach(fieldId => {
-    const field = document.getElementById(fieldId);
-    if (!field) return;
-    
-    const value = field.value;
-    
-    // Check if field is empty
-    if (!value || value.trim() === '') {
-      allValid = false;
-      return;
-    }
-    
-    // For text fields, validate with pattern
-    if (fieldId !== 'state' && typeof Validation !== 'undefined') {
-      const result = Validation.validateField(fieldId, value, true);
-      if (!result.isValid) {
-        allValid = false;
-      }
-    }
-  });
-
-  toReviewBtn.disabled = !allValid;
+  if (toReviewBtn) {
+    toReviewBtn.disabled = false;
+    toReviewBtn.style.display = 'block'; // Make sure it's visible
+  }
 }
 
 function saveStep1Data() {
