@@ -98,6 +98,25 @@ async function setupMigrations() {
       console.log('✅ paymentMethod column already exists');
     }
 
+    // Add paymentStatus column if it doesn't exist
+    if (!columnNames.includes('paymentStatus')) {
+      try {
+        await sequelize.query(`
+          ALTER TABLE orders 
+          ADD COLUMN paymentStatus VARCHAR(50) DEFAULT 'pending'
+        `);
+        console.log('✅ Added paymentStatus column');
+      } catch (err) {
+        if (err.message.includes('already exists')) {
+          console.log('✅ paymentStatus column already exists');
+        } else {
+          throw err;
+        }
+      }
+    } else {
+      console.log('✅ paymentStatus column already exists');
+    }
+
     // Add orderStatus column if it doesn't exist
     if (!columnNames.includes('orderStatus')) {
       try {
@@ -139,15 +158,23 @@ async function setupMigrations() {
     // Step 3: Create indexes
     console.log('📝 Creating indexes...');
 
-    await sequelize.query(`
-      CREATE INDEX IF NOT EXISTS idx_orders_paymentStatus ON orders(paymentStatus)
-    `);
-    console.log('✅ Created idx_orders_paymentStatus index');
+    try {
+      await sequelize.query(`
+        CREATE INDEX IF NOT EXISTS idx_orders_paymentStatus ON orders(paymentStatus)
+      `);
+      console.log('✅ Created idx_orders_paymentStatus index');
+    } catch (err) {
+      console.warn('⚠️ Could not create idx_orders_paymentStatus index:', err.message);
+    }
 
-    await sequelize.query(`
-      CREATE INDEX IF NOT EXISTS idx_orders_orderStatus ON orders(orderStatus)
-    `);
-    console.log('✅ Created idx_orders_orderStatus index');
+    try {
+      await sequelize.query(`
+        CREATE INDEX IF NOT EXISTS idx_orders_orderStatus ON orders(orderStatus)
+      `);
+      console.log('✅ Created idx_orders_orderStatus index');
+    } catch (err) {
+      console.warn('⚠️ Could not create idx_orders_orderStatus index:', err.message);
+    }
 
     console.log('✅ Database migrations completed successfully');
     return true;
