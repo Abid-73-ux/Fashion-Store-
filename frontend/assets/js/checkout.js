@@ -623,35 +623,8 @@ function loadOrderSummary() {
     }
 
     console.log('📋 loadOrderSummary: Processing cart items');
-    let subtotal = 0;
-    let orderHTML = '';
-
-    cart.forEach((item, index) => {
-      const itemPrice = parseFloat(item.price || 99.99);
-      const quantity = parseInt(item.quantity || 1);
-      const lineTotal = itemPrice * quantity;
-      subtotal += lineTotal;
-
-      console.log(`📋 Item ${index}: ${item.name} - ${itemPrice} × ${quantity} = ${lineTotal}`);
-
-      orderHTML += `
-        <div class="order-item">
-          <img src="${item.image || '/assets/images/placeholder.jpg'}" alt="${item.name}" class="order-item-image">
-          <div class="order-item-details flex-grow-1">
-            <h5>${item.name || 'Product'}</h5>
-            <p>Size: ${item.size || 'N/A'}</p>
-            <p>Qty: ${quantity}</p>
-          </div>
-          <div class="text-end">
-            <p class="fw-bold">${storeSettings.formatCurrency(lineTotal)}</p>
-          </div>
-        </div>
-      `;
-    });
-
-    console.log('📋 loadOrderSummary: Total subtotal:', subtotal);
-    orderItemsContainer.innerHTML = orderHTML;
-    updateSummary(subtotal);
+    // Fetch product details for accurate prices
+    fetchCheckoutProductDetails(cart, orderItemsContainer);
 
   } catch (error) {
     console.error('❌ Error loading order summary:', error);
@@ -660,6 +633,75 @@ function loadOrderSummary() {
     if (orderItemsContainer) {
       orderItemsContainer.innerHTML = '<p class="text-danger">Error loading cart</p>';
     }
+  }
+}
+
+/**
+ * Fetch product details from API to get accurate prices for checkout items
+ */
+async function fetchCheckoutProductDetails(cart, orderItemsContainer) {
+  try {
+    let subtotal = 0;
+    orderItemsContainer.innerHTML = '';
+    
+    for (const item of cart) {
+      let itemPrice = 99.99; // Default fallback
+      let productName = 'Product';
+      let productImage = '/assets/images/placeholder.jpg';
+      
+      console.log(`📋 Fetching details for product ${item.productId}`);
+      
+      // Fetch product from API to get current price
+      if (item.productId) {
+        try {
+          const response = await fetch(`${API_CONFIG.getEndpoint('/products')}/${item.productId}`);
+          if (response.ok) {
+            const data = await response.json();
+            const product = data.data || data;
+            
+            // Use sale price if available, otherwise regular price
+            itemPrice = product.salePrice || product.price || 99.99;
+            productName = product.name || 'Product';
+            productImage = product.imageUrl || product.image || '/assets/images/placeholder.jpg';
+            
+            console.log(`✅ Got price for ${productName}: ${itemPrice}`);
+          } else {
+            console.warn(`⚠️ Product API returned status ${response.status}`);
+          }
+        } catch (err) {
+          console.warn(`⚠️ Could not fetch product ${item.productId}, using fallback price`, err);
+        }
+      }
+      
+      const quantity = parseInt(item.quantity || 1);
+      const lineTotal = itemPrice * quantity;
+      subtotal += lineTotal;
+
+      console.log(`📋 Item: ${productName} - ${itemPrice} × ${quantity} = ${lineTotal}`);
+
+      const orderHTML = `
+        <div class="order-item">
+          <img src="${productImage}" alt="${productName}" class="order-item-image">
+          <div class="order-item-details flex-grow-1">
+            <h5>${productName}</h5>
+            <p>Size: ${item.size || 'N/A'}</p>
+            <p>Qty: ${quantity}</p>
+          </div>
+          <div class="text-end">
+            <p class="fw-bold">${storeSettings.formatCurrency(lineTotal)}</p>
+          </div>
+        </div>
+      `;
+      
+      orderItemsContainer.innerHTML += orderHTML;
+    }
+
+    console.log('📋 fetchCheckoutProductDetails: Total subtotal:', subtotal);
+    updateSummary(subtotal);
+
+  } catch (error) {
+    console.error('❌ Error fetching checkout product details:', error);
+    orderItemsContainer.innerHTML = '<p class="text-danger">Error loading cart items</p>';
   }
 }
 
