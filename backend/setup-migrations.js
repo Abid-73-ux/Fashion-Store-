@@ -155,25 +155,40 @@ async function setupMigrations() {
       console.log('✅ verifiedAt column already exists');
     }
 
-    // Step 3: Create indexes
+    // Step 3: Create indexes (only if columns exist)
     console.log('📝 Creating indexes...');
 
-    try {
-      await sequelize.query(`
-        CREATE INDEX IF NOT EXISTS idx_orders_paymentStatus ON orders(paymentStatus)
-      `);
-      console.log('✅ Created idx_orders_paymentStatus index');
-    } catch (err) {
-      console.warn('⚠️ Could not create idx_orders_paymentStatus index:', err.message);
+    // Verify columns exist before creating indexes
+    const freshColumns = await sequelize.query(`
+      SELECT column_name FROM information_schema.columns 
+      WHERE table_name = 'orders'
+    `);
+    const freshColumnNames = freshColumns[0].map(col => col.column_name);
+
+    if (freshColumnNames.includes('paymentStatus')) {
+      try {
+        await sequelize.query(`
+          CREATE INDEX IF NOT EXISTS idx_orders_paymentStatus ON orders(paymentStatus)
+        `);
+        console.log('✅ Created idx_orders_paymentStatus index');
+      } catch (err) {
+        console.warn('⚠️ Could not create idx_orders_paymentStatus index:', err.message);
+      }
+    } else {
+      console.warn('⚠️ Skipping idx_orders_paymentStatus - paymentStatus column does not exist');
     }
 
-    try {
-      await sequelize.query(`
-        CREATE INDEX IF NOT EXISTS idx_orders_orderStatus ON orders(orderStatus)
-      `);
-      console.log('✅ Created idx_orders_orderStatus index');
-    } catch (err) {
-      console.warn('⚠️ Could not create idx_orders_orderStatus index:', err.message);
+    if (freshColumnNames.includes('orderStatus')) {
+      try {
+        await sequelize.query(`
+          CREATE INDEX IF NOT EXISTS idx_orders_orderStatus ON orders(orderStatus)
+        `);
+        console.log('✅ Created idx_orders_orderStatus index');
+      } catch (err) {
+        console.warn('⚠️ Could not create idx_orders_orderStatus index:', err.message);
+      }
+    } else {
+      console.warn('⚠️ Skipping idx_orders_orderStatus - orderStatus column does not exist');
     }
 
     console.log('✅ Database migrations completed successfully');
