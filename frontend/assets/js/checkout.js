@@ -53,9 +53,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * Display order summary using EXACT same logic as cart page
+ * Display order summary - FETCH PRICES FROM API EXACTLY LIKE CART.JS
  */
-function displayOrderSummary(cart) {
+async function displayOrderSummary(cart) {
   try {
     const orderItemsContainer = document.getElementById('orderItems');
     
@@ -66,23 +66,44 @@ function displayOrderSummary(cart) {
       return;
     }
     
-    // Calculate subtotal from cart items
+    // Calculate subtotal by fetching CURRENT prices from API (same as cart.js)
     let subtotal = 0;
-    let orderHTML = '';
+    orderItemsContainer.innerHTML = '';
     
-    cart.forEach((item, index) => {
-      const itemPrice = parseFloat(item.price) || 99.99;
+    for (const item of cart) {
+      let itemPrice = 1299; // Default fallback (same as cart.js)
+      let productName = item.name || 'Product';
+      let productImage = item.image || 'assets/images/placeholder.jpg';
+      
+      // Fetch product from API to get CURRENT price (SAME AS CART.JS)
+      if (item.productId) {
+        try {
+          const response = await fetch(`${API_CONFIG.getEndpoint('/products')}/${item.productId}`);
+          if (response.ok) {
+            const data = await response.json();
+            const product = data.data || data;
+            
+            // Use sale price if available, otherwise regular price (SAME AS CART.JS)
+            itemPrice = product.salePrice || product.price || 1299;
+            productName = product.name || item.name || 'Product';
+            productImage = product.imageUrl || product.image || item.image || 'assets/images/placeholder.jpg';
+          }
+        } catch (err) {
+          console.warn(`Could not fetch product ${item.productId}, using fallback`, err);
+        }
+      }
+      
       const quantity = parseInt(item.quantity) || 1;
       const lineTotal = itemPrice * quantity;
       subtotal += lineTotal;
       
-      console.log(`📦 Item ${index}: price=${itemPrice}, qty=${quantity}, total=${lineTotal}`);
+      console.log(`📦 Item: price=${itemPrice}, qty=${quantity}, total=${lineTotal}`);
       
-      orderHTML += `
+      const orderHTML = `
         <div class="order-item">
-          <img src="${item.image || '/assets/images/placeholder.jpg'}" alt="${item.name}" class="order-item-image" style="max-width: 80px;">
+          <img src="${productImage}" alt="${productName}" class="order-item-image" style="max-width: 80px;">
           <div class="order-item-details flex-grow-1">
-            <h5>${item.name || 'Product'}</h5>
+            <h5>${productName}</h5>
             <p>Size: ${item.size || 'N/A'}</p>
             <p>Qty: ${quantity}</p>
           </div>
@@ -91,10 +112,11 @@ function displayOrderSummary(cart) {
           </div>
         </div>
       `;
-    });
+      
+      orderItemsContainer.innerHTML += orderHTML;
+    }
     
     console.log('💰 Subtotal:', subtotal);
-    orderItemsContainer.innerHTML = orderHTML;
     updateOrderSummaryDisplay(subtotal);
     
   } catch (error) {
@@ -434,18 +456,37 @@ async function placeOrder() {
     let subtotal = 0;
     const items = [];
 
+    // Fetch current prices from API - SAME LOGIC AS CART PAGE
     for (const cartItem of cart) {
-      let itemPrice = cartItem.price || 99.99;
+      let itemPrice = 1299; // Default fallback
       let productName = cartItem.name || 'Product';
 
-      const lineTotal = itemPrice * cartItem.quantity;
+      // Fetch product from API to get CURRENT price (SAME AS CART.JS)
+      if (cartItem.productId) {
+        try {
+          const response = await fetch(`${API_CONFIG.getEndpoint('/products')}/${cartItem.productId}`);
+          if (response.ok) {
+            const data = await response.json();
+            const product = data.data || data;
+            
+            // Use sale price if available, otherwise regular price (SAME AS CART.JS)
+            itemPrice = product.salePrice || product.price || 1299;
+            productName = product.name || cartItem.name || 'Product';
+          }
+        } catch (err) {
+          console.warn(`Could not fetch product ${cartItem.productId}, using fallback`, err);
+        }
+      }
+
+      const quantity = parseInt(cartItem.quantity) || 1;
+      const lineTotal = itemPrice * quantity;
       subtotal += lineTotal;
 
       items.push({
         productId: cartItem.productId,
         name: productName,
         price: itemPrice,
-        quantity: cartItem.quantity,
+        quantity: quantity,
         size: cartItem.size,
         lineTotal: lineTotal
       });
