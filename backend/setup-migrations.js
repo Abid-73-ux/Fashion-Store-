@@ -174,30 +174,34 @@ async function setupMigrations() {
     `);
     const freshColumnNames = freshColumns[0].map(col => col.column_name);
 
-    if (freshColumnNames.includes('paymentStatus')) {
+    // Check for both camelCase and lowercase versions (PostgreSQL stores as lowercase)
+    const hasPaymentStatus = freshColumnNames.includes('paymentStatus') || freshColumnNames.includes('paymentstatus');
+    const hasOrderStatus = freshColumnNames.includes('orderStatus') || freshColumnNames.includes('orderstatus');
+
+    if (hasPaymentStatus) {
       try {
         await sequelize.query(`
-          CREATE INDEX IF NOT EXISTS idx_orders_paymentStatus ON orders(paymentStatus)
+          CREATE INDEX IF NOT EXISTS idx_orders_paymentstatus ON orders("paymentStatus")
         `);
-        console.log('✅ Created idx_orders_paymentStatus index');
+        console.log('✅ Created idx_orders_paymentstatus index');
       } catch (err) {
-        console.warn('⚠️ Could not create idx_orders_paymentStatus index:', err.message);
+        console.warn('⚠️ Could not create idx_orders_paymentstatus index:', err.message);
       }
     } else {
-      console.warn('⚠️ Skipping idx_orders_paymentStatus - paymentStatus column does not exist');
+      console.warn('⚠️ Skipping idx_orders_paymentstatus - paymentStatus column does not exist');
     }
 
-    if (freshColumnNames.includes('orderStatus')) {
+    if (hasOrderStatus) {
       try {
         await sequelize.query(`
-          CREATE INDEX IF NOT EXISTS idx_orders_orderStatus ON orders(orderStatus)
+          CREATE INDEX IF NOT EXISTS idx_orders_orderstatus ON orders("orderStatus")
         `);
-        console.log('✅ Created idx_orders_orderStatus index');
+        console.log('✅ Created idx_orders_orderstatus index');
       } catch (err) {
-        console.warn('⚠️ Could not create idx_orders_orderStatus index:', err.message);
+        console.warn('⚠️ Could not create idx_orders_orderstatus index:', err.message);
       }
     } else {
-      console.warn('⚠️ Skipping idx_orders_orderStatus - orderStatus column does not exist');
+      console.warn('⚠️ Skipping idx_orders_orderstatus - orderStatus column does not exist');
     }
 
     console.log('✅ Database migrations completed successfully');
