@@ -38,8 +38,8 @@ const storeSettings = {
     return {
       currency: 'PKR',
       currencySymbol: 'Rs',
-      taxPercentage: 0,
-      shippingCost: 0,
+      taxPercentage: 10,  // 10% tax
+      shippingCost: 500,  // 500 PKR shipping
       freeShippingThreshold: 5000,
       storeName: 'TAKANJ'
     };

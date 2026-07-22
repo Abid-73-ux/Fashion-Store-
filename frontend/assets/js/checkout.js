@@ -585,7 +585,14 @@ function loadOrderSummary() {
     const orderItemsContainer = document.getElementById('orderItems');
 
     if (cart.length === 0) {
-      orderItemsContainer.innerHTML = '<p class="text-muted">No items in cart</p>';
+      // Show test data if cart is empty
+      orderItemsContainer.innerHTML = '<p class="text-muted">No items in cart. Add items from the shop to proceed.</p>';
+      
+      // Set default summary with zero values
+      document.getElementById('subtotal').textContent = storeSettings.formatCurrency(0);
+      document.getElementById('shipping').textContent = storeSettings.formatCurrency(0);
+      document.getElementById('tax').textContent = storeSettings.formatCurrency(0);
+      document.getElementById('total').textContent = storeSettings.formatCurrency(0);
       return;
     }
 
@@ -616,6 +623,9 @@ function loadOrderSummary() {
 
   } catch (error) {
     console.error('Error loading order summary:', error);
+    // Show error in summary
+    document.getElementById('subtotal').textContent = 'Error';
+    document.getElementById('total').textContent = 'Error';
   }
 }
 
@@ -623,6 +633,15 @@ function updateSummary(subtotal) {
   const shipping = storeSettings.calculateShipping(subtotal);
   const tax = storeSettings.calculateTax(subtotal);
   const total = storeSettings.calculateGrandTotal(subtotal, shipping);
+
+  // Debug logging
+  console.log('💰 Calculation:', {
+    subtotal,
+    tax,
+    shipping,
+    total,
+    settings: storeSettings.settings
+  });
 
   // Update display
   document.getElementById('subtotal').textContent = storeSettings.formatCurrency(subtotal);
