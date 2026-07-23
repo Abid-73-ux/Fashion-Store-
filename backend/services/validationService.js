@@ -13,8 +13,8 @@ const validationPatterns = {
   // WhatsApp: Pakistan numbers starting with +92 or 0, followed by 3-9 and 9 more digits
   whatsappNumber: /^(\+92|0)[3-9]\d{9}$/,
 
-  // Postal Code: 5 digits (Pakistan format)
-  postalCode: /^\d{5}$/,
+  // Postal Code: 3-10 digits (flexible for different formats)
+  postalCode: /^\d{3,10}$/,
 
   // Street/City/State: alphanumeric, spaces, hyphens, commas, periods
   address: /^[a-zA-Z0-9\s,'-\.]{3,100}$/,

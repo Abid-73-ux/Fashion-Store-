@@ -21,7 +21,12 @@ exports.createOrder = async (req, res) => {
   const t = await sequelize.transaction();
 
   try {
+    console.log('📋 Order creation started');
+    console.log('📊 Request body:', JSON.stringify(req.body, null, 2));
+    
     const userId = req.user.id;
+    console.log('👤 User ID:', userId);
+    
     let customerInfo, paymentMethod, couponCode, paymentProofId, cartItems;
 
     // Support both old and new data formats
@@ -67,7 +72,13 @@ exports.createOrder = async (req, res) => {
         size: item.size,
         color: item.color
       }));
+      
+      console.log('✅ Format detected: checkout.js format');
+      console.log('📦 Customer info:', customerInfo);
+      console.log('💳 Payment method:', paymentMethod);
+      console.log('🛒 Cart items:', cartItems);
     } else {
+      console.error('❌ Invalid data format - missing required fields');
       return res.status(400).json({
         success: false,
         message: 'Invalid order data format',
