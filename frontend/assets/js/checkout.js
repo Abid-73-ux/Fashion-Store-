@@ -26,23 +26,13 @@ function showNotification(type, message) {
 document.addEventListener('DOMContentLoaded', () => {
   console.log('🔄 Checkout: Starting initialization');
   
-  // CHECK LOGIN STATUS FIRST!
+  // Allow checkout page to load even if token is missing
+  // Token will be checked again when placing order
   const token = localStorage.getItem('token');
   const user = localStorage.getItem('user');
   
   console.log('🔐 Token exists:', !!token);
   console.log('👤 User exists:', !!user);
-  
-  if (!token || !user) {
-    console.error('❌ User not logged in - redirecting to login');
-    Toast.error('Please login to proceed with checkout');
-    setTimeout(() => {
-      window.location.href = 'login.html?redirect=checkout.html';
-    }, 1500);
-    return;
-  }
-  
-  console.log('✅ User is logged in - proceeding with checkout');
   
   // Initialize store settings (uses defaults immediately, no API call)
   storeSettings.initialize();
@@ -50,15 +40,15 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Get cart from localStorage
   const cart = JSON.parse(localStorage.getItem('cart')) || [];
-  console.log('🛒 Cart loaded:', cart);
+  console.log('🛒 Cart loaded:', cart.length, 'items');
   
   if (cart.length === 0) {
     console.warn('⚠️ Cart is empty');
-    Toast.error('Your cart is empty. Add items before checkout.');
-    setTimeout(() => {
-      window.location.href = 'cart.html';
-    }, 2000);
-    return;
+    // Show message but don't redirect - let user go back themselves
+    const cartCheck = document.querySelector('[id="step1"]');
+    if (cartCheck) {
+      showNotification('warning', 'Your cart is empty. Please add items before checkout.');
+    }
   }
   
   // Setup form and payment handlers
