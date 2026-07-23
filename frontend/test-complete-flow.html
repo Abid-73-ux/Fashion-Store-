@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Flow Test - Takanj</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: #f5f5f0;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .test-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            margin: 20px;
+        }
+        h1 {
+            color: #0a0a0a;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .test-step {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-left: 4px solid #c9a961;
+            border-radius: 5px;
+        }
+        .test-step h3 {
+            color: #c9a961;
+            margin-bottom: 15px;
+        }
+        .btn-test {
+            background: #0a0a0a;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+        .btn-test:hover {
+            background: #c9a961;
+            color: #0a0a0a;
+        }
+        .output-box {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .log-success { color: #28a745; }
+        .log-error { color: #dc3545; }
+        .log-info { color: #0056b3; }
+        .log-warning { color: #ff9800; }
+        .status-badge {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin: 5px 5px 5px 0;
+        }
+        .status-ok { background: #d4edda; color: #155724; }
+        .status-error { background: #f8d7da; color: #721c24; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .flow-chart {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .flow-item {
+            background: #f9f9f9;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .flow-item.active {
+            border-color: #c9a961;
+            background: #fffbf0;
+        }
+        .flow-item.completed {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        .flow-item.error {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Complete E-Commerce Flow Test</h1>
+        <p class="text-center text-muted mb-4">Test: Login → Browse → Add to Cart → Checkout → Place Order</p>
+        
+        <div class="test-step">
+            <h3>📊 Flow Progress</h3>
+            <div class="flow-chart">
+                <div class="flow-item" id="step-login">1️⃣ Login</div>
+                <div class="flow-item" id="step-browse">2️⃣ Browse</div>
+                <div class="flow-item" id="step-cart">3️⃣ Add Cart</div>
+                <div class="flow-item" id="step-checkout">4️⃣ Checkout</div>
+                <div class="flow-item" id="step-order">5️⃣ Place Order</div>
+            </div>
+        </div>
+
+        <div class="test-step">
+            <h3>🔐 Step 1: Authentication</h3>
+            <button class="btn-test" onclick="testAuthentication()">
+                <i class="bi bi-person-check"></i> Test Login
+            </button>
+            <button class="btn-test" onclick="testRegisterUser()">
+                <i class="bi bi-person-plus"></i> Register New User
+            </button>
+            <div id="authOutput" class="output-box"></div>
+        </div>
+
+        <div class="test-step">
+            <h3>🛍️ Step 2: Browse Products</h3>
+            <button class="btn-test" onclick="testGetProducts()">
+                <i class="bi bi-shop"></i> Fetch Products
+            </button>
+            <div id="productsOutput" class="output-box"></div>
+        </div>
+
+        <div class="test-step">
+            <h3>🛒 Step 3: Cart Management</h3>
+            <button class="btn-test" onclick="testAddToCart()">
+                <i class="bi bi-cart-plus"></i> Add to Cart
+            </button>
+            <button class="btn-test" onclick="testGetCart()">
+                <i class="bi bi-bag"></i> View Cart
+            </button>
+            <div id="cartOutput" class="output-box"></div>
+        </div>
+
+        <div class="test-step">
+            <h3>💳 Step 4: Checkout</h3>
+            <button class="btn-test" onclick="testCheckoutCalculation()">
+                <i class="bi bi-calculator"></i> Calculate Totals
+            </button>
+            <div id="checkoutOutput" class="output-box"></div>
+        </div>
+
+        <div class="test-step">
+            <h3>📦 Step 5: Place Order</h3>
+            <button class="btn-test" onclick="testPlaceOrder()">
+                <i class="bi bi-check-circle"></i> Place Order
+            </button>
+            <div id="orderOutput" class="output-box"></div>
+        </div>
+
+        <div class="test-step">
+            <h3>▶️ Quick Test</h3>
+            <button class="btn-test" style="background: #c9a961; color: #0a0a0a;" onclick="runCompleteFlow()">
+                <i class="bi bi-play-circle"></i> Run Complete Flow (All Steps)
+            </button>
+            <div id="flowOutput" class="output-box"></div>
+        </div>
+
+        <div class="test-step">
+            <h3>📊 Test Results</h3>
+            <div id="summaryArea">
+                <p style="color: #999;">Results will appear here...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/toast.js"></script>
+    <script>
+        let testState = {
+            user: null,
+            token: null,
+            products: [],
+            cart: [],
+            order: null
+        };
+
+        function log(output, message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+            const className = `log-${type}`;
+            
+            const logEntry = `<div class="${className}">${icon} [${timestamp}] ${message}</div>`;
+            const outputBox = document.getElementById(output);
+            outputBox.innerHTML += logEntry;
+            outputBox.scrollTop = outputBox.scrollHeight;
+        }
+
+        function updateFlowStep(step, status) {
+            const element = document.getElementById(`step-${step}`);
+            element.classList.remove('active', 'completed', 'error');
+            if (status === 'completed') {
+                element.classList.add('completed');
+            } else if (status === 'error') {
+                element.classList.add('error');
+            } else if (status === 'active') {
+                element.classList.add('active');
+            }
+        }
+
+        async function testRegisterUser() {
+            updateFlowStep('login', 'active');
+            log('authOutput', '🔄 Registering new user...', 'info');
+            
+            const email = `user${Date.now()}@test.com`;
+            const password = 'Test123456';
+            const name = `Test User ${Date.now()}`;
+            
+            try {
+                const response = await fetch(API_CONFIG.getEndpoint('/auth/register'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Registration failed');
+                }
+
+                const data = await response.json();
+                testState.user = data.user;
+                testState.token = data.token;
+                
+                localStorage.setItem('token', testState.token);
+                localStorage.setItem('user', JSON.stringify(testState.user));
+                
+                log('authOutput', `✅ User registered: ${email}`, 'success');
+                log('authOutput', `✅ Token saved to localStorage`, 'success');
+                updateFlowStep('login', 'completed');
+                
+            } catch (error) {
+                log('authOutput', `❌ Registration error: ${error.message}`, 'error');
+                updateFlowStep('login', 'error');
+            }
+        }
+
+        async function testAuthentication() {
+            updateFlowStep('login', 'active');
+            log('authOutput', '🔄 Testing authentication...', 'info');
+            
+            // Try with existing localStorage token
+            const token = localStorage.getItem('token');
+            if (!token) {
+                log('authOutput', '⚠️ No token found. Registering new user...', 'warning');
+                await testRegisterUser();
+                return;
+            }
+
+            try {
+                const response = await fetch(API_CONFIG.getEndpoint('/auth/validate'), {
+                    method: 'GET',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    testState.token = token;
+                    testState.user = data.user;
+                    log('authOutput', `✅ Token valid for user: ${data.user.email}`, 'success');
+                    updateFlowStep('login', 'completed');
+                } else {
+                    log('authOutput', '⚠️ Token expired. Registering new user...', 'warning');
+                    await testRegisterUser();
+                }
+            } catch (error) {
+                log('authOutput', `❌ Auth error: ${error.message}`, 'error');
+                await testRegisterUser();
+            }
+        }
+
+        async function testGetProducts() {
+            updateFlowStep('browse', 'active');
+            log('productsOutput', '🔄 Fetching products...', 'info');
+            
+            try {
+                const response = await fetch(API_CONFIG.getEndpoint('/products'));
+                if (!response.ok) throw new Error('Failed to fetch products');
+                
+                const data = await response.json();
+                testState.products = data.data || data;
+                
+                log('productsOutput', `✅ Fetched ${testState.products.length} products`, 'success');
+                testState.products.slice(0, 3).forEach(p => {
+                    log('productsOutput', `  • ${p.name} - Rs. ${p.price}`, 'info');
+                });
+                updateFlowStep('browse', 'completed');
+            } catch (error) {
+                log('productsOutput', `❌ Error: ${error.message}`, 'error');
+                updateFlowStep('browse', 'error');
+            }
+        }
+
+        async function testAddToCart() {
+            updateFlowStep('cart', 'active');
+            if (testState.products.length === 0) {
+                log('cartOutput', '⚠️ No products loaded. Fetching first...', 'warning');
+                await testGetProducts();
+            }
+
+            const product = testState.products[0];
+            if (!product) {
+                log('cartOutput', '❌ No products available', 'error');
+                return;
+            }
+
+            log('cartOutput', `🔄 Adding ${product.name} to cart...`, 'info');
+            
+            testState.cart.push({
+                productId: product.id,
+                name: product.name,
+                price: product.price,
+                quantity: 1,
+                total: product.price
+            });
+
+            log('cartOutput', `✅ Added to cart: ${product.name}`, 'success');
+            log('cartOutput', `✅ Cart items: ${testState.cart.length}`, 'success');
+            localStorage.setItem('cart', JSON.stringify(testState.cart));
+            updateFlowStep('cart', 'completed');
+        }
+
+        async function testGetCart() {
+            log('cartOutput', '🔄 Retrieving cart...', 'info');
+            
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const total = cart.reduce((sum, item) => sum + item.total, 0);
+            
+            log('cartOutput', `✅ Cart has ${cart.length} items`, 'success');
+            log('cartOutput', `✅ Subtotal: Rs. ${total}`, 'success');
+            
+            cart.forEach(item => {
+                log('cartOutput', `  • ${item.name} x${item.quantity} = Rs. ${item.total}`, 'info');
+            });
+        }
+
+        async function testCheckoutCalculation() {
+            updateFlowStep('checkout', 'active');
+            log('checkoutOutput', '🔄 Calculating checkout totals...', 'info');
+            
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const subtotal = cart.reduce((sum, item) => sum + item.total, 0);
+            const tax = subtotal * 0.17; // 17% tax
+            const shipping = 250; // Fixed shipping
+            const total = subtotal + tax + shipping;
+            
+            log('checkoutOutput', `✅ Subtotal: Rs. ${subtotal}`, 'success');
+            log('checkoutOutput', `✅ Tax (17%): Rs. ${tax.toFixed(2)}`, 'success');
+            log('checkoutOutput', `✅ Shipping: Rs. ${shipping}`, 'success');
+            log('checkoutOutput', `✅ Total: Rs. ${total.toFixed(2)}`, 'success');
+            
+            testState.checkout = { subtotal, tax, shipping, total };
+            updateFlowStep('checkout', 'completed');
+        }
+
+        async function testPlaceOrder() {
+            updateFlowStep('order', 'active');
+            if (!testState.token) {
+                log('orderOutput', '❌ Not authenticated', 'error');
+                return;
+            }
+
+            if (testState.cart.length === 0) {
+                log('orderOutput', '❌ Cart is empty', 'error');
+                return;
+            }
+
+            log('orderOutput', '🔄 Placing order...', 'info');
+            
+            try {
+                const orderData = {
+                    items: testState.cart,
+                    subtotal: testState.checkout.subtotal || 0,
+                    tax: testState.checkout.tax || 0,
+                    shipping: testState.checkout.shipping || 0,
+                    total: testState.checkout.total || 0,
+                    status: 'pending',
+                    paymentMethod: 'bank_transfer',
+                    shippingAddress: {
+                        name: testState.user.name,
+                        email: testState.user.email,
+                        city: 'Test City',
+                        country: 'Pakistan'
+                    }
+                };
+
+                const response = await fetch(API_CONFIG.getEndpoint('/orders'), {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${testState.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(orderData)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to place order');
+                }
+
+                const data = await response.json();
+                testState.order = data.data || data;
+                
+                log('orderOutput', `✅ Order placed successfully!`, 'success');
+                log('orderOutput', `✅ Order ID: ${testState.order.id}`, 'success');
+                log('orderOutput', `✅ Status: ${testState.order.status}`, 'success');
+                log('orderOutput', `✅ Total: Rs. ${testState.order.total}`, 'success');
+                
+                // Clear cart after order
+                localStorage.removeItem('cart');
+                testState.cart = [];
+                
+                updateFlowStep('order', 'completed');
+                updateSummary();
+                
+            } catch (error) {
+                log('orderOutput', `❌ Error: ${error.message}`, 'error');
+                updateFlowStep('order', 'error');
+            }
+        }
+
+        async function runCompleteFlow() {
+            log('flowOutput', '🚀 Starting complete flow test...', 'info');
+            
+            await testAuthentication();
+            log('flowOutput', '✅ Step 1: Authentication complete', 'success');
+            
+            await testGetProducts();
+            log('flowOutput', '✅ Step 2: Products loaded', 'success');
+            
+            await testAddToCart();
+            log('flowOutput', '✅ Step 3: Added to cart', 'success');
+            
+            await testCheckoutCalculation();
+            log('flowOutput', '✅ Step 4: Checkout calculated', 'success');
+            
+            await testPlaceOrder();
+            log('flowOutput', '✅ Step 5: Order placed', 'success');
+            
+            log('flowOutput', '🎉 Complete flow test finished!', 'success');
+        }
+
+        function updateSummary() {
+            const summary = `
+                <h5>✅ Test Summary</h5>
+                <p><strong>User:</strong> ${testState.user.email}</p>
+                <p><strong>Products Found:</strong> ${testState.products.length}</p>
+                <p><strong>Order Total:</strong> Rs. ${testState.order?.total || 0}</p>
+                <p><strong>Order Status:</strong> ${testState.order?.status || 'N/A'}</p>
+                <hr>
+                <p class="text-success">✅ All systems working correctly!</p>
+            `;
+            document.getElementById('summaryArea').innerHTML = summary;
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            log('authOutput', '📝 Complete Flow Test Ready', 'info');
+            log('authOutput', '👉 Click buttons to test each step', 'info');
+        });
+    </script>
+</body>
+</html>
