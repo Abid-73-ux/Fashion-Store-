@@ -528,41 +528,27 @@ async function placeOrder() {
   }
 
   try {
-    // CHECK LOGIN - MUST HAVE TOKEN AND USER
+    // Get token - if not available, user needs to login
     const token = localStorage.getItem('token');
-    const userJson = localStorage.getItem('user');
     
-    console.log('🔐 Checking login status...');
-    console.log('Token exists:', !!token);
-    console.log('User exists:', !!userJson);
-    
-    if (!token || !userJson) {
-      console.error('❌ Not logged in!');
-      showNotification('error', 'Session expired. Please login again.');
+    if (!token) {
+      console.warn('⚠️ No token found - user needs to login');
+      showNotification('error', 'Please login to place an order');
       setTimeout(() => {
         window.location.href = 'login.html?redirect=checkout.html';
       }, 1500);
       return;
     }
     
-    let user;
-    try {
-      user = JSON.parse(userJson);
-      console.log('✅ User data:', user);
-    } catch (e) {
-      console.error('❌ Invalid user data in localStorage');
-      showNotification('error', 'Session error. Please login again.');
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      setTimeout(() => {
-        window.location.href = 'login.html?redirect=checkout.html';
-      }, 1500);
-      return;
-    }
+    console.log('📋 Placing order with token...');
 
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
     if (cart.length === 0) {
       showNotification('error', 'Your cart is empty');
+      if (placeOrderBtn) {
+        placeOrderBtn.disabled = false;
+        placeOrderBtn.innerHTML = 'Place Order <i class="bi bi-lock ms-2"></i>';
+      }
       return;
     }
 
@@ -610,7 +596,7 @@ async function placeOrder() {
     const total = storeSettings.calculateGrandTotal(subtotal, shipping);
 
     const orderData = {
-      userId: user.id,
+      userId: parseInt(localStorage.getItem('userId') || '0'),
       firstName: checkoutData.customerInfo.firstName,
       lastName: checkoutData.customerInfo.lastName,
       email: checkoutData.customerInfo.email,
@@ -628,8 +614,7 @@ async function placeOrder() {
       notes: checkoutData.customerInfo.notes
     };
 
-    console.log('📋 Sending order data:', orderData);
-    console.log('🔑 Using token:', token);
+    console.log('� Sending order to API...');
 
     const response = await fetch(API_CONFIG.getEndpoint('/v1/orders/create'), {
       method: 'POST',
@@ -640,16 +625,29 @@ async function placeOrder() {
       body: JSON.stringify(orderData)
     });
 
-    console.log('📊 Response status:', response.status);
+    console.log('� Response status:', response.status);
+
+    // Handle 401 Unauthorized (token expired or invalid)
+    if (response.status === 401) {
+      console.error('❌ Token unauthorized - session expired');
+      showNotification('error', 'Your session has expired. Please login again.');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('userId');
+      setTimeout(() => {
+        window.location.href = 'login.html?redirect=checkout.html';
+      }, 1500);
+      return;
+    }
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('❌ API Error:', errorData);
+      console.error('❌ Order creation failed:', errorData);
       throw new Error(errorData.message || 'Failed to create order');
     }
 
     const result = await response.json();
-    console.log('✅ Order created:', result);
+    console.log('✅ Order created successfully:', result);
     
     const orderId = result.data?.orderId || result.data?.id;
 
