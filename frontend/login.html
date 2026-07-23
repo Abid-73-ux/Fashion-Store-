@@ -184,18 +184,6 @@
                     <button type="submit" class="btn btn-login">Login</button>
                 </form>
                 
-                <div class="divider"><span>Or continue with</span></div>
-                
-                <button class="btn-social" onclick="alert('Google Sign-In will be implemented with backend')">
-                    <i class="bi bi-google" style="color: #ea4335;"></i>
-                    <span>Continue with Google</span>
-                </button>
-                
-                <button class="btn-social" onclick="alert('Facebook Login will be implemented with backend')">
-                    <i class="bi bi-facebook" style="color: #1877f2;"></i>
-                    <span>Continue with Facebook</span>
-                </button>
-                
                 <p class="text-center mt-4">
                     Don't have an account? 
                     <a href="register.html" style="color: var(--secondary-color); font-weight: 600; text-decoration: none;">Register Now</a>
@@ -212,26 +200,130 @@
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/toast.js"></script>
+
     <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        console.log('📝 Login page loaded');
+        
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('remember').checked;
             
-            // Simulate login
-            const user = {
-                email: email,
-                name: email.split('@')[0],
-                role: 'customer'
-            };
+            console.log('🔐 Attempting login with:', email);
             
-            localStorage.setItem('currentUser', JSON.stringify(user));
-            
-            alert('Login successful! Redirecting...');
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 1000);
+            try {
+                // Call backend API to authenticate
+                const response = await fetch(API_CONFIG.getEndpoint('/auth/login'), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
+                
+                console.log('📊 Login response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('❌ Login failed:', errorData);
+                    throw new Error(errorData.error || 'Login failed');
+                }
+                
+                const data = await response.json();
+                console.log('✅ Login successful:', data);
+                
+                // Save token and user to localStorage
+                const token = data.token;
+                const user = data.user;
+                
+                if (!token) {
+                    throw new Error('No token received from server');
+                }
+                
+                console.log('� Saving to localStorage:', { token, user });
+                
+                localStorage.setItem('token', token);
+                localStorage.setItem('user', JSON.stringify(user));
+                
+                if (user?.id) {
+                    localStorage.setItem('userId', user.id);
+                }
+                
+                if (rememberMe) {
+                    localStorage.setItem('rememberMe', 'true');
+                }
+                
+                Toast.success('Login successful! Redirecting...');
+                
+                // Check for redirect parameter
+                const params = new URLSearchParams(window.location.search);
+                const redirect = params.get('redirect');
+                
+                setTimeout(() => {
+                    if (redirect) {
+                        console.log('� Redirecting to:', redirect);
+                        window.location.href = redirect;
+                    } else {
+                        console.log('🔄 Redirecting to home');
+                        window.location.href = 'index.html';
+                    }
+                }, 1500);
+                
+            } catch (error) {
+                console.error('❌ Login error:', error);
+                Toast.error(error.message || 'Login failed. Please try again.');
+            }
+        });
+    </script>
+                
+                // Save token and user to localStorage
+                const token = data.data?.token || data.token;
+                const user = data.data?.user || data.user;
+                
+                if (!token) {
+                    throw new Error('No token received from server');
+                }
+                
+                console.log('💾 Saving to localStorage:', { token, user });
+                
+                localStorage.setItem('token', token);
+                localStorage.setItem('user', JSON.stringify(user));
+                
+                if (user?.id) {
+                    localStorage.setItem('userId', user.id);
+                }
+                
+                if (rememberMe) {
+                    localStorage.setItem('rememberMe', 'true');
+                }
+                
+                Toast.success('Login successful! Redirecting...');
+                
+                // Check for redirect parameter
+                const params = new URLSearchParams(window.location.search);
+                const redirect = params.get('redirect');
+                
+                setTimeout(() => {
+                    if (redirect) {
+                        console.log('🔄 Redirecting to:', redirect);
+                        window.location.href = redirect;
+                    } else {
+                        console.log('🔄 Redirecting to home');
+                        window.location.href = 'index.html';
+                    }
+                }, 1500);
+                
+            } catch (error) {
+                console.error('❌ Login error:', error);
+                Toast.error(error.message || 'Login failed. Please try again.');
+            }
         });
     </script>
     

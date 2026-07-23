@@ -97,3 +97,16 @@ exports.getMe = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+// Validate token
+exports.validate = async (req, res) => {
+    try {
+        const user = await User.findByPk(req.user.id);
+        if (!user) {
+            return res.status(401).json({ success: false, error: 'User not found' });
+        }
+        res.status(200).json({ success: true, user });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
