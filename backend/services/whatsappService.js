@@ -5,7 +5,6 @@
  */
 
 const axios = require('axios');
-const { WhatsAppInteraction } = require('../models');
 const logger = require('../utils/logger');
 
 /**
@@ -174,42 +173,31 @@ const sendMessage = async (params) => {
         // Send via WhatsApp API (Twilio or similar)
         const response = await sendViaAPI(normalizedNumber, message);
 
-        // Record successful interaction
-        const interaction = await WhatsAppInteraction.create({
-            orderId,
-            userId,
-            phoneNumber: normalizedNumber,
-            eventType,
-            message,
-            status: 'sent',
-            externalMessageId: response.messageId,
-            attempt,
-            sentAt: new Date()
-        });
+        // Log successful send (commented out DB storage for now)
+        // const interaction = await WhatsAppInteraction.create({...});
 
         logger.info(`WhatsApp: Message sent successfully. ID: ${response.messageId}`);
 
         return {
             success: true,
             messageId: response.messageId,
-            interaction: interaction.toJSON()
+            interaction: {
+                orderId,
+                userId,
+                phoneNumber: normalizedNumber,
+                eventType,
+                status: 'sent',
+                externalMessageId: response.messageId,
+                attempt,
+                sentAt: new Date()
+            }
         };
 
     } catch (error) {
         logger.error(`WhatsApp Error (Attempt ${attempt}):`, error.message);
 
-        // Record failed attempt
-        await WhatsAppInteraction.create({
-            orderId,
-            userId,
-            phoneNumber: phoneNumber,
-            eventType,
-            message,
-            status: 'failed',
-            attempt,
-            errorMessage: error.message,
-            sentAt: new Date()
-        }).catch(err => logger.error('Error recording WhatsApp interaction:', err));
+        // Log failed attempt (commented out DB storage for now)
+        // await WhatsAppInteraction.create({...});
 
         // Retry logic
         if (attempt < RETRY_CONFIG.maxAttempts) {
@@ -454,54 +442,20 @@ const queueNotification = async (notificationType, orderId, customerId, data = {
 
 /**
  * Get WhatsApp interaction history
+ * (Disabled for now - no database storage)
  */
 const getInteractionHistory = async (orderId) => {
-    try {
-        const interactions = await WhatsAppInteraction.findAll({
-            where: { orderId },
-            order: [['createdAt', 'DESC']]
-        });
-
-        return interactions.map(i => i.toJSON());
-    } catch (error) {
-        logger.error(`Error fetching WhatsApp interactions:`, error);
-        return [];
-    }
+    logger.info(`WhatsApp interaction history lookup for order ${orderId} - feature disabled`);
+    return [];
 };
 
 /**
  * Retry failed notifications
+ * (Disabled for now - no database storage)
  */
 const retryFailedNotifications = async (orderId) => {
-    try {
-        const failed = await WhatsAppInteraction.findAll({
-            where: {
-                orderId,
-                status: 'failed'
-            }
-        });
-
-        const results = [];
-        for (const interaction of failed) {
-            try {
-                const result = await sendMessage({
-                    phoneNumber: interaction.phoneNumber,
-                    message: interaction.message,
-                    orderId: interaction.orderId,
-                    userId: interaction.userId,
-                    eventType: interaction.eventType
-                });
-                results.push(result);
-            } catch (error) {
-                logger.error(`Retry failed for notification:`, error);
-            }
-        }
-
-        return results;
-    } catch (error) {
-        logger.error(`Error retrying notifications:`, error);
-        return [];
-    }
+    logger.info(`Retry failed notifications for order ${orderId} - feature disabled`);
+    return [];
 };
 
 module.exports = {
