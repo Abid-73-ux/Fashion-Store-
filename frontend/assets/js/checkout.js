@@ -26,6 +26,24 @@ function showNotification(type, message) {
 document.addEventListener('DOMContentLoaded', () => {
   console.log('🔄 Checkout: Starting initialization');
   
+  // CHECK LOGIN STATUS FIRST!
+  const token = localStorage.getItem('token');
+  const user = localStorage.getItem('user');
+  
+  console.log('🔐 Token exists:', !!token);
+  console.log('👤 User exists:', !!user);
+  
+  if (!token || !user) {
+    console.error('❌ User not logged in - redirecting to login');
+    Toast.error('Please login to proceed with checkout');
+    setTimeout(() => {
+      window.location.href = 'login.html?redirect=checkout.html';
+    }, 1500);
+    return;
+  }
+  
+  console.log('✅ User is logged in - proceeding with checkout');
+  
   // Initialize store settings (uses defaults immediately, no API call)
   storeSettings.initialize();
   console.log('✅ Store settings ready');
@@ -33,6 +51,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // Get cart from localStorage
   const cart = JSON.parse(localStorage.getItem('cart')) || [];
   console.log('🛒 Cart loaded:', cart);
+  
+  if (cart.length === 0) {
+    console.warn('⚠️ Cart is empty');
+    Toast.error('Your cart is empty. Add items before checkout.');
+    setTimeout(() => {
+      window.location.href = 'cart.html';
+    }, 2000);
+    return;
+  }
   
   // Setup form and payment handlers
   setupEventListeners();
@@ -511,10 +538,35 @@ async function placeOrder() {
   }
 
   try {
-    const user = getCurrentUser();
-    if (!user) {
-      showNotification('error', 'User not logged in');
-      window.location.href = 'login.html?redirect=checkout.html';
+    // CHECK LOGIN - MUST HAVE TOKEN AND USER
+    const token = localStorage.getItem('token');
+    const userJson = localStorage.getItem('user');
+    
+    console.log('🔐 Checking login status...');
+    console.log('Token exists:', !!token);
+    console.log('User exists:', !!userJson);
+    
+    if (!token || !userJson) {
+      console.error('❌ Not logged in!');
+      showNotification('error', 'Session expired. Please login again.');
+      setTimeout(() => {
+        window.location.href = 'login.html?redirect=checkout.html';
+      }, 1500);
+      return;
+    }
+    
+    let user;
+    try {
+      user = JSON.parse(userJson);
+      console.log('✅ User data:', user);
+    } catch (e) {
+      console.error('❌ Invalid user data in localStorage');
+      showNotification('error', 'Session error. Please login again.');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setTimeout(() => {
+        window.location.href = 'login.html?redirect=checkout.html';
+      }, 1500);
       return;
     }
 
@@ -586,21 +638,29 @@ async function placeOrder() {
       notes: checkoutData.customerInfo.notes
     };
 
+    console.log('📋 Sending order data:', orderData);
+    console.log('🔑 Using token:', token);
+
     const response = await fetch(API_CONFIG.getEndpoint('/v1/orders/create'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(orderData)
     });
 
+    console.log('📊 Response status:', response.status);
+
     if (!response.ok) {
       const errorData = await response.json();
+      console.error('❌ API Error:', errorData);
       throw new Error(errorData.message || 'Failed to create order');
     }
 
     const result = await response.json();
+    console.log('✅ Order created:', result);
+    
     const orderId = result.data?.orderId || result.data?.id;
 
     if (paymentMethod === 'Bank_Transfer' && paymentProofFile) {
@@ -611,7 +671,7 @@ async function placeOrder() {
         await fetch(API_CONFIG.getEndpoint(`/v1/orders/${orderId}/payment-proof`), {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${token}`
           },
           body: formData
         });
@@ -630,7 +690,7 @@ async function placeOrder() {
     }, 1500);
 
   } catch (error) {
-    console.error('Error placing order:', error);
+    console.error('❌ Error placing order:', error);
     showNotification('error', error.message || 'Failed to place order. Please try again.');
     
     if (placeOrderBtn) {
