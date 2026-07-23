@@ -5,30 +5,90 @@ const PaymentProof = require('../models/PaymentProof');
 const OrderStatusChange = require('../models/OrderStatusChange');
 const User = require('../models/User');
 const sequelize = require('../database/sequelize');
-const { Op } = require('sequelize');
 const validationService = require('../services/validationService');
 const fileService = require('../services/fileService');
+const emailNotificationService = require('../services/emailNotificationService');
+const whatsappService = require('../services/whatsappService');
 
 // ==================== Task 2.1: Create Order ====================
 
 /**
  * POST /api/v1/orders/create
  * Create a new order with customer info, cart items, and payment details
+ * Handles both checkout.js format and API format
  */
 exports.createOrder = async (req, res) => {
   const t = await sequelize.transaction();
 
   try {
-    const { customerInfo, paymentMethod, couponCode, paymentProofId, cartItems } = req.body;
     const userId = req.user.id;
+    let customerInfo, paymentMethod, couponCode, paymentProofId, cartItems;
 
-    // Validate customer information
-    const validation = validationService.validateCustomerInfo(customerInfo);
-    if (!validation.isValid) {
+    // Support both old and new data formats
+    // Format 1 (checkout.js): { userId, items, subtotal, tax, shipping, discount, total, paymentMethod, paymentStatus, orderStatus, shippingAddress, notes, customerInfo }
+    // Format 2 (API): { customerInfo, paymentMethod, couponCode, paymentProofId, cartItems }
+    
+    if (req.body.customerInfo && req.body.cartItems) {
+      // New format from API
+      ({ customerInfo, paymentMethod, couponCode, paymentProofId, cartItems } = req.body);
+    } else if (req.body.items && req.body.paymentMethod) {
+      // Old format from checkout.js - build customer info from body
+      const {
+        items,
+        subtotal: providedSubtotal,
+        tax: providedTax,
+        shipping: providedShipping,
+        discount: providedDiscount,
+        total: providedTotal,
+        paymentStatus: providedPaymentStatus,
+        orderStatus: providedOrderStatus,
+        shippingAddress,
+        notes,
+        firstName,
+        lastName,
+        email,
+        whatsappNumber
+      } = req.body;
+
+      customerInfo = {
+        firstName: firstName || '',
+        lastName: lastName || '',
+        email: email || '',
+        whatsappNumber: whatsappNumber || '',
+        shippingAddress: shippingAddress || {}
+      };
+
+      paymentMethod = req.body.paymentMethod;
+      couponCode = req.body.couponCode || null;
+      paymentProofId = req.body.paymentProofId || null;
+      cartItems = items.map(item => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        size: item.size,
+        color: item.color
+      }));
+    } else {
       return res.status(400).json({
         success: false,
-        message: 'Customer information validation failed',
-        error: validation.errors
+        message: 'Invalid order data format',
+        error: { data: 'Missing required fields' }
+      });
+    }
+
+    // Validate customer information
+    if (!customerInfo.email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Customer email is required',
+        error: { email: 'Email is required' }
+      });
+    }
+
+    if (!customerInfo.shippingAddress || !Object.keys(customerInfo.shippingAddress).length) {
+      return res.status(400).json({
+        success: false,
+        message: 'Shipping address is required',
+        error: { shippingAddress: 'Shipping address is required' }
       });
     }
 
@@ -133,7 +193,7 @@ exports.createOrder = async (req, res) => {
     const dateStr = date.toISOString().split('T')[0].replace(/-/g, '');
     const orderId = `TAK-${dateStr}-${String(orderNumber).padStart(5, '0')}`;
 
-    // Create order record
+    // Create order record with customer info
     const order = await Order.create(
       {
         orderId,
@@ -148,7 +208,12 @@ exports.createOrder = async (req, res) => {
         paymentStatus: 'pending',
         orderStatus: 'pending',
         shippingAddress: customerInfo.shippingAddress,
-        couponCode: couponCode || null
+        couponCode: couponCode || null,
+        customerFirstName: customerInfo.firstName,
+        customerLastName: customerInfo.lastName,
+        customerEmail: customerInfo.email,
+        customerWhatsappNumber: customerInfo.whatsappNumber,
+        notes: req.body.notes || null
       },
       { transaction: t }
     );
@@ -191,10 +256,26 @@ exports.createOrder = async (req, res) => {
 
     // Trigger background jobs (email, WhatsApp) - non-blocking
     // These can fail without rejecting the order
-    setImmediate(() => {
-      // TODO: Send order confirmation email
-      // TODO: Send WhatsApp notification
-      console.log('Background jobs triggered for order:', orderId);
+    setImmediate(async () => {
+      try {
+        const customer = {
+          id: userId,
+          firstName: customerInfo.firstName,
+          lastName: customerInfo.lastName,
+          email: customerInfo.email,
+          whatsappNumber: customerInfo.whatsappNumber
+        };
+
+        // Send email confirmation
+        await emailNotificationService.sendOrderConfirmation(order.toJSON(), customer);
+
+        // Send WhatsApp notification
+        await whatsappService.notifyOrderPlaced(order.toJSON(), customer);
+
+        console.log('✅ Background notifications sent for order:', orderId);
+      } catch (error) {
+        console.error('❌ Error sending background notifications:', error);
+      }
     });
 
     res.status(201).json({
@@ -533,14 +614,34 @@ exports.verifyPayment = async (req, res) => {
 
     await order.save();
 
-    // Trigger background jobs (WhatsApp notification, email)
-    setImmediate(() => {
-      // TODO: Send WhatsApp notification
-      // TODO: Send email notification
-      console.log(
-        `Background jobs triggered for payment ${decision}:`,
-        orderId
-      );
+    // Trigger background jobs (email, WhatsApp notification)
+    setImmediate(async () => {
+      try {
+        const user = await User.findByPk(order.userId);
+        if (!user) return;
+
+        const customer = {
+          id: user.id,
+          firstName: order.customerFirstName || user.name.split(' ')[0],
+          lastName: order.customerLastName || user.name.split(' ')[1] || '',
+          email: order.customerEmail || user.email,
+          whatsappNumber: order.customerWhatsappNumber
+        };
+
+        if (decision === 'approve') {
+          // Send payment verified emails and WhatsApp
+          await emailNotificationService.sendPaymentVerified(order.toJSON(), customer);
+          await whatsappService.notifyPaymentVerified(order.toJSON(), customer);
+        } else {
+          // Send payment rejected notification
+          await emailNotificationService.sendPaymentRejected(order.toJSON(), customer, reason);
+          await whatsappService.notifyPaymentRejected(order.toJSON(), customer, reason);
+        }
+
+        console.log('✅ Background notifications sent for payment', decision);
+      } catch (error) {
+        console.error('❌ Error sending background notifications:', error);
+      }
     });
 
     res.status(200).json({
@@ -683,9 +784,28 @@ exports.updateOrderStatus = async (req, res) => {
     await t.commit();
 
     // Trigger background jobs (WhatsApp notification)
-    setImmediate(() => {
-      // TODO: Send WhatsApp notification with tracking number if shipped
-      console.log('Background job triggered for status update:', orderId);
+    setImmediate(async () => {
+      try {
+        const fullOrder = await Order.findOne({ where: { orderId } });
+        const user = await User.findByPk(fullOrder.userId);
+        
+        if (!user) return;
+
+        const customer = {
+          id: user.id,
+          firstName: fullOrder.customerFirstName || user.name.split(' ')[0],
+          lastName: fullOrder.customerLastName || user.name.split(' ')[1] || '',
+          email: fullOrder.customerEmail || user.email,
+          whatsappNumber: fullOrder.customerWhatsappNumber
+        };
+
+        // Send order status notification
+        await whatsappService.notifyOrderStatusChange(fullOrder.toJSON(), customer, orderStatus, trackingNumber);
+
+        console.log('✅ WhatsApp notification sent for status update:', orderId);
+      } catch (error) {
+        console.error('❌ Error sending status notification:', error);
+      }
     });
 
     res.status(200).json({
@@ -707,6 +827,7 @@ exports.updateOrderStatus = async (req, res) => {
       message: 'Error updating order status',
       error: error.message
     });
+
   }
 };
 

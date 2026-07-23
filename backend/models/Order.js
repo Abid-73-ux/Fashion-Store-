@@ -81,6 +81,22 @@ const Order = sequelize.define('Order', {
   couponCode: {
     type: DataTypes.STRING(50),
     allowNull: true
+  },
+  customerFirstName: {
+    type: DataTypes.STRING(100),
+    allowNull: true
+  },
+  customerLastName: {
+    type: DataTypes.STRING(100),
+    allowNull: true
+  },
+  customerEmail: {
+    type: DataTypes.STRING(100),
+    allowNull: true
+  },
+  customerWhatsappNumber: {
+    type: DataTypes.STRING(20),
+    allowNull: true
   }
 }, {
   tableName: 'orders',

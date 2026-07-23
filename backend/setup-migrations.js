@@ -164,6 +164,79 @@ async function setupMigrations() {
       console.log('✅ verifiedAt column already exists');
     }
 
+    // Add customer info columns
+    if (!columnNames.includes('customerFirstName')) {
+      try {
+        await sequelize.query(`
+          ALTER TABLE orders 
+          ADD COLUMN customerFirstName VARCHAR(100) NULL
+        `);
+        console.log('✅ Added customerFirstName column');
+      } catch (err) {
+        if (err.message.includes('already exists')) {
+          console.log('✅ customerFirstName column already exists');
+        } else {
+          throw err;
+        }
+      }
+    } else {
+      console.log('✅ customerFirstName column already exists');
+    }
+
+    if (!columnNames.includes('customerLastName')) {
+      try {
+        await sequelize.query(`
+          ALTER TABLE orders 
+          ADD COLUMN customerLastName VARCHAR(100) NULL
+        `);
+        console.log('✅ Added customerLastName column');
+      } catch (err) {
+        if (err.message.includes('already exists')) {
+          console.log('✅ customerLastName column already exists');
+        } else {
+          throw err;
+        }
+      }
+    } else {
+      console.log('✅ customerLastName column already exists');
+    }
+
+    if (!columnNames.includes('customerEmail')) {
+      try {
+        await sequelize.query(`
+          ALTER TABLE orders 
+          ADD COLUMN customerEmail VARCHAR(100) NULL
+        `);
+        console.log('✅ Added customerEmail column');
+      } catch (err) {
+        if (err.message.includes('already exists')) {
+          console.log('✅ customerEmail column already exists');
+        } else {
+          throw err;
+        }
+      }
+    } else {
+      console.log('✅ customerEmail column already exists');
+    }
+
+    if (!columnNames.includes('customerWhatsappNumber')) {
+      try {
+        await sequelize.query(`
+          ALTER TABLE orders 
+          ADD COLUMN customerWhatsappNumber VARCHAR(20) NULL
+        `);
+        console.log('✅ Added customerWhatsappNumber column');
+      } catch (err) {
+        if (err.message.includes('already exists')) {
+          console.log('✅ customerWhatsappNumber column already exists');
+        } else {
+          throw err;
+        }
+      }
+    } else {
+      console.log('✅ customerWhatsappNumber column already exists');
+    }
+
     // Step 3: Create indexes (only if columns exist)
     console.log('📝 Creating indexes...');
 

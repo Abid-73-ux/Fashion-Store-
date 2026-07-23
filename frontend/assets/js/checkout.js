@@ -569,6 +569,10 @@ async function placeOrder() {
 
     const orderData = {
       userId: user.id,
+      firstName: checkoutData.customerInfo.firstName,
+      lastName: checkoutData.customerInfo.lastName,
+      email: checkoutData.customerInfo.email,
+      whatsappNumber: checkoutData.customerInfo.whatsappNumber,
       items: items,
       subtotal: subtotal,
       tax: tax,

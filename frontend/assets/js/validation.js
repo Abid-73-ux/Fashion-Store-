@@ -61,7 +61,7 @@ const Validation = {
       };
     }
 
-    // Check if pattern exists
+    // Check if pattern exists for this field
     if (this.patterns[fieldName]) {
       const isValid = this.patterns[fieldName].test(value.trim());
       return {
@@ -70,7 +70,7 @@ const Validation = {
       };
     }
 
-    // No pattern found, assume valid if not required
+    // No pattern found - field is valid if it has a value (for fields like state/province)
     return {
       isValid: true,
       message: ''
