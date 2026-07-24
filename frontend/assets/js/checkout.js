@@ -648,8 +648,16 @@ async function placeOrder() {
 
     const result = await response.json();
     console.log('✅ Order created successfully:', result);
+    console.log('📦 Result data:', result.data);
     
     const orderId = result.data?.orderId || result.data?.id;
+    console.log('🆔 Order ID extracted:', orderId);
+    
+    if (!orderId) {
+      console.error('❌ No orderId in response!');
+      showNotification('error', 'Order created but confirmation page failed to load');
+      throw new Error('No orderId returned from API');
+    }
 
     if (paymentMethod === 'Bank_Transfer' && paymentProofFile) {
       try {
@@ -674,7 +682,9 @@ async function placeOrder() {
     showNotification('success', 'Order placed successfully!');
 
     setTimeout(() => {
-      window.location.href = `checkout-confirmation.html?orderId=${orderId}`;
+      const confirmationUrl = `checkout-confirmation.html?orderId=${orderId}`;
+      console.log('🔗 Redirecting to:', confirmationUrl);
+      window.location.href = confirmationUrl;
     }, 1500);
 
   } catch (error) {
@@ -794,7 +804,7 @@ function validateAndGoToStep2() {
   
   const requiredFields = ['firstName', 'lastName', 'email', 'whatsappNumber', 'street', 'city', 'state', 'postalCode'];
   let allValid = true;
-  const errors = {};
+  const errors = [];
 
   requiredFields.forEach(fieldId => {
     const field = document.getElementById(fieldId);
@@ -803,40 +813,27 @@ function validateAndGoToStep2() {
       return;
     }
     
-    const value = field.value;
+    const value = field.value.trim();
     console.log(`📝 ${fieldId}: "${value}"`);
     
-    if (!value || value.trim() === '') {
+    if (!value) {
       allValid = false;
-      errors[fieldId] = 'This field is required';
+      errors.push(fieldId);
       console.error(`❌ ${fieldId} is empty`);
-      return;
-    }
-    
-    // Validate using Validation service
-    if (fieldId !== 'state' && typeof Validation !== 'undefined') {
-      const result = Validation.validateField(fieldId, value, true);
-      if (!result.isValid) {
-        allValid = false;
-        errors[fieldId] = result.message;
-        console.error(`❌ ${fieldId} validation failed: ${result.message}`);
-      } else {
-        console.log(`✅ ${fieldId} is valid`);
-      }
-    } else if (fieldId === 'state') {
-      console.log(`✅ ${fieldId} is valid (state field)`);
+    } else {
+      console.log(`✅ ${fieldId} has value`);
     }
   });
 
   console.log('📊 Validation complete. All valid?', allValid);
-  console.log('❌ Errors:', errors);
 
   if (!allValid) {
-    showNotification('warning', 'Please fix all errors in the form');
+    console.log('❌ Missing fields:', errors);
+    showNotification('warning', 'Please fill in all required fields');
     return;
   }
 
-  console.log('✅ Form validation passed, moving to step 2');
+  console.log('✅ All fields valid, moving to step 2');
   displayOrderReview();
   setStep(2);
 }

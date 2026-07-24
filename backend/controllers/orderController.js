@@ -193,9 +193,10 @@ exports.createOrder = async (req, res) => {
       }
     }
 
-    // Calculate tax and shipping (hardcoded for now - can be from StoreSettings)
-    const tax = Math.round((subtotal - discount) * 0.17 * 100) / 100; // 17% tax
-    const shipping = 250; // Fixed shipping
+    // Calculate tax and shipping (same as frontend)
+    const taxRate = 0.10; // 10% tax (matches frontend)
+    const tax = Math.round(subtotal * taxRate * 100) / 100;
+    const shipping = 500; // Rs 500 shipping (matches frontend)
     const total = subtotal - discount + tax + shipping;
 
     // Generate order ID
@@ -277,15 +278,13 @@ exports.createOrder = async (req, res) => {
           whatsappNumber: customerInfo.whatsappNumber
         };
 
-        // Send email confirmation
-        await emailNotificationService.sendOrderConfirmation(order.toJSON(), customer);
+        // Email and WhatsApp notifications DISABLED - not required for now
+        // await emailNotificationService.sendOrderConfirmation(order.toJSON(), customer);
+        // await whatsappService.notifyOrderPlaced(order.toJSON(), customer);
 
-        // Send WhatsApp notification
-        await whatsappService.notifyOrderPlaced(order.toJSON(), customer);
-
-        console.log('✅ Background notifications sent for order:', orderId);
+        console.log('✅ Order created successfully:', orderId);
       } catch (error) {
-        console.error('❌ Error sending background notifications:', error);
+        console.error('❌ Error in background tasks:', error);
       }
     });
 
@@ -371,9 +370,9 @@ exports.getOrder = async (req, res) => {
       message: 'Order retrieved successfully',
       data: {
         orderId: order.orderId,
-        customerName: order.User ? order.User.name : 'Unknown',
-        customerEmail: order.User ? order.User.email : 'N/A',
-        customerPhone: order.User ? order.User.phone : 'N/A',
+        customerName: order.User ? order.User.name : `${order.customerFirstName || ''} ${order.customerLastName || ''}`.trim() || 'Unknown',
+        customerEmail: order.User ? order.User.email : order.customerEmail || 'N/A',
+        customerPhone: order.User ? order.User.phone : order.customerWhatsappNumber || 'N/A',
         items: order.items,
         subtotal: order.subtotal,
         tax: order.tax,
@@ -396,7 +395,10 @@ exports.getOrder = async (req, res) => {
           : null,
         statusHistory: order.OrderStatusChanges,
         createdAt: order.createdAt,
-        updatedAt: order.updatedAt
+        updatedAt: order.updatedAt,
+        customerFirstName: order.customerFirstName,
+        customerLastName: order.customerLastName,
+        customerWhatsappNumber: order.customerWhatsappNumber
       }
     });
   } catch (error) {
@@ -643,19 +645,18 @@ exports.verifyPayment = async (req, res) => {
           whatsappNumber: order.customerWhatsappNumber
         };
 
-        if (decision === 'approve') {
-          // Send payment verified emails and WhatsApp
-          await emailNotificationService.sendPaymentVerified(order.toJSON(), customer);
-          await whatsappService.notifyPaymentVerified(order.toJSON(), customer);
-        } else {
-          // Send payment rejected notification
-          await emailNotificationService.sendPaymentRejected(order.toJSON(), customer, reason);
-          await whatsappService.notifyPaymentRejected(order.toJSON(), customer, reason);
-        }
+        // Email and WhatsApp notifications DISABLED - not required for now
+        // if (decision === 'approve') {
+        //   await emailNotificationService.sendPaymentVerified(order.toJSON(), customer);
+        //   await whatsappService.notifyPaymentVerified(order.toJSON(), customer);
+        // } else {
+        //   await emailNotificationService.sendPaymentRejected(order.toJSON(), customer, reason);
+        //   await whatsappService.notifyPaymentRejected(order.toJSON(), customer, reason);
+        // }
 
-        console.log('✅ Background notifications sent for payment', decision);
+        console.log('✅ Payment', decision, 'for order:', orderId);
       } catch (error) {
-        console.error('❌ Error sending background notifications:', error);
+        console.error('❌ Error in background tasks:', error);
       }
     });
 
@@ -814,12 +815,12 @@ exports.updateOrderStatus = async (req, res) => {
           whatsappNumber: fullOrder.customerWhatsappNumber
         };
 
-        // Send order status notification
-        await whatsappService.notifyOrderStatusChange(fullOrder.toJSON(), customer, orderStatus, trackingNumber);
+        // WhatsApp notification DISABLED - not required for now
+        // await whatsappService.notifyOrderStatusChange(fullOrder.toJSON(), customer, orderStatus, trackingNumber);
 
-        console.log('✅ WhatsApp notification sent for status update:', orderId);
+        console.log('✅ Order status updated for:', orderId);
       } catch (error) {
-        console.error('❌ Error sending status notification:', error);
+        console.error('❌ Error in background tasks:', error);
       }
     });
 

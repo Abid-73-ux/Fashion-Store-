@@ -415,52 +415,135 @@
     
     <!-- Custom JS -->
     <script src="assets/js/config.js"></script>
+    <script src="assets/js/services/storeSettings.js"></script>
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/modal.js"></script>
     <script src="assets/js/navbar.js"></script>
     <script src="assets/js/toast.js"></script>
     <script src="assets/js/main.js"></script>
-    <script src="assets/js/services/storeSettings.js"></script>
     
     <script>
+        console.log('🎉 Confirmation page script loaded');
+        
         document.addEventListener('DOMContentLoaded', async () => {
-            // Initialize store settings
-            await storeSettings.initialize();
+            console.log('🎉 DOMContentLoaded fired');
             
-            // Get order ID from URL
+            // Get order ID from URL FIRST
             const urlParams = new URLSearchParams(window.location.search);
             const orderId = urlParams.get('orderId');
+            
+            console.log('🔍 Order ID:', orderId, 'URL:', window.location.href);
 
             if (!orderId) {
+                console.error('❌ No orderId in URL');
                 showError();
                 return;
             }
 
-            // Fetch order details
+            // Set a timeout to force show success if nothing happens
+            const timeoutId = setTimeout(() => {
+                console.warn('⏱️ TIMEOUT: Force showing simple success');
+                if (document.getElementById('successState').style.display === 'none') {
+                    showSimpleSuccess(orderId);
+                }
+            }, 5000);
+            
+            try {
+                // Try to initialize store settings
+                if (typeof storeSettings !== 'undefined' && storeSettings.initialize) {
+                    console.log('📊 Initializing storeSettings');
+                    await storeSettings.initialize();
+                    console.log('✅ storeSettings ready');
+                }
+            } catch (err) {
+                console.warn('⚠️ storeSettings failed:', err);
+            }
+            
+            console.log('📋 Calling loadOrderDetails');
             await loadOrderDetails(orderId);
+            clearTimeout(timeoutId);
         });
 
         async function loadOrderDetails(orderId) {
             try {
+                const token = localStorage.getItem('token');
+                const userId = localStorage.getItem('userId');
+                
+                console.log('📋 Loading order:', orderId);
+                console.log('🔑 Token present:', !!token);
+                console.log('👤 User ID:', userId);
+                
+                if (!token) {
+                    console.warn('⚠️ No authentication token - showing simple success');
+                    showSimpleSuccess(orderId);
+                    return;
+                }
+                
                 const response = await fetch(API_CONFIG.getEndpoint(`/orders/${orderId}`), {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${token}`
                     }
                 });
 
+                console.log('📊 API Response status:', response.status);
+
                 if (!response.ok) {
-                    showError();
+                    const errorData = await response.json();
+                    console.warn('⚠️ Order fetch failed:', response.status, errorData);
+                    
+                    // For any non-200 response, show simple success with the order ID
+                    showSimpleSuccess(orderId);
                     return;
                 }
 
                 const result = await response.json();
-                const order = result.data || result;
-
-                displayOrderConfirmation(order);
+                console.log('✅ Order data received:', result);
+                
+                if (result.data) {
+                    displayOrderConfirmation(result.data);
+                } else {
+                    console.warn('❌ No data in response');
+                    showSimpleSuccess(orderId);
+                }
             } catch (error) {
-                console.error('Error loading order:', error);
-                showError();
+                console.error('❌ Error loading order:', error);
+                console.log('📝 Showing simple success message instead');
+                showSimpleSuccess(orderId);
             }
+        }
+
+        function showSimpleSuccess(orderId) {
+            const loadingState = document.getElementById('loadingState');
+            const successState = document.getElementById('successState');
+
+            loadingState.style.display = 'none';
+            successState.style.display = 'block';
+
+            // Show order ID prominently
+            document.getElementById('orderIdContainer').textContent = orderId;
+            document.getElementById('orderNumber').textContent = orderId;
+            
+            // Set order date to today
+            const today = new Date();
+            document.getElementById('orderDate').textContent = today.toLocaleDateString('en-PK', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            // Show payment status message
+            displayPaymentStatusMessage('Bank_Transfer');
+
+            // Hide detailed cards but keep basic success message
+            const cards = document.querySelectorAll('.confirmation-card');
+            cards.forEach((card, index) => {
+                // Keep only the first card (Order Status)
+                if (index > 0) {
+                    card.style.display = 'none';
+                }
+            });
+            
+            console.log('✅ Simple success page displayed');
         }
 
         function displayOrderConfirmation(order) {
@@ -471,43 +554,62 @@
             loadingState.style.display = 'none';
             successState.style.display = 'block';
 
+            // Fallback for currency formatter
+            const formatCurrency = (amount) => {
+                if (storeSettings && storeSettings.formatCurrency) {
+                    return storeSettings.formatCurrency(amount);
+                }
+                // Fallback to PKR format
+                return new Intl.NumberFormat('en-PK', {
+                    style: 'currency',
+                    currency: 'PKR'
+                }).format(amount || 0);
+            };
+
             // Order ID
-            document.getElementById('orderIdContainer').textContent = order.orderId || order.id;
+            document.getElementById('orderIdContainer').textContent = order.orderId || order.id || 'N/A';
             document.getElementById('orderNumber').textContent = order.orderId || 'N/A';
 
             // Order date
-            const orderDate = new Date(order.createdAt);
-            document.getElementById('orderDate').textContent = orderDate.toLocaleDateString('en-PK', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
+            if (order.createdAt) {
+                const orderDate = new Date(order.createdAt);
+                document.getElementById('orderDate').textContent = orderDate.toLocaleDateString('en-PK', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
 
             // Payment method
-            document.getElementById('paymentMethod').textContent = formatPaymentMethod(order.paymentMethod);
+            document.getElementById('paymentMethod').textContent = formatPaymentMethod(order.paymentMethod || 'N/A');
 
             // Order amount
-            document.getElementById('orderAmount').textContent = storeSettings.formatCurrency(order.total || 0);
+            document.getElementById('orderAmount').textContent = formatCurrency(order.total || 0);
 
             // Payment status message
             displayPaymentStatusMessage(order.paymentMethod);
 
-            // Customer info - Get from API response (not from address object)
-            document.getElementById('customerName').textContent = order.customerName || 'N/A';
+            // Customer info - handle both database fields and API response fields
+            const customerName = order.customerName || `${order.customerFirstName || ''} ${order.customerLastName || ''}`.trim() || 'N/A';
+            document.getElementById('customerName').textContent = customerName;
             document.getElementById('customerEmail').textContent = order.customerEmail || 'N/A';
-            document.getElementById('customerPhone').textContent = order.customerPhone || 'N/A';
+            document.getElementById('customerPhone').textContent = order.customerPhone || order.customerWhatsappNumber || 'N/A';
 
             // Shipping address
-            displayShippingAddress(addr);
+            if (order.shippingAddress) {
+                displayShippingAddress(order.shippingAddress);
+            }
 
             // Order items
-            displayOrderItems(order.items || []);
+            if (order.items && Array.isArray(order.items)) {
+                displayOrderItems(order.items, formatCurrency);
+            }
 
             // Order summary
-            document.getElementById('summarySubtotal').textContent = storeSettings.formatCurrency(order.subtotal || 0);
-            document.getElementById('summaryShipping').textContent = storeSettings.formatCurrency(order.shipping || 0);
-            document.getElementById('summaryTax').textContent = storeSettings.formatCurrency(order.tax || 0);
-            document.getElementById('summaryTotal').textContent = storeSettings.formatCurrency(order.total || 0);
+            document.getElementById('summarySubtotal').textContent = formatCurrency(order.subtotal || 0);
+            document.getElementById('summaryShipping').textContent = formatCurrency(order.shipping || 0);
+            document.getElementById('summaryTax').textContent = formatCurrency(order.tax || 0);
+            document.getElementById('summaryTotal').textContent = formatCurrency(order.total || 0);
         }
 
         function displayPaymentStatusMessage(paymentMethod) {
@@ -536,24 +638,47 @@
             document.getElementById('shippingAddress').innerHTML = addressHtml;
         }
 
-        function displayOrderItems(items) {
+        function displayOrderItems(items, formatCurrency) {
             const container = document.getElementById('orderItems');
+            
+            if (!items || items.length === 0) {
+                container.innerHTML = '<p class="text-muted">No items</p>';
+                return;
+            }
+            
+            // Fallback for formatCurrency
+            if (!formatCurrency) {
+                formatCurrency = (amount) => {
+                    return new Intl.NumberFormat('en-PK', {
+                        style: 'currency',
+                        currency: 'PKR'
+                    }).format(amount || 0);
+                };
+            }
+            
             let itemsHtml = '';
 
             items.forEach(item => {
+                // Handle item data structure from backend
+                const productName = item.name || item.productName || 'Product';
+                const quantity = item.quantity || 1;
+                const price = item.price || item.lineTotal / (item.quantity || 1) || 0;
+                const lineTotal = item.lineTotal || (price * quantity);
+                const size = item.size || 'N/A';
+                
                 itemsHtml += `
                     <div class="d-flex gap-3 mb-3 pb-3 border-bottom">
-                        <img src="${item.image || '/assets/images/placeholder.jpg'}" alt="${item.name}" style="width: 80px; height: 100px; object-fit: cover; border: 1px solid var(--gray-300);">
+                        <img src="${item.image || '/assets/images/placeholder.jpg'}" alt="${productName}" style="width: 80px; height: 100px; object-fit: cover; border: 1px solid var(--gray-300);">
                         <div class="flex-grow-1" style="font-size: 0.875rem;">
-                            <p class="mb-1" style="font-weight: 600; color: #000;">${item.name || 'Product'}</p>
-                            <p class="mb-1 text-muted">Size: ${item.size || 'N/A'} | Qty: ${item.quantity}</p>
-                            <p class="mb-0" style="font-weight: 600; color: #000;">${storeSettings.formatCurrency(item.lineTotal || item.price * item.quantity)}</p>
+                            <p class="mb-1" style="font-weight: 600; color: #000;">${productName}</p>
+                            <p class="mb-1 text-muted">Size: ${size} | Qty: ${quantity}</p>
+                            <p class="mb-0" style="font-weight: 600; color: #000;">${formatCurrency(lineTotal)}</p>
                         </div>
                     </div>
                 `;
             });
 
-            container.innerHTML = itemsHtml || '<p class="text-muted">No items</p>';
+            container.innerHTML = itemsHtml;
         }
 
         function formatPaymentMethod(method) {

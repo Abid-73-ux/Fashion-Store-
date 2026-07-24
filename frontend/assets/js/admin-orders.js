@@ -76,7 +76,9 @@ const AdminOrders = (() => {
                         <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                     </select>
                 </td>
-                <td><a href="orders/details.html?id=${order.id}" class="btn btn-sm btn-outline-primary">View</a></td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary view-order-btn" data-order-id="${order.id}" data-order='${JSON.stringify(order)}'>View</button>
+                </td>
             </tr>
         `).join('');
 
@@ -85,6 +87,7 @@ const AdminOrders = (() => {
     };
 
     const attachOrderHandlers = () => {
+        // Status change handlers
         document.querySelectorAll('.status-select').forEach(select => {
             select.addEventListener('change', async (e) => {
                 const orderId = parseInt(select.dataset.orderId);
@@ -160,6 +163,63 @@ const AdminOrders = (() => {
                     Toast.error(`Failed to update: ${error.message}`);
                     // Revert the select to previous value
                     select.value = previousStatus;
+                }
+            });
+        });
+
+        // View order button handlers
+        document.querySelectorAll('.view-order-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                try {
+                    const orderData = btn.getAttribute('data-order');
+                    const order = JSON.parse(orderData);
+                    
+                    console.log('📋 Opening order details for:', order.orderId);
+                    
+                    // Fetch full order details from backend API
+                    const token = localStorage.getItem('admin-token');
+                    if (!token) {
+                        Toast.error('Admin token not found');
+                        return;
+                    }
+
+                    console.log('🔗 Fetching full order details from API:', order.orderId);
+                    const response = await fetch(API_CONFIG.getEndpoint(`/orders/${order.orderId}`), {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (!response.ok) {
+                        console.warn('Could not fetch full order details, using cached data');
+                        // Use cached data if API fails
+                        if (typeof OrderDetailModal !== 'undefined') {
+                            OrderDetailModal.show(order, async () => {
+                                console.log('Order action completed, refreshing...');
+                                await renderOrders();
+                            });
+                        }
+                        return;
+                    }
+
+                    const result = await response.json();
+                    const fullOrder = result.data || result;
+                    
+                    console.log('✅ Full order details fetched:', fullOrder);
+                    
+                    // Show order detail modal with full data
+                    if (typeof OrderDetailModal !== 'undefined') {
+                        OrderDetailModal.show(fullOrder, async () => {
+                            console.log('Order action completed, refreshing...');
+                            await renderOrders();
+                        });
+                    } else {
+                        Toast.error('Order detail component not loaded');
+                    }
+                } catch (error) {
+                    console.error('Error opening order details:', error);
+                    Toast.error('Failed to open order details');
                 }
             });
         });
