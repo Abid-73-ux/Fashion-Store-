@@ -127,8 +127,8 @@
                 
                 <form id="adminLoginForm">
                     <div class="form-floating mb-3">
-                        <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
-                        <label for="username">Username</label>
+                        <input type="email" class="form-control" id="username" name="username" placeholder="Email" required>
+                        <label for="username">Email Address</label>
                         <div class="invalid-feedback"></div>
                     </div>
                     
@@ -187,43 +187,52 @@
             
             console.log('Form found, attaching submit handler');
             
-            form.addEventListener('submit', function(e) {
+            form.addEventListener('submit', async function(e) {
                 console.log('Form submit event fired');
                 e.preventDefault();
                 
-                const username = usernameInput.value.trim();
+                const email = usernameInput.value.trim();
                 const password = passwordInput.value.trim();
                 
-                console.log('Username:', username);
+                console.log('Email:', email);
                 console.log('Password length:', password.length);
                 
                 // Simple validation
-                if (!username || !password) {
+                if (!email || !password) {
                     console.log('Empty fields');
                     if (typeof Toast !== 'undefined') {
-                        Toast.error('Username and password required');
+                        Toast.error('Email and password required');
                     }
                     return;
                 }
                 
-                // Check credentials
-                if (username === 'admin' && password === 'admin123') {
-                    console.log('Credentials correct!');
-                    
-                    // Store admin user
-                    try {
-                        const adminUser = {
-                            id: 'admin-001',
-                            email: 'admin@admin.local',
-                            name: 'Administrator',
-                            role: 'admin',
-                            loginTime: new Date().toISOString()
-                        };
-                        localStorage.setItem('currentUser', JSON.stringify(adminUser));
-                        console.log('User data stored:', localStorage.getItem('currentUser'));
-                    } catch(err) {
-                        console.error('localStorage error:', err);
+                try {
+                    // Call backend login endpoint
+                    const response = await fetch('http://127.0.0.1:5000/api/auth/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email, password })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Login failed');
                     }
+
+                    const data = await response.json();
+                    
+                    // Check if user is admin
+                    if (data.user.role !== 'admin') {
+                        throw new Error('Access denied. Admin role required.');
+                    }
+
+                    console.log('Login successful!');
+                    
+                    // Store admin credentials
+                    localStorage.setItem('admin-token', data.token);
+                    localStorage.setItem('admin-user', JSON.stringify(data.user));
                     
                     if (typeof Toast !== 'undefined') {
                         Toast.success('Login successful!');
@@ -235,10 +244,11 @@
                         console.log('Now redirecting...');
                         window.location.href = 'dashboard.html';
                     }, 1000);
-                } else {
-                    console.log('Invalid credentials');
+                    
+                } catch (error) {
+                    console.error('Login error:', error.message);
                     if (typeof Toast !== 'undefined') {
-                        Toast.error('Invalid credentials. Use: admin / admin123');
+                        Toast.error('Invalid credentials: ' + error.message);
                     }
                 }
             });

@@ -16,25 +16,13 @@ const AdminStorage = (() => {
 
     // Initialize default data only once, on first load
     const initializeDefaults = () => {
-        // Only initialize if keys don't exist yet
-        if (!localStorage.getItem(KEYS.PRODUCTS)) {
-            localStorage.setItem(KEYS.PRODUCTS, JSON.stringify([]));
-        }
-        if (!localStorage.getItem(KEYS.CUSTOMERS)) {
-            localStorage.setItem(KEYS.CUSTOMERS, JSON.stringify([]));
-        }
-        if (!localStorage.getItem(KEYS.ORDERS)) {
-            localStorage.setItem(KEYS.ORDERS, JSON.stringify([]));
-        }
-        if (!localStorage.getItem(KEYS.CATEGORIES)) {
-            localStorage.setItem(KEYS.CATEGORIES, JSON.stringify([]));
-        }
-        if (!localStorage.getItem(KEYS.COUPONS)) {
-            localStorage.setItem(KEYS.COUPONS, JSON.stringify([]));
-        }
-        if (!localStorage.getItem(KEYS.REVIEWS)) {
-            localStorage.setItem(KEYS.REVIEWS, JSON.stringify([]));
-        }
+        // Initialize all with empty arrays (no dummy data)
+        localStorage.setItem(KEYS.PRODUCTS, JSON.stringify([]));
+        localStorage.setItem(KEYS.CUSTOMERS, JSON.stringify([]));
+        localStorage.setItem(KEYS.ORDERS, JSON.stringify([]));
+        localStorage.setItem(KEYS.CATEGORIES, JSON.stringify([]));
+        localStorage.setItem(KEYS.COUPONS, JSON.stringify([]));
+        localStorage.setItem(KEYS.REVIEWS, JSON.stringify([]));
     };
 
     // Call initialization once when module loads
@@ -69,17 +57,64 @@ const AdminStorage = (() => {
         },
 
         // Orders
-        getOrders: () => {
-            return JSON.parse(localStorage.getItem(KEYS.ORDERS)) || [];
+        getOrders: async () => {
+            try {
+                // Try to fetch from backend first
+                const token = localStorage.getItem('admin-token');
+                if (!token) {
+                    return JSON.parse(localStorage.getItem(KEYS.ORDERS)) || [];
+                }
+
+                const response = await fetch(API_CONFIG.getEndpoint('/orders/admin/list/all?limit=1000'), {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    const orders = result.data || [];
+                    
+                    // Map backend orders to frontend format
+                    const formattedOrders = orders.map(o => ({
+                        id: o.id,
+                        orderId: o.orderId,
+                        customer: `${o.customerFirstName || ''} ${o.customerLastName || ''}`.trim() || o.customerEmail || 'Unknown',
+                        date: new Date(o.createdAt).toLocaleDateString(),
+                        items: o.items?.length || 0,
+                        total: o.total,
+                        payment: o.paymentStatus === 'verified' ? 'Paid' : 'Pending',
+                        status: o.orderStatus || o.status || 'pending'
+                    }));
+                    
+                    // Cache in localStorage
+                    localStorage.setItem(KEYS.ORDERS, JSON.stringify(formattedOrders));
+                    return formattedOrders;
+                } else if (response.status === 401) {
+                    // Token invalid, clear admin session
+                    localStorage.removeItem('admin-token');
+                    localStorage.removeItem('admin-user');
+                    return JSON.parse(localStorage.getItem(KEYS.ORDERS)) || [];
+                } else {
+                    // Fallback to localStorage
+                    return JSON.parse(localStorage.getItem(KEYS.ORDERS)) || [];
+                }
+            } catch (error) {
+                console.error('Error fetching orders:', error);
+                // Fallback to localStorage
+                return JSON.parse(localStorage.getItem(KEYS.ORDERS)) || [];
+            }
         },
         updateOrder: (id, updates) => {
-            let orders = AdminStorage.getOrders();
+            let orders = JSON.parse(localStorage.getItem(KEYS.ORDERS)) || [];
             orders = orders.map(o => o.id === id ? { ...o, ...updates } : o);
             localStorage.setItem(KEYS.ORDERS, JSON.stringify(orders));
             return orders.find(o => o.id === id);
         },
         getOrder: (id) => {
-            return AdminStorage.getOrders().find(o => o.id === parseInt(id));
+            let orders = JSON.parse(localStorage.getItem(KEYS.ORDERS)) || [];
+            return orders.find(o => o.id === parseInt(id));
         },
 
         // Customers

@@ -412,8 +412,17 @@
              */
             const loadOrders = async () => {
                 try {
-                    const endpoint = `${API_CONFIG.getEndpoint('/v1/admin/orders/pending-verification')}?page=1&limit=1000`;
-                    const token = Auth.getToken();
+                    const endpoint = `${API_CONFIG.getEndpoint('/orders/admin/pending-verification')}?page=1&limit=1000`;
+                    const token = Auth.getAdminToken();
+
+                    console.log('🔗 Loading orders from:', endpoint);
+                    console.log('🔐 Using token:', token ? 'Present' : 'Missing');
+
+                    if (!token) {
+                        Toast.error('Admin token not found. Please login again.');
+                        setTimeout(() => { window.location.href = '../admin/login.html'; }, 2000);
+                        return;
+                    }
 
                     const response = await fetch(endpoint, {
                         method: 'GET',
@@ -423,31 +432,38 @@
                         }
                     });
 
+                    console.log('📊 Response status:', response.status);
+
                     if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        console.error('❌ API Error:', errorData);
+                        
                         if (response.status === 401) {
                             Toast.error('Unauthorized. Please login again.');
                             setTimeout(() => { window.location.href = '../admin/login.html'; }, 2000);
                             return;
                         }
-                        throw new Error(`HTTP ${response.status}`);
+                        throw new Error(errorData.message || `HTTP ${response.status}`);
                     }
 
                     const data = await response.json();
+                    console.log('✅ API Response:', data);
 
                     if (data.success && data.data && data.data.orders) {
                         allOrders = data.data.orders;
+                        console.log('📋 Loaded', allOrders.length, 'orders');
                         updateStats();
                         applyFilters();
                     } else {
-                        throw new Error(data.message || 'Failed to load orders');
+                        throw new Error(data.message || 'Invalid response format');
                     }
                 } catch (error) {
-                    console.error('Error loading orders:', error);
+                    console.error('❌ Error loading orders:', error);
                     Toast.error('Failed to load orders: ' + error.message);
                     document.getElementById('ordersTableBody').innerHTML = `
                         <tr>
                             <td colspan="6" class="text-center text-danger py-5">
-                                <i class="bi bi-exclamation-circle"></i> Failed to load orders
+                                <i class="bi bi-exclamation-circle"></i> Failed to load orders: ${error.message}
                             </td>
                         </tr>
                     `;
@@ -631,11 +647,33 @@
              */
             const viewOrderDetail = async (orderId) => {
                 try {
-                    const order = allOrders.find(o => o.orderId === orderId);
-                    if (!order) {
-                        Toast.error('Order not found');
+                    console.log('📋 Fetching order details for:', orderId);
+                    
+                    const token = Auth.getAdminToken();
+                    const endpoint = `${API_CONFIG.getEndpoint('/orders')}/${orderId}`;
+
+                    // Fetch complete order details from API
+                    const response = await fetch(endpoint, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    console.log('✅ Full order details:', data.data);
+
+                    if (!data.success || !data.data) {
+                        Toast.error('Failed to load order details');
                         return;
                     }
+
+                    const order = data.data;
 
                     // Show the order detail modal using the OrderDetailModal component
                     OrderDetailModal.show(order, () => {
@@ -643,8 +681,8 @@
                         loadOrders();
                     });
                 } catch (error) {
-                    console.error('Error viewing order detail:', error);
-                    Toast.error('Failed to load order details');
+                    console.error('❌ Error loading order details:', error);
+                    Toast.error('Failed to load order details: ' + error.message);
                 }
             };
 
@@ -658,7 +696,7 @@
 
                 try {
                     const token = Auth.getToken();
-                    const endpoint = `${API_CONFIG.getEndpoint('/v1/admin/orders')}/${orderId}/verify-payment`;
+                    const endpoint = `${API_CONFIG.getEndpoint('/orders/admin/verify-payment')}/${orderId}`;
 
                     const response = await fetch(endpoint, {
                         method: 'POST',
@@ -692,7 +730,7 @@
 
                 try {
                     const token = Auth.getToken();
-                    const endpoint = `${API_CONFIG.getEndpoint('/v1/admin/orders')}/${orderId}/verify-payment`;
+                    const endpoint = `${API_CONFIG.getEndpoint('/orders/admin/verify-payment')}/${orderId}`;
 
                     const response = await fetch(endpoint, {
                         method: 'POST',

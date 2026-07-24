@@ -7,13 +7,12 @@ const AdminOrders = (() => {
     let currentSearch = '';
     let currentStatusFilter = 'All';
 
-    const updateStats = () => {
-        const orders = AdminStorage.getOrders();
+    const updateStats = (orders) => {
         const stats = {
-            pending: orders.filter(o => o.status === 'Pending' || o.status === 'Processing' || o.status === 'Packed').length,
-            shipped: orders.filter(o => o.status === 'Shipped' || o.status === 'Out for Delivery').length,
-            delivered: orders.filter(o => o.status === 'Delivered').length,
-            cancelled: orders.filter(o => o.status === 'Cancelled').length
+            pending: orders.filter(o => o.status === 'pending' || o.status === 'confirmed' || o.status === 'processing').length,
+            shipped: orders.filter(o => o.status === 'shipped').length,
+            delivered: orders.filter(o => o.status === 'delivered').length,
+            cancelled: orders.filter(o => o.status === 'cancelled').length
         };
 
         // Update stat cards on orders page
@@ -28,9 +27,9 @@ const AdminOrders = (() => {
         if (cancelledCount) cancelledCount.textContent = stats.cancelled;
     };
 
-    const renderOrders = () => {
+    const renderOrders = async () => {
         console.log('renderOrders called');
-        let orders = AdminStorage.getOrders();
+        let orders = await AdminStorage.getOrders();
         console.log('Orders from storage:', orders);
 
         // Apply search filter
@@ -69,13 +68,12 @@ const AdminOrders = (() => {
                 <td><span class="badge ${order.payment === 'Paid' ? 'bg-success' : 'bg-danger'}">${order.payment}</span></td>
                 <td>
                     <select class="form-select form-select-sm status-select" data-order-id="${order.id}" style="width: auto; display: inline-block;">
-                        <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                        <option value="Processing" ${order.status === 'Processing' ? 'selected' : ''}>Processing</option>
-                        <option value="Packed" ${order.status === 'Packed' ? 'selected' : ''}>Packed</option>
-                        <option value="Shipped" ${order.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
-                        <option value="Out for Delivery" ${order.status === 'Out for Delivery' ? 'selected' : ''}>Out for Delivery</option>
-                        <option value="Delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
-                        <option value="Cancelled" ${order.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                        <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
+                        <option value="confirmed" ${order.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
+                        <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Processing</option>
+                        <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>Shipped</option>
+                        <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Delivered</option>
+                        <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                     </select>
                 </td>
                 <td><a href="orders/details.html?id=${order.id}" class="btn btn-sm btn-outline-primary">View</a></td>
@@ -83,25 +81,97 @@ const AdminOrders = (() => {
         `).join('');
 
         attachOrderHandlers();
-        updateStats();
+        updateStats(orders);
     };
 
     const attachOrderHandlers = () => {
         document.querySelectorAll('.status-select').forEach(select => {
-            select.addEventListener('change', (e) => {
+            select.addEventListener('change', async (e) => {
                 const orderId = parseInt(select.dataset.orderId);
                 const newStatus = e.target.value;
-                AdminStorage.updateOrder(orderId, { status: newStatus });
-                Toast.success(`Order status updated to ${newStatus}`);
-                renderOrders();
+                const previousStatus = select.value;
+                
+                // Convert status to lowercase for backend
+                const backendStatus = newStatus.toLowerCase();
+                
+                // Find the order to get its orderId (not database id)
+                const allOrders = await AdminStorage.getOrders();
+                const order = allOrders.find(o => o.id === orderId);
+                
+                if (!order) {
+                    Toast.error('Order not found');
+                    return;
+                }
+                
+                console.log('📋 Updating order status:', {
+                    orderId: order.orderId,
+                    currentStatus: order.status,
+                    newStatus: backendStatus,
+                    apiEndpoint: API_CONFIG.getEndpoint(`/orders/admin/${order.orderId}/status`)
+                });
+                
+                // Send update to backend API
+                try {
+                    const token = localStorage.getItem('admin-token');
+                    if (!token) {
+                        Toast.error('Admin token not found');
+                        return;
+                    }
+
+                    const endpoint = API_CONFIG.getEndpoint(`/orders/admin/${order.orderId}/status`);
+                    console.log('🔗 Calling endpoint:', endpoint);
+                    
+                    const response = await fetch(endpoint, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            orderStatus: backendStatus,
+                            reason: `Status updated to ${newStatus}`
+                        })
+                    });
+
+                    console.log('📊 Response status:', response.status);
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        console.error('❌ API Error:', errorData);
+                        throw new Error(errorData.message || `HTTP ${response.status}: Failed to update order status`);
+                    }
+
+                    const result = await response.json();
+                    console.log('✅ Update successful:', result);
+                    
+                    Toast.success(`Order status updated to ${newStatus}`);
+                    
+                    // Refresh orders from API after a short delay
+                    setTimeout(async () => {
+                        try {
+                            await renderOrders();
+                        } catch (error) {
+                            console.error('Error refreshing orders:', error);
+                        }
+                    }, 500);
+                    
+                } catch (error) {
+                    console.error('❌ Error updating order status:', error);
+                    Toast.error(`Failed to update: ${error.message}`);
+                    // Revert the select to previous value
+                    select.value = previousStatus;
+                }
             });
         });
     };
 
     return {
-        init: () => {
+        init: async () => {
             console.log('AdminOrders.init() called');
-            renderOrders();
+            
+            // Fetch orders from API
+            await AdminStorage.getOrders();
+            await renderOrders();
 
             // Setup search input
             const searchInput = document.getElementById('searchInput');
@@ -124,13 +194,13 @@ const AdminOrders = (() => {
 
         render: renderOrders,
 
-        getOrderStats: () => {
-            const orders = AdminStorage.getOrders();
+        getOrderStats: async () => {
+            const orders = await AdminStorage.getOrders();
             return {
-                pending: orders.filter(o => o.status === 'Pending' || o.status === 'Processing' || o.status === 'Packed').length,
-                shipped: orders.filter(o => o.status === 'Shipped' || o.status === 'Out for Delivery').length,
-                delivered: orders.filter(o => o.status === 'Delivered').length,
-                cancelled: orders.filter(o => o.status === 'Cancelled').length,
+                pending: orders.filter(o => o.status === 'pending' || o.status === 'confirmed' || o.status === 'processing').length,
+                shipped: orders.filter(o => o.status === 'shipped').length,
+                delivered: orders.filter(o => o.status === 'delivered').length,
+                cancelled: orders.filter(o => o.status === 'cancelled').length,
                 total: orders.length
             };
         }
@@ -138,7 +208,9 @@ const AdminOrders = (() => {
 })();
 
 console.log('admin-orders.js loaded');
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     console.log('DOMContentLoaded fired');
-    AdminOrders.init();
+    if (typeof AdminOrders !== 'undefined') {
+        await AdminOrders.init();
+    }
 });

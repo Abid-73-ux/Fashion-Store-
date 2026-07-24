@@ -140,8 +140,8 @@ function savePaymentProof(file, orderId) {
     // Save file to disk
     fs.writeFileSync(filePath, file.buffer);
 
-    // Return relative path for database storage
-    const relativePath = path.join('uploads', 'payment_proofs', filename);
+    // Return just the filename relative to uploads folder (no 'uploads/' prefix)
+    const relativePath = `payment_proofs/${filename}`;
 
     return {
       success: true,
@@ -186,13 +186,25 @@ function deleteFile(filePath) {
 
 /**
  * Get file URL for serving
- * @param {string} filePath - Relative file path
- * @returns {string} URL path for accessing file
+ * @param {string} filePath - Relative file path (payment_proofs/filename.png)
+ * @returns {string} Full URL path for accessing file
  */
 function getFileUrl(filePath) {
   if (!filePath) return null;
-  // Remove leading/trailing slashes and construct URL path
-  return `/files/${filePath.replace(/\\/g, '/')}`;
+  
+  // Normalize path separators (convert backslashes to forward slashes)
+  let normalizedPath = filePath.replace(/\\/g, '/');
+  
+  // Remove 'uploads/' prefix if it exists from old data
+  if (normalizedPath.startsWith('uploads/')) {
+    normalizedPath = normalizedPath.substring(8);
+  }
+  
+  // Get API base URL from environment or construct it
+  const apiBase = process.env.API_BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
+  
+  // Return full URL path - backend /files route serves from uploads folder
+  return `${apiBase}/files/${normalizedPath}`;
 }
 
 /**

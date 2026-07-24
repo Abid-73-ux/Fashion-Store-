@@ -88,7 +88,7 @@ const AdminCommon = (() => {
             }
 
             // Use the API endpoint to get pending verification orders
-            const endpoint = API_CONFIG.getEndpoint('/v1/admin/orders/pending-verification?page=1&limit=1');
+            const endpoint = API_CONFIG.getEndpoint('/orders/admin/pending-verification?page=1&limit=1');
             
             const response = await fetch(endpoint, {
                 method: 'GET',

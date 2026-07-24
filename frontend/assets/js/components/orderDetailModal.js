@@ -249,8 +249,8 @@ const OrderDetailModal = (() => {
         }
 
         try {
-            const token = Auth.getToken();
-            const endpoint = `${API_CONFIG.getEndpoint('/v1/admin/orders')}/${currentOrder.orderId}/verify-payment`;
+            const token = Auth.getAdminToken();
+            const endpoint = `${API_CONFIG.getEndpoint('/orders/admin/verify-payment')}/${currentOrder.orderId}`;
 
             const response = await fetch(endpoint, {
                 method: 'POST',
@@ -308,8 +308,8 @@ const OrderDetailModal = (() => {
         }
 
         try {
-            const token = Auth.getToken();
-            const endpoint = `${API_CONFIG.getEndpoint('/v1/admin/orders')}/${currentOrder.orderId}/verify-payment`;
+            const token = Auth.getAdminToken();
+            const endpoint = `${API_CONFIG.getEndpoint('/orders/admin/verify-payment')}/${currentOrder.orderId}`;
 
             const response = await fetch(endpoint, {
                 method: 'POST',

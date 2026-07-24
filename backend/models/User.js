@@ -84,12 +84,13 @@ User.prototype.comparePassword = async function(password) {
   return await bcrypt.compare(password, this.password);
 };
 
-// Association for status changes (loaded after model definition to avoid circular dependencies)
-User.associate = function(models) {
-  User.hasMany(models.OrderStatusChange, { 
-    foreignKey: 'changedBy', 
-    as: 'statusChanges'
-  });
-};
+// Load OrderStatusChange model
+const OrderStatusChange = require('./OrderStatusChange');
+
+// Direct association (instead of using User.associate pattern)
+User.hasMany(OrderStatusChange, { 
+  foreignKey: 'changedBy', 
+  as: 'statusChanges'
+});
 
 module.exports = User;

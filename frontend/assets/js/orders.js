@@ -41,7 +41,7 @@ async function loadOrders() {
       return;
     }
 
-    const response = await fetch(API_CONFIG.getEndpoint(`/v1/customers/${user.id}/orders`), {
+    const response = await fetch(API_CONFIG.getEndpoint(`/orders/my-orders`), {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
@@ -211,7 +211,7 @@ async function checkOrderStatusUpdates() {
     const user = getCurrentUser();
     if (!user || !user.id) return;
 
-    const response = await fetch(API_CONFIG.getEndpoint(`/v1/customers/${user.id}/orders`), {
+    const response = await fetch(API_CONFIG.getEndpoint(`/orders/my-orders`), {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       }

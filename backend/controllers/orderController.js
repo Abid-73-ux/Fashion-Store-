@@ -371,6 +371,9 @@ exports.getOrder = async (req, res) => {
       message: 'Order retrieved successfully',
       data: {
         orderId: order.orderId,
+        customerName: order.User ? order.User.name : 'Unknown',
+        customerEmail: order.User ? order.User.email : 'N/A',
+        customerPhone: order.User ? order.User.phone : 'N/A',
         items: order.items,
         subtotal: order.subtotal,
         tax: order.tax,
@@ -381,6 +384,7 @@ exports.getOrder = async (req, res) => {
         paymentStatus: order.paymentStatus,
         orderStatus: order.orderStatus,
         shippingAddress: order.shippingAddress,
+        paymentProofUrl: order.PaymentProof ? fileService.getFileUrl(order.PaymentProof.filePath) : null,
         paymentProof: order.PaymentProof
           ? {
               fileName: order.PaymentProof.fileName,
@@ -727,11 +731,11 @@ exports.updateOrderStatus = async (req, res) => {
 
     // Validate status transition
     const validTransitions = {
-      pending: ['confirmed', 'cancelled'],
-      confirmed: ['processing', 'cancelled'],
-      processing: ['shipped', 'cancelled'],
-      shipped: ['delivered'],
-      delivered: [],
+      pending: ['confirmed', 'processing', 'shipped', 'cancelled'],
+      confirmed: ['processing', 'shipped', 'cancelled'],
+      processing: ['shipped', 'delivered', 'cancelled'],
+      shipped: ['delivered', 'cancelled'],
+      delivered: ['cancelled'],
       cancelled: []
     };
 

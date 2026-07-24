@@ -616,7 +616,7 @@ async function placeOrder() {
 
     console.log('� Sending order to API...');
 
-    const response = await fetch(API_CONFIG.getEndpoint('/v1/orders/create'), {
+    const response = await fetch(API_CONFIG.getEndpoint('/orders/create'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -656,7 +656,7 @@ async function placeOrder() {
         const formData = new FormData();
         formData.append('file', paymentProofFile);
 
-        await fetch(API_CONFIG.getEndpoint(`/v1/orders/${orderId}/payment-proof`), {
+        await fetch(API_CONFIG.getEndpoint(`/orders/${orderId}/payment-proof`), {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`

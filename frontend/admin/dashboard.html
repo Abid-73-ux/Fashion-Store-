@@ -370,10 +370,10 @@
         console.log('Is admin?', Auth.isAdmin());
         
         // Initialize dashboard module
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             console.log('DOM ready, initializing AdminDashboard');
             if (typeof AdminDashboard !== 'undefined') {
-                AdminDashboard.init();
+                await AdminDashboard.init();
             } else {
                 console.error('AdminDashboard module not loaded');
             }

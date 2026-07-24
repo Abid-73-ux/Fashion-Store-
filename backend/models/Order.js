@@ -103,19 +103,22 @@ const Order = sequelize.define('Order', {
   timestamps: true
 });
 
+// Load all related models first
+const PaymentProof = require('./PaymentProof');
+const OrderStatusChange = require('./OrderStatusChange');
+
 // Association with User
 Order.belongsTo(User, { foreignKey: 'userId', allowNull: false });
 
-// Associations for payment verification (loaded after model definition to avoid circular dependencies)
-Order.associate = function(models) {
-  Order.hasOne(models.PaymentProof, { 
-    foreignKey: 'orderId',
-    onDelete: 'CASCADE'
-  });
-  Order.hasMany(models.OrderStatusChange, { 
-    foreignKey: 'orderId',
-    onDelete: 'CASCADE'
-  });
-};
+// Direct associations (instead of using Order.associate pattern)
+Order.hasOne(PaymentProof, { 
+  foreignKey: 'orderId',
+  onDelete: 'CASCADE'
+});
+
+Order.hasMany(OrderStatusChange, { 
+  foreignKey: 'orderId',
+  onDelete: 'CASCADE'
+});
 
 module.exports = Order;

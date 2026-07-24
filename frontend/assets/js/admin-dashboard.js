@@ -4,14 +4,13 @@
  */
 
 const AdminDashboard = (() => {
-    const updateStats = () => {
+    const updateStats = (orders) => {
         // Get all data
         const products = AdminStorage.getProducts();
-        const orders = AdminStorage.getOrders();
         const customers = AdminStorage.getCustomers();
 
         // Calculate stats
-        const totalRevenue = orders.reduce((sum, o) => sum + parseFloat(o.total), 0);
+        const totalRevenue = orders.reduce((sum, o) => sum + parseFloat(o.total || 0), 0);
         const totalOrders = orders.length;
         const totalCustomers = customers.length;
         const totalProducts = products.length;
@@ -21,10 +20,10 @@ const AdminDashboard = (() => {
         
         // Pending orders
         const pendingOrders = orders.filter(o => 
-            o.status === 'Pending' || o.status === 'Processing' || o.status === 'Packed'
+            o.status === 'pending' || o.status === 'confirmed' || o.status === 'processing'
         ).length;
-        const deliveredOrders = orders.filter(o => o.status === 'Delivered').length;
-        const cancelledOrders = orders.filter(o => o.status === 'Cancelled').length;
+        const deliveredOrders = orders.filter(o => o.status === 'delivered').length;
+        const cancelledOrders = orders.filter(o => o.status === 'cancelled').length;
 
         // Update stat cards
         const statCards = document.querySelectorAll('.stat-value');
@@ -54,13 +53,13 @@ const AdminDashboard = (() => {
         }
     };
 
-    const renderRecentOrders = () => {
-        const orders = AdminStorage.getOrders().slice(0, 5);
+    const renderRecentOrders = (orders) => {
+        const ordersSliced = orders.slice(0, 5);
         const tbody = document.querySelector('.card table tbody');
         
         if (!tbody) return;
 
-        tbody.innerHTML = orders.map(order => `
+        tbody.innerHTML = ordersSliced.map(order => `
             <tr>
                 <td><strong>${order.orderId}</strong></td>
                 <td>${order.customer}</td>
@@ -76,11 +75,12 @@ const AdminDashboard = (() => {
 
     const getStatusColor = (status) => {
         const colors = {
-            'Delivered': 'bg-success',
-            'Shipped': 'bg-info',
-            'Processing': 'bg-warning',
-            'Cancelled': 'bg-danger',
-            'Pending': 'bg-secondary'
+            'delivered': 'bg-success',
+            'shipped': 'bg-info',
+            'processing': 'bg-warning',
+            'confirmed': 'bg-primary',
+            'cancelled': 'bg-danger',
+            'pending': 'bg-secondary'
         };
         return colors[status] || 'bg-secondary';
     };
@@ -122,25 +122,29 @@ const AdminDashboard = (() => {
     };
 
     return {
-        init: () => {
-            updateStats();
-            renderRecentOrders();
+        init: async () => {
+            // Fetch orders from API first
+            const orders = await AdminStorage.getOrders();
+            updateStats(orders);
+            renderRecentOrders(orders);
             renderRecentCustomers();
             renderTopProducts();
 
             // Setup listeners for storage changes
-            window.addEventListener('storage', () => {
-                updateStats();
-                renderRecentOrders();
+            window.addEventListener('storage', async () => {
+                const updatedOrders = await AdminStorage.getOrders();
+                updateStats(updatedOrders);
+                renderRecentOrders(updatedOrders);
                 renderRecentCustomers();
                 renderTopProducts();
             });
         },
 
         updateStats: updateStats,
-        refreshAll: () => {
-            updateStats();
-            renderRecentOrders();
+        refreshAll: async () => {
+            const orders = await AdminStorage.getOrders();
+            updateStats(orders);
+            renderRecentOrders(orders);
             renderRecentCustomers();
             renderTopProducts();
         }

@@ -415,6 +415,10 @@
     
     <!-- Custom JS -->
     <script src="assets/js/config.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/modal.js"></script>
+    <script src="assets/js/navbar.js"></script>
+    <script src="assets/js/toast.js"></script>
     <script src="assets/js/main.js"></script>
     <script src="assets/js/services/storeSettings.js"></script>
     
@@ -438,7 +442,7 @@
 
         async function loadOrderDetails(orderId) {
             try {
-                const response = await fetch(API_CONFIG.getEndpoint(`/v1/orders/${orderId}`), {
+                const response = await fetch(API_CONFIG.getEndpoint(`/orders/${orderId}`), {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
@@ -488,12 +492,10 @@
             // Payment status message
             displayPaymentStatusMessage(order.paymentMethod);
 
-            // Customer info
-            const addr = order.shippingAddress || {};
-            const customerName = `${addr.firstName || ''} ${addr.lastName || ''}`.trim() || 'N/A';
-            document.getElementById('customerName').textContent = customerName;
-            document.getElementById('customerEmail').textContent = addr.email || 'N/A';
-            document.getElementById('customerPhone').textContent = addr.whatsappNumber || 'N/A';
+            // Customer info - Get from API response (not from address object)
+            document.getElementById('customerName').textContent = order.customerName || 'N/A';
+            document.getElementById('customerEmail').textContent = order.customerEmail || 'N/A';
+            document.getElementById('customerPhone').textContent = order.customerPhone || 'N/A';
 
             // Shipping address
             displayShippingAddress(addr);
@@ -527,9 +529,9 @@
         function displayShippingAddress(address) {
             const addr = address || {};
             const addressHtml = `
-                <p style="margin-bottom: 0.5rem;"><strong>${addr.firstName || ''} ${addr.lastName || ''}</strong></p>
-                <p style="margin-bottom: 0.5rem;">${addr.street || ''}</p>
+                <p style="margin-bottom: 0.5rem;"><strong>${addr.street || ''}</strong></p>
                 <p style="margin-bottom: 0.5rem;">${addr.city || ''}, ${addr.state || ''} ${addr.postalCode || ''}</p>
+                <p style="margin-bottom: 0;">Country: ${addr.country || 'N/A'}</p>
             `;
             document.getElementById('shippingAddress').innerHTML = addressHtml;
         }
