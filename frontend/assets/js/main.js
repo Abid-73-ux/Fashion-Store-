@@ -338,31 +338,42 @@ function createProductCard(product) {
 // Add to Cart Function
 async function addToCart(productId, quantity = 1, sizeId = null, colorId = null) {
   try {
-    // Check if user is authenticated
-    if (!AppState.isAuthenticated) {
-      // Add to localStorage for guest users
-      const guestCart = Storage.get('guestCart') || [];
-      guestCart.push({ productId, quantity, sizeId, colorId });
-      Storage.set('guestCart', guestCart);
-      updateCartCount();
-      Toast.success('Product added to cart!');
-      return;
+    // Use backend cart service if available
+    if (typeof cartService !== 'undefined') {
+      return await cartService.addToCart(productId, quantity, sizeId || 'One Size', colorId);
     }
 
-    // For authenticated users, call API
-    Loading.show();
-    const response = await API.post('/cart/items', {
-      product_id: productId,
-      quantity,
-      size_id: sizeId,
-      color_id: colorId
-    });
-
-    if (response.success) {
-      updateCartCount();
-      Toast.success('Product added to cart!');
+    // Fallback to localStorage
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const existingItem = cart.find(item => item.productId == productId && item.size === (sizeId || 'One Size'));
+    
+    if (existingItem) {
+      existingItem.quantity += quantity;
+    } else {
+      cart.push({
+        productId,
+        quantity,
+        size: sizeId || 'One Size',
+        color: colorId,
+        addedAt: new Date().toISOString()
+      });
     }
+    
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartCount();
+    
+    if (typeof Toast !== 'undefined') {
+      Toast.success(`Product added to cart! (${quantity} item${quantity > 1 ? 's' : ''})`);
+    } else {
+      alert(`Product added to cart! (${quantity} item${quantity > 1 ? 's' : ''})`);
+    }
+
+    return { success: true };
   } catch (error) {
+    console.error('❌ Error adding to cart:', error);
+    return { success: false, error: error.message };
+  }
+}
     console.error('Add to cart error:', error);
     Toast.error(error.message || 'Failed to add product to cart');
   } finally {
