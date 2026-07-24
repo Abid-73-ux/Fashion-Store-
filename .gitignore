@@ -59,3 +59,9 @@ update-footers.ps1
 # Installers
 *.exe
 postgresql_*.exe
+
+# Admin Frontend (keep locally for development, never push to GitHub)
+frontend/admin/
+frontend/assets/js/admin-*.js
+frontend/clear-admin-session.html
+frontend/test-logout.html
