@@ -749,6 +749,50 @@
             icon.classList.toggle('bi-heart');
             icon.classList.toggle('bi-heart-fill');
         });
+        
+        // Add to Cart Button
+        document.getElementById('addToCartBtn').addEventListener('click', function() {
+            // Get product ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+            
+            if (!productId) {
+                alert('Product ID not found');
+                return;
+            }
+            
+            // Get selected size and quantity
+            const selectedSize = document.querySelector('.size-option.active')?.textContent || 'One Size';
+            const quantity = parseInt(document.getElementById('quantity').value) || 1;
+            
+            // Add to cart using shop.js function
+            if (typeof addToCart === 'function') {
+                addToCart(productId, quantity, selectedSize);
+            } else {
+                // Fallback if function not available
+                let cart = JSON.parse(localStorage.getItem('cart')) || [];
+                const existingItem = cart.find(item => item.productId == productId && item.size === selectedSize);
+                
+                if (existingItem) {
+                    existingItem.quantity += quantity;
+                } else {
+                    cart.push({
+                        productId,
+                        quantity,
+                        size: selectedSize,
+                        addedAt: new Date().toISOString()
+                    });
+                }
+                
+                localStorage.setItem('cart', JSON.stringify(cart));
+                alert(`Product added to cart! (${quantity} item${quantity > 1 ? 's' : ''})`);
+                
+                // Update cart badge if available
+                if (typeof updateCartCount === 'function') {
+                    updateCartCount();
+                }
+            }
+        });
     </script>
     
     <!-- WhatsApp Widget -->
