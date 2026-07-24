@@ -340,32 +340,36 @@ function setupEventListeners() {
         });
     }
     
-    // Size filter checkboxes
+    // Size filter checkboxes - CALL APPLY FILTERS on change
     const sizeCheckboxes = document.querySelectorAll('input[name="size"]');
     sizeCheckboxes.forEach(checkbox => {
         checkbox.addEventListener('change', () => {
-            console.log('📌 Size filter changed');
+            console.log('📌 Size filter changed - applying filters');
+            applyFilters();
         });
     });
     
-    // Color filter checkboxes
+    // Color filter checkboxes - CALL APPLY FILTERS on change
     const colorCheckboxes = document.querySelectorAll('input[name="color"]');
     colorCheckboxes.forEach(checkbox => {
         checkbox.addEventListener('change', () => {
-            console.log('🎨 Color filter changed');
+            console.log('🎨 Color filter changed - applying filters');
+            applyFilters();
         });
     });
     
-    // Price range inputs
+    // Price range inputs - CALL APPLY FILTERS on change
     const minPriceInput = document.getElementById('minPrice');
     const maxPriceInput = document.getElementById('maxPrice');
     
     if (minPriceInput && maxPriceInput) {
         minPriceInput.addEventListener('change', () => {
-            console.log('💰 Min price changed');
+            console.log('💰 Min price changed - applying filters');
+            applyFilters();
         });
         maxPriceInput.addEventListener('change', () => {
-            console.log('💰 Max price changed');
+            console.log('💰 Max price changed - applying filters');
+            applyFilters();
         });
     }
 }

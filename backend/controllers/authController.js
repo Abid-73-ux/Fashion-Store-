@@ -33,11 +33,11 @@ exports.register = async (req, res) => {
             role: role || 'user'
         });
 
-        const token = generateToken(user);
-
+        // Do NOT return token for registration
+        // User must login after registration
         res.status(201).json({
             success: true,
-            token,
+            message: 'Account created successfully. Please login with your credentials.',
             user: {
                 id: user.id,
                 name: user.name,

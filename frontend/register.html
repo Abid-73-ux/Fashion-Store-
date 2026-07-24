@@ -208,28 +208,11 @@
                 const data = await response.json();
                 console.log('✅ Registration successful:', data);
                 
-                // Save token and user to localStorage
-                const token = data.token;
-                const user = data.user;
-                
-                if (!token) {
-                    throw new Error('No token received from server');
-                }
-                
-                console.log('💾 Saving to localStorage:', { token, user });
-                
-                localStorage.setItem('token', token);
-                localStorage.setItem('user', JSON.stringify(user));
-                
-                if (user?.id) {
-                    localStorage.setItem('userId', user.id);
-                }
-                
-                Toast.success('Account created successfully! Redirecting...');
+                Toast.success('Account created successfully! Redirecting to login...');
                 
                 setTimeout(() => {
-                    console.log('🔄 Redirecting to profile');
-                    window.location.href = 'profile.html';
+                    console.log('🔄 Redirecting to login page');
+                    window.location.href = 'login.html';
                 }, 1500);
                 
             } catch (error) {

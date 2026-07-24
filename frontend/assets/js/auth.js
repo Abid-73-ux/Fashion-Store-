@@ -108,6 +108,12 @@ const Auth = {
   setUser(user, token) {
     localStorage.setItem(this.TOKEN_KEY, token);
     localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    
+    // Trigger navbar update after login
+    if (typeof Navigation !== 'undefined') {
+      console.log('🔄 Triggering navbar update after login');
+      Navigation.updateNavbar();
+    }
   },
 
   /**
@@ -116,18 +122,39 @@ const Auth = {
   setAdminUser(user, token) {
     localStorage.setItem(this.ADMIN_TOKEN_KEY, token);
     localStorage.setItem(this.ADMIN_USER_KEY, JSON.stringify(user));
+    
+    // Trigger navbar update after admin login
+    if (typeof Navigation !== 'undefined') {
+      console.log('🔄 Triggering navbar update after admin login');
+      Navigation.updateNavbar();
+    }
   },
 
   /**
    * Clear user session (logout)
    */
   logout() {
+    console.log('🔐 Auth.logout() started');
+    console.log('Clearing TOKEN_KEY:', this.TOKEN_KEY);
+    console.log('Clearing USER_KEY:', this.USER_KEY);
+    console.log('Clearing ADMIN_TOKEN_KEY:', this.ADMIN_TOKEN_KEY);
+    console.log('Clearing ADMIN_USER_KEY:', this.ADMIN_USER_KEY);
+    
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
     localStorage.removeItem(this.ADMIN_TOKEN_KEY);
     localStorage.removeItem(this.ADMIN_USER_KEY);
     localStorage.removeItem('cart');
     localStorage.removeItem('wishlist');
+    
+    console.log('✅ All localStorage items cleared');
+    console.log('Current user after logout:', this.getCurrentUser());
+    
+    // Trigger navbar update after logout
+    if (typeof Navigation !== 'undefined') {
+      console.log('🔄 Triggering navbar update after logout');
+      Navigation.updateNavbar();
+    }
   },
 
   /**
@@ -136,6 +163,12 @@ const Auth = {
   logoutAdmin() {
     localStorage.removeItem(this.ADMIN_TOKEN_KEY);
     localStorage.removeItem(this.ADMIN_USER_KEY);
+    
+    // Trigger navbar update after admin logout
+    if (typeof Navigation !== 'undefined') {
+      console.log('🔄 Triggering navbar update after admin logout');
+      Navigation.updateNavbar();
+    }
   },
 
   /**
