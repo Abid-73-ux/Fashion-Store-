@@ -752,46 +752,76 @@
         });
         
         // Add to Cart Button
-        document.getElementById('addToCartBtn').addEventListener('click', function() {
+        document.getElementById('addToCartBtn').addEventListener('click', async function() {
             // Get product ID from URL
             const urlParams = new URLSearchParams(window.location.search);
             const productId = urlParams.get('id');
             
             if (!productId) {
-                alert('Product ID not found');
+                if (typeof Toast !== 'undefined') {
+                    Toast.error('Product ID not found');
+                } else {
+                    alert('Product ID not found');
+                }
                 return;
             }
             
             // Get selected size and quantity
             const selectedSize = document.querySelector('.size-option.active')?.textContent || 'One Size';
+            const selectedColor = document.querySelector('.color-option.active')?.style.backgroundColor || null;
             const quantity = parseInt(document.getElementById('quantity').value) || 1;
             
-            // Add to cart using shop.js function
-            if (typeof addToCart === 'function') {
-                addToCart(productId, quantity, selectedSize);
-            } else {
-                // Fallback if function not available
-                let cart = JSON.parse(localStorage.getItem('cart')) || [];
-                const existingItem = cart.find(item => item.productId == productId && item.size === selectedSize);
-                
-                if (existingItem) {
-                    existingItem.quantity += quantity;
+            // Check if user is logged in
+            const token = localStorage.getItem('token');
+            if (!token) {
+                if (typeof Toast !== 'undefined') {
+                    Toast.warning('Please login to add items to cart');
                 } else {
-                    cart.push({
-                        productId,
-                        quantity,
-                        size: selectedSize,
-                        addedAt: new Date().toISOString()
-                    });
+                    alert('Please login to add items to cart');
                 }
-                
-                localStorage.setItem('cart', JSON.stringify(cart));
-                alert(`Product added to cart! (${quantity} item${quantity > 1 ? 's' : ''})`);
-                
-                // Update cart badge if available
-                if (typeof updateCartCount === 'function') {
-                    updateCartCount();
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Disable button while adding
+            const btn = this;
+            btn.disabled = true;
+            btn.textContent = 'Adding...';
+            
+            try {
+                // Use cartService to add to cart (backend API only)
+                if (typeof cartService !== 'undefined') {
+                    const result = await cartService.addToCart(productId, quantity, selectedSize, selectedColor);
+                    
+                    if (result.success) {
+                        // Success - show message
+                        if (typeof Toast !== 'undefined') {
+                            Toast.success(`Product added to cart! (${quantity} item${quantity > 1 ? 's' : ''})`);
+                        } else {
+                            alert(`Product added to cart! (${quantity} item${quantity > 1 ? 's' : ''})`);
+                        }
+                    } else {
+                        // Error
+                        if (typeof Toast !== 'undefined') {
+                            Toast.error(result.message || 'Failed to add to cart');
+                        } else {
+                            alert(result.message || 'Failed to add to cart');
+                        }
+                    }
+                } else {
+                    throw new Error('Cart service not available');
                 }
+            } catch (error) {
+                console.error('❌ Error:', error);
+                if (typeof Toast !== 'undefined') {
+                    Toast.error('Error adding to cart: ' + error.message);
+                } else {
+                    alert('Error adding to cart: ' + error.message);
+                }
+            } finally {
+                // Re-enable button
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-bag me-2"></i> Add to Cart';
             }
         });
     </script>
