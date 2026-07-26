@@ -675,9 +675,13 @@ async function placeOrder() {
             body: formData
           });
 
+          // Always consume the response to avoid "Request aborted" error
+          const responseData = await uploadResponse.text();
+          
           console.log('📤 Payment proof upload response:', uploadResponse.status);
           if (!uploadResponse.ok) {
             console.warn('⚠️ Payment proof upload failed with status:', uploadResponse.status);
+            console.warn('⚠️ Response:', responseData);
           } else {
             console.log('✅ Payment proof uploaded successfully');
           }
