@@ -661,18 +661,27 @@ async function placeOrder() {
 
     if (paymentMethod === 'Bank_Transfer' && paymentProofFile) {
       try {
+        console.log('📤 Uploading payment proof for order:', orderId);
         const formData = new FormData();
         formData.append('file', paymentProofFile);
 
-        await fetch(API_CONFIG.getEndpoint(`/orders/${orderId}/payment-proof`), {
+        const uploadResponse = await fetch(API_CONFIG.getEndpoint(`/orders/${orderId}/payment-proof`), {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`
           },
           body: formData
         });
+
+        console.log('📤 Payment proof upload response:', uploadResponse.status);
+        if (!uploadResponse.ok) {
+          console.warn('⚠️ Payment proof upload failed with status:', uploadResponse.status);
+        } else {
+          console.log('✅ Payment proof uploaded successfully');
+        }
       } catch (err) {
-        console.warn('Payment proof upload failed:', err);
+        console.warn('⚠️ Payment proof upload error (non-blocking):', err.message);
+        // Don't throw - this shouldn't block order confirmation
       }
     }
 
@@ -681,11 +690,17 @@ async function placeOrder() {
 
     showNotification('success', 'Order placed successfully!');
 
-    setTimeout(() => {
-      const confirmationUrl = `checkout-confirmation.html?orderId=${orderId}`;
-      console.log('🔗 Redirecting to:', confirmationUrl);
-      window.location.href = confirmationUrl;
-    }, 1500);
+    // CRITICAL: Redirect IMMEDIATELY - don't wait
+    const confirmationUrl = `checkout-confirmation.html?orderId=${orderId}`;
+    console.log('🔗 IMMEDIATE Redirect to:', confirmationUrl);
+    console.log('🆔 Final orderId before redirect:', orderId);
+    console.log('🔐 Token still in localStorage:', !!localStorage.getItem('token'));
+    console.log('👤 UserId still in localStorage:', localStorage.getItem('userId'));
+    
+    // Store orderId for manual recovery if needed
+    localStorage.setItem('lastOrderId', orderId);
+    
+    window.location.href = confirmationUrl;
 
   } catch (error) {
     console.error('❌ Error placing order:', error);

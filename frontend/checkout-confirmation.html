@@ -258,10 +258,13 @@
     <section class="confirmation-section">
         <div class="container">
             <!-- Loading State -->
-            <div id="loadingState" class="loading-spinner">
+            <div id="loadingState" class="loading-spinner" style="display: flex !important;">
                 <div class="spinner-border" role="status">
                     <span class="visually-hidden">Loading...</span>
                 </div>
+                <p style="margin-top: 1rem; text-align: center; width: 100%; color: #666; font-size: 14px;">
+                    Loading your order confirmation...
+                </p>
             </div>
 
             <!-- Error State -->
@@ -429,16 +432,28 @@
             console.log('🎉 DOMContentLoaded fired');
             
             // Get order ID from URL FIRST
-            const urlParams = new URLSearchParams(window.location.search);
-            const orderId = urlParams.get('orderId');
+            let urlParams = new URLSearchParams(window.location.search);
+            let orderId = urlParams.get('orderId');
+            
+            // Fallback to localStorage if URL doesn't have it
+            if (!orderId) {
+                console.log('📌 No orderId in URL, checking localStorage');
+                orderId = localStorage.getItem('lastOrderId');
+                if (orderId) {
+                    console.log('📌 Using orderId from localStorage:', orderId);
+                }
+            }
             
             console.log('🔍 Order ID:', orderId, 'URL:', window.location.href);
 
             if (!orderId) {
-                console.error('❌ No orderId in URL');
+                console.error('❌ No orderId found anywhere');
                 showError();
                 return;
             }
+
+            // Remove from localStorage after use
+            localStorage.removeItem('lastOrderId');
 
             // Set a timeout to force show success if nothing happens
             const timeoutId = setTimeout(() => {
