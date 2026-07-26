@@ -509,7 +509,6 @@ function displayPaymentProofError(container, message) {
  * Place Order
  */
 async function placeOrder() {
-  console.log('🚀 placeOrder() function called!');
   const placeOrderBtn = document.getElementById('placeOrderBtn');
   const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value;
 
@@ -691,32 +690,17 @@ async function placeOrder() {
 
     showNotification('success', 'Order placed successfully!');
 
+    // CRITICAL: Redirect IMMEDIATELY - don't wait
+    const confirmationUrl = `checkout-confirmation.html?orderId=${orderId}`;
+    console.log('🔗 IMMEDIATE Redirect to:', confirmationUrl);
+    console.log('🆔 Final orderId before redirect:', orderId);
+    console.log('🔐 Token still in localStorage:', !!localStorage.getItem('token'));
+    console.log('👤 UserId still in localStorage:', localStorage.getItem('userId'));
+    
     // Store orderId for manual recovery if needed
     localStorage.setItem('lastOrderId', orderId);
     
-    // AGGRESSIVE REDIRECT - Multiple methods to ensure redirect happens
-    const confirmationUrl = `checkout-confirmation.html?orderId=${orderId}`;
-    console.log('🔗 Redirect URL:', confirmationUrl);
-    console.log('🆔 Order ID:', orderId);
-    
-    // Method 1: Direct assignment
     window.location.href = confirmationUrl;
-    
-    // Method 2: Backup redirect in case method 1 doesn't work
-    setTimeout(() => {
-      if (window.location.href.indexOf('checkout-confirmation') === -1) {
-        console.log('⚠️ Method 1 failed, using Method 2');
-        window.location.href = confirmationUrl;
-      }
-    }, 100);
-    
-    // Method 3: Replace history
-    setTimeout(() => {
-      if (window.location.href.indexOf('checkout-confirmation') === -1) {
-        console.log('⚠️ Method 2 failed, using Method 3');
-        window.location.replace(confirmationUrl);
-      }
-    }, 200);
 
   } catch (error) {
     console.error('❌ Error placing order:', error);
