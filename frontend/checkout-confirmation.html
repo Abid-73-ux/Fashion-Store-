@@ -268,50 +268,7 @@
             console.log('⚡ Inline script found orderId:', orderId);
             
             if (orderId) {
-                // Create visible overlay IMMEDIATELY
-                const overlay = document.createElement('div');
-                overlay.innerHTML = `
-                    <div style="
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        background: white;
-                        display: flex;
-                        flex-direction: column;
-                        justify-content: center;
-                        align-items: center;
-                        z-index: 9999;
-                        font-family: Arial, sans-serif;
-                    ">
-                        <div style="text-align: center; padding: 40px;">
-                            <div style="font-size: 80px; margin-bottom: 20px;">✅</div>
-                            <h1 style="font-size: 48px; margin: 20px 0; color: #333;">Thank You!</h1>
-                            <p style="font-size: 24px; margin: 20px 0; color: #666;">Your Order Has Been Placed Successfully</p>
-                            <div style="
-                                background: #2c5aa0;
-                                color: white;
-                                padding: 30px;
-                                margin: 30px 0;
-                                font-size: 28px;
-                                letter-spacing: 2px;
-                                border-radius: 8px;
-                                min-width: 300px;
-                            ">
-                                ${orderId}
-                            </div>
-                            <p style="font-size: 18px; margin: 30px 0; color: #666;">
-                                Our team will contact you soon with further details.
-                            </p>
-                            <p style="font-size: 14px; color: #999; margin-top: 40px;">Loading full details...</p>
-                        </div>
-                    </div>
-                `;
-                document.body.innerHTML = overlay.innerHTML + document.body.innerHTML;
-                console.log('⚡ OVERLAY CREATED WITH ORDERID:', orderId);
-                
-                // Then properly update the page after a short delay
+                // Hide loading immediately
                 setTimeout(() => {
                     const loadingState = document.getElementById('loadingState');
                     const successState = document.getElementById('successState');
@@ -346,9 +303,9 @@
                             `;
                         }
                         
-                        console.log('⚡ SUCCESS PAGE PROPERLY DISPLAYED');
+                        console.log('⚡ SUCCESS PAGE DISPLAYED');
                     }
-                }, 500);
+                }, 100);
             }
         })();
     </script>
