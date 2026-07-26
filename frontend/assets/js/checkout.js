@@ -552,42 +552,6 @@ async function placeOrder() {
       return;
     }
 
-    // Step 1: Upload payment proof BEFORE order creation (if bank transfer)
-    let paymentProofId = null;
-    if (paymentMethod === 'Bank_Transfer' && paymentProofFile) {
-      console.log('📤 Uploading payment proof...');
-      try {
-        const formData = new FormData();
-        formData.append('file', paymentProofFile);
-
-        const uploadResponse = await fetch(API_CONFIG.getEndpoint('/orders/temporary/payment-proof'), {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          body: formData
-        });
-
-        if (!uploadResponse.ok) {
-          const errorData = await uploadResponse.json();
-          console.error('❌ Payment proof upload failed:', errorData);
-          throw new Error(errorData.message || 'Failed to upload payment proof');
-        }
-
-        const uploadResult = await uploadResponse.json();
-        paymentProofId = uploadResult.data?.paymentProofId;
-        console.log('✅ Payment proof uploaded successfully:', paymentProofId);
-      } catch (uploadError) {
-        console.error('❌ Error uploading payment proof:', uploadError);
-        showNotification('error', 'Failed to upload payment proof. Please try again.');
-        if (placeOrderBtn) {
-          placeOrderBtn.disabled = false;
-          placeOrderBtn.innerHTML = 'Place Order <i class="bi bi-lock ms-2"></i>';
-        }
-        return;
-      }
-    }
-
     let subtotal = 0;
     const items = [];
 
@@ -631,7 +595,7 @@ async function placeOrder() {
     const shipping = storeSettings?.calculateShipping?.(subtotal) || 500;
     const total = storeSettings?.calculateGrandTotal?.(subtotal, shipping) || (subtotal + tax + shipping);
 
-    // Step 2: Create order WITH paymentProofId if available
+    // Create order WITHOUT payment proof (will upload in background)
     const orderData = {
       userId: parseInt(localStorage.getItem('userId') || '0'),
       firstName: checkoutData.customerInfo.firstName,
@@ -645,7 +609,6 @@ async function placeOrder() {
       discount: 0,
       total: total,
       paymentMethod: paymentMethod,
-      paymentProofId: paymentProofId,
       paymentStatus: 'pending',
       orderStatus: 'pending',
       shippingAddress: checkoutData.customerInfo.shippingAddress,
@@ -653,7 +616,6 @@ async function placeOrder() {
     };
 
     console.log('📦 Sending order to API...');
-    console.log('💾 Order data:', orderData);
 
     const response = await fetch(API_CONFIG.getEndpoint('/orders/create'), {
       method: 'POST',
@@ -698,12 +660,51 @@ async function placeOrder() {
       throw new Error('No orderId returned from API');
     }
 
+    // Upload payment proof in BACKGROUND (don't wait, don't block)
+    if (paymentMethod === 'Bank_Transfer' && paymentProofFile) {
+      console.log('📤 Starting background payment proof upload...');
+      
+      // Fire and forget - no await, no .catch()
+      // This prevents any request interruption from page navigation
+      const uploadPaymentProofInBackground = async () => {
+        try {
+          const formData = new FormData();
+          formData.append('file', paymentProofFile);
+
+          console.log('📤 Uploading payment proof for orderId:', orderId);
+          
+          const uploadResponse = await fetch(API_CONFIG.getEndpoint(`/orders/${orderId}/payment-proof`), {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            body: formData
+          });
+
+          // CRITICAL: Consume the response body to prevent Multer abort
+          const responseText = await uploadResponse.text();
+          
+          if (uploadResponse.ok) {
+            console.log('✅ Payment proof uploaded successfully in background');
+          } else {
+            console.warn('⚠️ Payment proof upload returned non-ok status:', uploadResponse.status);
+          }
+        } catch (uploadError) {
+          // Silently fail - order is already created, payment proof can be uploaded later
+          console.warn('⚠️ Background payment proof upload error (non-blocking):', uploadError);
+        }
+      };
+
+      // Start upload but don't wait for it
+      uploadPaymentProofInBackground();
+    }
+
     localStorage.removeItem('cart');
     localStorage.removeItem('checkout_step1_data');
 
     showNotification('success', 'Order placed successfully!');
 
-    // CRITICAL: Redirect IMMEDIATELY - don't wait
+    // CRITICAL: Redirect IMMEDIATELY - confirmation shows right away
     const confirmationUrl = `checkout-confirmation.html?orderId=${orderId}`;
     console.log('🔗 Redirecting to confirmation:', confirmationUrl);
     console.log('🆔 Final orderId before redirect:', orderId);
