@@ -34,16 +34,11 @@ setupMigrations().catch(err => {
     // Continue startup even if migrations fail (tables may already exist)
 });
 
-// Sync database models
-sequelize.sync({ alter: false }).then(() => {
+// Sync database models with ALTER enabled to update schema
+sequelize.sync({ alter: true }).then(() => {
     console.log('✅ Database models synchronized');
 }).catch(err => {
-    // Ignore "relation does not exist" errors - tables will be created by migrations
-    if (err.message && err.message.includes('relation') && err.message.includes('does not exist')) {
-        console.log('📝 Initial sync skipped - tables will be created by migrations');
-    } else {
-        console.error('⚠️ Database sync warning:', err.message);
-    }
+    console.error('⚠️ Database sync error:', err.message);
 });
 
 // Routes

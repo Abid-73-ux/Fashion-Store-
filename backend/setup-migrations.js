@@ -12,10 +12,17 @@ async function setupMigrations() {
     // Step 0: Sync Sequelize models to create/update tables
     console.log('📝 Syncing Sequelize models...');
     try {
-      await sequelize.sync({ alter: true });
+      // Use alter:false first to avoid foreign key issues on fresh database
+      // Migrations will handle the actual table creation
+      const result = await sequelize.sync({ alter: false });
       console.log('✅ Sequelize models synced successfully');
     } catch (err) {
-      console.warn('⚠️ Sequelize sync warning:', err.message);
+      // If tables don't exist, that's OK - migrations will create them
+      if (err.message && err.message.includes('does not exist')) {
+        console.log('📝 Tables will be created by migrations');
+      } else {
+        console.error('❌ Sequelize sync error:', err.message);
+      }
     }
 
     // Step 1: Create ENUM types if they don't exist
@@ -275,6 +282,39 @@ async function setupMigrations() {
       }
     } else {
       console.warn('⚠️ Skipping idx_orders_orderstatus - orderStatus column does not exist');
+    }
+
+    // Step 4: Fix PaymentProof.orderId column to be nullable
+    console.log('📝 Verifying PaymentProof.orderId column...');
+    try {
+      const ppColumns = await sequelize.query(`
+        SELECT column_name, is_nullable FROM information_schema.columns 
+        WHERE table_name = 'paymentproofs' AND column_name = 'orderId'
+      `);
+      
+      if (ppColumns && ppColumns[0] && ppColumns[0].length > 0) {
+        const isNullable = ppColumns[0][0].is_nullable === 'YES';
+        console.log(`  - orderId is_nullable: ${isNullable}`);
+        
+        if (!isNullable) {
+          console.log('  - Converting orderId to NULLABLE...');
+          await sequelize.query(`
+            ALTER TABLE paymentproofs 
+            ALTER COLUMN "orderId" DROP NOT NULL
+          `);
+          console.log('✅ orderId column is now NULLABLE');
+        } else {
+          console.log('✅ orderId column is already NULLABLE');
+        }
+      } else {
+        console.log('  - PaymentProof table does not exist yet (will be created on first use)');
+      }
+    } catch (err) {
+      if (err.message && err.message.includes('does not exist')) {
+        console.log('  - PaymentProof table will be created on first sync');
+      } else {
+        console.warn('⚠️ Could not verify PaymentProof.orderId:', err.message);
+      }
     }
 
     console.log('✅ Database migrations completed successfully');
