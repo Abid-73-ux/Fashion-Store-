@@ -1,61 +1,41 @@
-# Dependencies
-node_modules/
-package-lock.json
-yarn.lock
+# Documentation
+*.md
+!README.md
 
-# Environment variables
+# Temporary files
+*.txt
+*.log
+*.tmp
+
+# Node modules
+node_modules/
+.npm
+
+# Environment
 .env
 .env.local
 .env.*.local
 
-# IDE & Editor
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
-
-# Build & Dist
-dist/
-build/
-*.log
 
 # OS
-Thumbs.db
 .DS_Store
+Thumbs.db
 
-# Project specific
-backend/uploads/
-backend/logs/
-backend/node_modules/
+# Build
+dist/
+build/
 
-# Documentation files (keep locally, don't push)
-ADMIN_DASHBOARD_COMPLETE.md
-ADMIN_DASHBOARD_FINAL_FIX.md
-ADMIN_DASHBOARD_FIXES.md
-ADMIN_DASHBOARD_IMPLEMENTATION.md
-ADMIN_DASHBOARD_TEST_GUIDE.md
-ADMIN_DEMO_DATA_REMOVED.md
-BUTTONS_NOW_WORKING.md
-BUTTON_DEBUG_GUIDE.md
-BUTTON_FIX_VERIFICATION.md
-CHANGES_SUMMARY.md
-DEMO_DATA_COMPLETELY_REMOVED.md
-FIX_COMPLETE.md
-FORMS_NOW_WORKING.md
-ISSUE_ROOT_CAUSE_ANALYSIS.md
-QUICK_START.md
-QUICK_TEST.md
-README_ADMIN_DASHBOARD_FIXES.md
-TESTING_CATEGORIES_COUPONS.md
-TESTING_INSTRUCTIONS.md
-GODADDY_DEPLOYMENT_GUIDE.md
-update-footers.ps1
+# Testing
+coverage/
+.nyc_output/
 
-# Kiro specific
-.kiro/
-.vscode/
-
-# Installers
-*.exe
-postgresql_*.exe
+# Uploads (except git structure)
+uploads/*
+!uploads/.gitkeep
+backend/logs/*
+!backend/logs/.gitkeep
