@@ -591,9 +591,9 @@ async function placeOrder() {
       });
     }
 
-    const tax = storeSettings.calculateTax(subtotal);
-    const shipping = storeSettings.calculateShipping(subtotal);
-    const total = storeSettings.calculateGrandTotal(subtotal, shipping);
+    const tax = storeSettings?.calculateTax?.(subtotal) || Math.round(subtotal * 0.1 * 100) / 100;
+    const shipping = storeSettings?.calculateShipping?.(subtotal) || 500;
+    const total = storeSettings?.calculateGrandTotal?.(subtotal, shipping) || (subtotal + tax + shipping);
 
     const orderData = {
       userId: parseInt(localStorage.getItem('userId') || '0'),
