@@ -660,29 +660,31 @@ async function placeOrder() {
     }
 
     if (paymentMethod === 'Bank_Transfer' && paymentProofFile) {
-      try {
-        console.log('📤 Uploading payment proof for order:', orderId);
-        const formData = new FormData();
-        formData.append('file', paymentProofFile);
+      // Upload payment proof in background - DON'T WAIT
+      (async () => {
+        try {
+          console.log('📤 Uploading payment proof for order:', orderId);
+          const formData = new FormData();
+          formData.append('file', paymentProofFile);
 
-        const uploadResponse = await fetch(API_CONFIG.getEndpoint(`/orders/${orderId}/payment-proof`), {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          body: formData
-        });
+          const uploadResponse = await fetch(API_CONFIG.getEndpoint(`/orders/${orderId}/payment-proof`), {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            body: formData
+          });
 
-        console.log('📤 Payment proof upload response:', uploadResponse.status);
-        if (!uploadResponse.ok) {
-          console.warn('⚠️ Payment proof upload failed with status:', uploadResponse.status);
-        } else {
-          console.log('✅ Payment proof uploaded successfully');
+          console.log('📤 Payment proof upload response:', uploadResponse.status);
+          if (!uploadResponse.ok) {
+            console.warn('⚠️ Payment proof upload failed with status:', uploadResponse.status);
+          } else {
+            console.log('✅ Payment proof uploaded successfully');
+          }
+        } catch (err) {
+          console.warn('⚠️ Payment proof upload error:', err.message);
         }
-      } catch (err) {
-        console.warn('⚠️ Payment proof upload error (non-blocking):', err.message);
-        // Don't throw - this shouldn't block order confirmation
-      }
+      })();
     }
 
     localStorage.removeItem('cart');
