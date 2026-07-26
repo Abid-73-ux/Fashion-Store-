@@ -528,11 +528,6 @@ async function placeOrder() {
     placeOrderBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Placing Order...';
   }
 
-  // Add unload handler to track if page is leaving
-  window.addEventListener('beforeunload', () => {
-    console.log('📤 PAGE LEAVING - beforeunload fired');
-  });
-
   try {
     // Get token - if not available, user needs to login
     const token = localStorage.getItem('token');
