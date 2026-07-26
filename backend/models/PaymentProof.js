@@ -9,8 +9,8 @@ const PaymentProof = sequelize.define('PaymentProof', {
   },
   orderId: {
     type: DataTypes.INTEGER,
-    allowNull: false,
-    unique: true,
+    allowNull: true, // Allow null for temporary payment proofs before order creation
+    unique: false, // Don't enforce unique initially since it can be null
     references: {
       model: 'orders',
       key: 'id'

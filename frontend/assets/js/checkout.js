@@ -552,6 +552,42 @@ async function placeOrder() {
       return;
     }
 
+    // Step 1: Upload payment proof BEFORE order creation (if bank transfer)
+    let paymentProofId = null;
+    if (paymentMethod === 'Bank_Transfer' && paymentProofFile) {
+      console.log('📤 Uploading payment proof...');
+      try {
+        const formData = new FormData();
+        formData.append('file', paymentProofFile);
+
+        const uploadResponse = await fetch(API_CONFIG.getEndpoint('/orders/temporary/payment-proof'), {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        });
+
+        if (!uploadResponse.ok) {
+          const errorData = await uploadResponse.json();
+          console.error('❌ Payment proof upload failed:', errorData);
+          throw new Error(errorData.message || 'Failed to upload payment proof');
+        }
+
+        const uploadResult = await uploadResponse.json();
+        paymentProofId = uploadResult.data?.paymentProofId;
+        console.log('✅ Payment proof uploaded successfully:', paymentProofId);
+      } catch (uploadError) {
+        console.error('❌ Error uploading payment proof:', uploadError);
+        showNotification('error', 'Failed to upload payment proof. Please try again.');
+        if (placeOrderBtn) {
+          placeOrderBtn.disabled = false;
+          placeOrderBtn.innerHTML = 'Place Order <i class="bi bi-lock ms-2"></i>';
+        }
+        return;
+      }
+    }
+
     let subtotal = 0;
     const items = [];
 
@@ -595,6 +631,7 @@ async function placeOrder() {
     const shipping = storeSettings?.calculateShipping?.(subtotal) || 500;
     const total = storeSettings?.calculateGrandTotal?.(subtotal, shipping) || (subtotal + tax + shipping);
 
+    // Step 2: Create order WITH paymentProofId if available
     const orderData = {
       userId: parseInt(localStorage.getItem('userId') || '0'),
       firstName: checkoutData.customerInfo.firstName,
@@ -608,13 +645,15 @@ async function placeOrder() {
       discount: 0,
       total: total,
       paymentMethod: paymentMethod,
+      paymentProofId: paymentProofId,
       paymentStatus: 'pending',
       orderStatus: 'pending',
       shippingAddress: checkoutData.customerInfo.shippingAddress,
       notes: checkoutData.customerInfo.notes
     };
 
-    console.log('� Sending order to API...');
+    console.log('📦 Sending order to API...');
+    console.log('💾 Order data:', orderData);
 
     const response = await fetch(API_CONFIG.getEndpoint('/orders/create'), {
       method: 'POST',
@@ -625,7 +664,7 @@ async function placeOrder() {
       body: JSON.stringify(orderData)
     });
 
-    console.log('� Response status:', response.status);
+    console.log('✅ Response status:', response.status);
 
     // Handle 401 Unauthorized (token expired or invalid)
     if (response.status === 401) {
@@ -659,12 +698,6 @@ async function placeOrder() {
       throw new Error('No orderId returned from API');
     }
 
-    if (paymentMethod === 'Bank_Transfer' && paymentProofFile) {
-      // Skip background upload - it's causing "Request aborted" error
-      // Payment proof can be uploaded separately if needed
-      console.log('📤 Payment proof upload skipped (background)');
-    }
-
     localStorage.removeItem('cart');
     localStorage.removeItem('checkout_step1_data');
 
@@ -672,7 +705,7 @@ async function placeOrder() {
 
     // CRITICAL: Redirect IMMEDIATELY - don't wait
     const confirmationUrl = `checkout-confirmation.html?orderId=${orderId}`;
-    console.log('🔗 IMMEDIATE Redirect to:', confirmationUrl);
+    console.log('🔗 Redirecting to confirmation:', confirmationUrl);
     console.log('🆔 Final orderId before redirect:', orderId);
     console.log('🔐 Token still in localStorage:', !!localStorage.getItem('token'));
     console.log('👤 UserId still in localStorage:', localStorage.getItem('userId'));

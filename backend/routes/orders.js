@@ -57,6 +57,67 @@ router.get('/my-orders', protect, getUserOrders);
 // Legacy: Cancel order (specific path with 'cancel')
 router.patch('/:id/cancel', protect, cancelOrder);
 
+// Task 2.3: Upload payment proof (temporary - before order creation)
+// This endpoint accepts a file and creates a temporary PaymentProof record
+// Returns paymentProofId to be used during order creation
+router.post('/temporary/payment-proof', protect, upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No file uploaded',
+        error: { file: 'Payment proof file is required' }
+      });
+    }
+
+    const fileValidation = require('../services/fileService').validateFile(req.file);
+    if (!fileValidation.isValid) {
+      return res.status(400).json({
+        success: false,
+        message: 'File validation failed',
+        error: { file: fileValidation.error }
+      });
+    }
+
+    const fileService = require('../services/fileService');
+    const saveResult = fileService.savePaymentProof(req.file, 0); // Use 0 for temporary files
+    if (!saveResult.success) {
+      return res.status(500).json({
+        success: false,
+        message: 'File upload failed',
+        error: { file: saveResult.error }
+      });
+    }
+
+    // Create temporary payment proof record (no orderId yet)
+    const paymentProof = await require('../models/PaymentProof').create({
+      filePath: saveResult.filePath,
+      fileName: saveResult.fileName,
+      fileSize: req.file.size,
+      mimeType: req.file.mimetype,
+      orderId: null // Temporary - will be linked during order creation
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Payment proof uploaded successfully',
+      data: {
+        paymentProofId: paymentProof.id,
+        fileName: paymentProof.fileName,
+        fileSize: paymentProof.fileSize,
+        fileUrl: fileService.getFileUrl(paymentProof.filePath)
+      }
+    });
+  } catch (error) {
+    console.error('Temporary payment proof upload error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error uploading payment proof',
+      error: error.message
+    });
+  }
+});
+
 // Task 2.3: Upload payment proof (specific path with 'payment-proof')
 router.post('/:orderId/payment-proof', protect, upload.single('file'), uploadPaymentProof);
 
