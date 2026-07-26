@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Confirmation Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        input {
+            padding: 10px;
+            width: 100%;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #333;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #555;
+        }
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Confirmation Page Test</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Redirect to Confirmation Page</h2>
+        <p>This will redirect to the confirmation page with a test order ID:</p>
+        <input type="text" id="testOrderId" placeholder="Enter order ID (e.g., TAK-20260726-00001)" value="TAK-20260726-00001">
+        <button onclick="testRedirect()">Redirect to Confirmation</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Check localStorage</h2>
+        <p>Check what's stored in browser storage:</p>
+        <button onclick="checkStorage()">Check Storage</button>
+        <pre id="storageOutput"></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Direct Test - Click here to see confirmation page</h2>
+        <button onclick="window.location.href='checkout-confirmation.html?orderId=TAK-20260726-12345'">
+            Go to Confirmation Page (TAK-20260726-12345)
+        </button>
+    </div>
+
+    <script>
+        function testRedirect() {
+            const orderId = document.getElementById('testOrderId').value;
+            if (!orderId) {
+                alert('Please enter an order ID');
+                return;
+            }
+            console.log('🔗 Redirecting to confirmation with orderId:', orderId);
+            window.location.href = `checkout-confirmation.html?orderId=${orderId}`;
+        }
+
+        function checkStorage() {
+            const output = {
+                token: !!localStorage.getItem('token') ? 'PRESENT' : 'MISSING',
+                userId: localStorage.getItem('userId'),
+                lastOrderId: localStorage.getItem('lastOrderId'),
+                cart: localStorage.getItem('cart') ? 'PRESENT' : 'EMPTY',
+                all_keys: Object.keys(localStorage)
+            };
+            document.getElementById('storageOutput').textContent = JSON.stringify(output, null, 2);
+        }
+
+        // Auto-check storage on load
+        window.addEventListener('load', () => {
+            console.log('✅ Test page loaded');
+            checkStorage();
+        });
+    </script>
+</body>
+</html>

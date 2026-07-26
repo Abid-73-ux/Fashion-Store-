@@ -455,42 +455,26 @@
             // Remove from localStorage after use
             localStorage.removeItem('lastOrderId');
 
-            // Set a timeout to force show success if nothing happens
-            const timeoutId = setTimeout(() => {
-                console.warn('⏱️ TIMEOUT: Force showing simple success');
-                if (document.getElementById('successState').style.display === 'none') {
-                    showSimpleSuccess(orderId);
-                }
-            }, 5000);
+            // AGGRESSIVE FIX: Show success page IMMEDIATELY
+            // Don't wait for API - the order is already created on backend
+            console.log('✅ SHOWING SUCCESS PAGE IMMEDIATELY - orderId:', orderId);
+            showSimpleSuccess(orderId);
             
-            try {
-                // Try to initialize store settings
-                if (typeof storeSettings !== 'undefined' && storeSettings.initialize) {
-                    console.log('📊 Initializing storeSettings');
-                    await storeSettings.initialize();
-                    console.log('✅ storeSettings ready');
-                }
-            } catch (err) {
-                console.warn('⚠️ storeSettings failed:', err);
-            }
-            
-            console.log('📋 Calling loadOrderDetails');
-            await loadOrderDetails(orderId);
-            clearTimeout(timeoutId);
+            // Try to load full order details in background (non-blocking)
+            loadOrderDetailsInBackground(orderId);
         });
 
-        async function loadOrderDetails(orderId) {
+        async function loadOrderDetailsInBackground(orderId) {
             try {
                 const token = localStorage.getItem('token');
                 const userId = localStorage.getItem('userId');
                 
-                console.log('📋 Loading order:', orderId);
+                console.log('📋 (Background) Loading order:', orderId);
                 console.log('🔑 Token present:', !!token);
                 console.log('👤 User ID:', userId);
                 
                 if (!token) {
-                    console.warn('⚠️ No authentication token - showing simple success');
-                    showSimpleSuccess(orderId);
+                    console.log('📋 (Background) No token - skipping detailed load');
                     return;
                 }
                 
@@ -500,30 +484,23 @@
                     }
                 });
 
-                console.log('📊 API Response status:', response.status);
+                console.log('📊 (Background) API Response status:', response.status);
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    console.warn('⚠️ Order fetch failed:', response.status, errorData);
-                    
-                    // For any non-200 response, show simple success with the order ID
-                    showSimpleSuccess(orderId);
+                    console.warn('⚠️ (Background) Order fetch failed, but simple success already showing');
                     return;
                 }
 
                 const result = await response.json();
-                console.log('✅ Order data received:', result);
+                console.log('✅ (Background) Order data received:', result);
                 
                 if (result.data) {
+                    // Update the page with full details
                     displayOrderConfirmation(result.data);
-                } else {
-                    console.warn('❌ No data in response');
-                    showSimpleSuccess(orderId);
                 }
             } catch (error) {
-                console.error('❌ Error loading order:', error);
-                console.log('📝 Showing simple success message instead');
-                showSimpleSuccess(orderId);
+                console.warn('⚠️ (Background) Error loading full order details:', error);
+                // Don't show error - simple success is already showing
             }
         }
 
