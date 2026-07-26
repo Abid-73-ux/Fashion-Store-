@@ -254,6 +254,62 @@
         </div>
     </nav>
     
+    <!-- INLINE BOOTSTRAP: Show success page IMMEDIATELY -->
+    <script>
+        (function() {
+            console.log('⚡ INLINE SCRIPT EXECUTING IMMEDIATELY');
+            let urlParams = new URLSearchParams(window.location.search);
+            let orderId = urlParams.get('orderId');
+            
+            if (!orderId) {
+                orderId = localStorage.getItem('lastOrderId');
+            }
+            
+            console.log('⚡ Inline script found orderId:', orderId);
+            
+            if (orderId) {
+                // Hide loading immediately
+                setTimeout(() => {
+                    const loadingState = document.getElementById('loadingState');
+                    const successState = document.getElementById('successState');
+                    const orderIdContainer = document.getElementById('orderIdContainer');
+                    const orderNumber = document.getElementById('orderNumber');
+                    const orderDate = document.getElementById('orderDate');
+                    const paymentMethod = document.getElementById('paymentMethod');
+                    const paymentStatusMessage = document.getElementById('paymentStatusMessage');
+                    
+                    if (loadingState && successState && orderIdContainer) {
+                        console.log('⚡ Showing success page with orderId:', orderId);
+                        loadingState.style.display = 'none';
+                        successState.style.display = 'block';
+                        orderIdContainer.textContent = orderId;
+                        if (orderNumber) orderNumber.textContent = orderId;
+                        
+                        const today = new Date();
+                        if (orderDate) {
+                            orderDate.textContent = today.toLocaleDateString('en-PK', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            });
+                        }
+                        
+                        if (paymentMethod) paymentMethod.textContent = 'Bank Transfer';
+                        
+                        if (paymentStatusMessage) {
+                            paymentStatusMessage.innerHTML = `
+                                <strong>Payment Verification Pending</strong>
+                                Your payment proof has been submitted. Our team will verify your payment shortly.
+                            `;
+                        }
+                        
+                        console.log('⚡ SUCCESS PAGE DISPLAYED');
+                    }
+                }, 100);
+            }
+        })();
+    </script>
+    
     <!-- Confirmation Section -->
     <section class="confirmation-section">
         <div class="container">
