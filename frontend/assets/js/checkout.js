@@ -660,35 +660,9 @@ async function placeOrder() {
     }
 
     if (paymentMethod === 'Bank_Transfer' && paymentProofFile) {
-      // Upload payment proof in background - DON'T WAIT
-      (async () => {
-        try {
-          console.log('📤 Uploading payment proof for order:', orderId);
-          const formData = new FormData();
-          formData.append('file', paymentProofFile);
-
-          const uploadResponse = await fetch(API_CONFIG.getEndpoint(`/orders/${orderId}/payment-proof`), {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`
-            },
-            body: formData
-          });
-
-          // Always consume the response to avoid "Request aborted" error
-          const responseData = await uploadResponse.text();
-          
-          console.log('📤 Payment proof upload response:', uploadResponse.status);
-          if (!uploadResponse.ok) {
-            console.warn('⚠️ Payment proof upload failed with status:', uploadResponse.status);
-            console.warn('⚠️ Response:', responseData);
-          } else {
-            console.log('✅ Payment proof uploaded successfully');
-          }
-        } catch (err) {
-          console.warn('⚠️ Payment proof upload error:', err.message);
-        }
-      })();
+      // Skip background upload - it's causing "Request aborted" error
+      // Payment proof can be uploaded separately if needed
+      console.log('📤 Payment proof upload skipped (background)');
     }
 
     localStorage.removeItem('cart');
