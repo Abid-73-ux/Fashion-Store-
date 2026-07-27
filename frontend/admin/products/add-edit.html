@@ -185,7 +185,7 @@
                                 <div class="tab-content">
                                     <!-- Upload Panel -->
                                     <div class="tab-pane fade show active" id="uploadPanel">
-                                        <input type="file" class="form-control" id="productImageFile" accept="image/jpeg,image/png,image/webp" onchange="handleFileSelect(event)">
+                                        <input type="file" class="form-control" id="productImageFile" accept="image/jpeg,image/png,image/webp">
                                         <small class="text-muted d-block mt-2">JPG, PNG, or WebP (Max 5MB)</small>
                                         <div id="uploadStatus" style="margin-top: 0.5rem;"></div>
                                     </div>
@@ -367,13 +367,18 @@
             return false;
         });
 
+        // Attach file input listener
+        document.getElementById('productImageFile').addEventListener('change', function(e) {
+            handleFileSelect(e);
+        });
+
         // File upload handler
         async function handleFileSelect(event) {
             event.preventDefault();
             event.stopPropagation();
             
             const file = event.target.files[0];
-            if (!file) return;
+            if (!file) return false;
 
             console.log('📁 File selected:', file.name, file.size, file.type);
 
@@ -381,13 +386,13 @@
             if (!file.type.startsWith('image/')) {
                 Toast.error('Please select an image file');
                 console.error('Invalid file type:', file.type);
-                return;
+                return false;
             }
 
             // Validate file size (5MB)
             if (file.size > 5 * 1024 * 1024) {
                 Toast.error('File size must not exceed 5MB');
-                return;
+                return false;
             }
 
             try {
@@ -467,6 +472,8 @@
                 document.getElementById('uploadStatus').innerHTML = `<small class="text-danger">❌ ${error.message}</small>`;
                 Toast.error('Upload failed: ' + error.message);
             }
+            
+            return false;
         }
 
         function saveProduct() {
