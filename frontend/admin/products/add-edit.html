@@ -565,11 +565,21 @@
             const stock = document.getElementById('productStock').value;
             const category = document.getElementById('productCategory').value;
 
-            if (!name) { Toast.error('Enter product name'); return; }
-            if (!sku) { Toast.error('Enter SKU'); return; }
-            if (!price) { Toast.error('Enter price'); return; }
-            if (!stock) { Toast.error('Enter stock'); return; }
-            if (!category) { Toast.error('Select category'); return; }
+            console.log('🔍 Validation check:');
+            console.log('  Name:', name);
+            console.log('  SKU:', sku);
+            console.log('  Price:', price);
+            console.log('  Stock:', stock);
+            console.log('  Category:', category);
+
+            if (!name) { Toast.error('Enter product name'); console.warn('Missing name'); return; }
+            if (!sku) { Toast.error('Enter SKU'); console.warn('Missing SKU'); return; }
+            if (!price) { Toast.error('Enter price'); console.warn('Missing price'); return; }
+            if (!stock) { Toast.error('Enter stock'); console.warn('Missing stock'); return; }
+            if (!category) { Toast.error('Select category'); console.warn('Missing category'); return; }
+
+            const imageUrl = document.getElementById('productImage').value;
+            console.log('📷 Image URL:', imageUrl);
 
             const productData = {
                 name: name,
@@ -582,9 +592,12 @@
                 tax: parseFloat(document.getElementById('productTax').value) || 0,
                 stock: parseInt(stock),
                 category: category,
-                imageUrl: document.getElementById('productImage').value,
+                imageUrl: imageUrl,
                 status: document.querySelector('input[name="productStatus"]:checked').value
             };
+
+            console.log('✅ All validation passed, saving...');
+            console.log('Full product data:', productData);
 
             // Save to backend API
             saveProductToBackend(productData);
@@ -607,6 +620,8 @@
 
                 console.log(`📦 ${isEditMode ? 'Updating' : 'Creating'} product...`);
                 console.log('Product data:', productData);
+                console.log('URL:', url);
+                console.log('Method:', method);
 
                 const response = await fetch(url, {
                     method: method,
@@ -618,14 +633,21 @@
                 });
 
                 console.log('Response status:', response.status);
+                const responseText = await response.text();
+                console.log('Response body:', responseText);
 
                 if (!response.ok) {
-                    const errorData = await response.json();
+                    let errorData;
+                    try {
+                        errorData = JSON.parse(responseText);
+                    } catch (e) {
+                        errorData = { message: responseText };
+                    }
                     console.error('❌ API Error:', errorData);
-                    throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
+                    throw new Error(errorData.error || errorData.message || `Error ${response.status}: ${response.statusText}`);
                 }
 
-                const result = await response.json();
+                const result = JSON.parse(responseText);
                 console.log('✅ Success:', result);
 
                 if (isEditMode) {
