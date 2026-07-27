@@ -276,6 +276,12 @@
             }
         }
 
+        // Refresh categories periodically (every 5 seconds) to catch new categories added
+        setInterval(() => {
+            console.log('🔄 Refreshing categories...');
+            loadCategories();
+        }, 5000);
+
         // Log page unload to detect if page is actually reloading
         window.addEventListener('beforeunload', (e) => {
             console.error('⚠️  PAGE UNLOAD/RELOAD DETECTED! This should not happen.');
