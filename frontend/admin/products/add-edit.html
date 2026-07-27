@@ -328,8 +328,26 @@
             }
         });
 
+        // Prevent form submission on Enter key
+        document.getElementById('productForm').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Prevent form from submitting accidentally
+        document.getElementById('productForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        });
+
         // File upload handler
         async function handleFileSelect(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
             const file = event.target.files[0];
             if (!file) return;
 
@@ -399,9 +417,15 @@
                 // Update preview
                 document.getElementById('imagePreview').innerHTML = `<img src="${imageUrl}" style="width: 100%; height: 100%; object-fit: cover;">`;
                 
-                uploadStatus.innerHTML = '<small class="text-success">✅ Image uploaded successfully!</small>';
+                uploadStatus.innerHTML = '<small class="text-success">✅ Image uploaded successfully! Ready to save.</small>';
                 
                 Toast.success('Image uploaded successfully!');
+                
+                // Clear the file input after successful upload (but don't clear form)
+                setTimeout(() => {
+                    document.getElementById('productImageFile').value = '';
+                }, 500);
+                
             } catch (error) {
                 console.error('❌ Upload error:', error.message);
                 document.getElementById('uploadStatus').innerHTML = `<small class="text-danger">❌ ${error.message}</small>`;
