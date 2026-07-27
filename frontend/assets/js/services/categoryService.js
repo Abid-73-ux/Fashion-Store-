@@ -26,11 +26,23 @@ class CategoryService {
         }
       }
 
+      console.log(`🌐 Fetching from ${this.baseUrl}?active=${active}`);
       const url = active ? `${this.baseUrl}?active=true` : `${this.baseUrl}?active=false`;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Failed to fetch categories');
+      console.log(`📤 Full URL: ${url}`);
       
-      const data = await response.json();
+      const response = await fetch(url);
+      console.log(`📬 Response status: ${response.status}`);
+      
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
+      }
+      
+      const json = await response.json();
+      console.log(`✅ API Response:`, json);
+      
+      // Extract data from response wrapper
+      const data = json.success ? json.data : json;
+      console.log(`📊 Extracted data:`, data);
       
       // Cache the data
       this.cache.set(cacheKey, { data, time: Date.now() });
@@ -95,13 +107,24 @@ class CategoryService {
   async renderCategoryDropdown(containerId, baseUrl = 'shop.html?category=', refreshInterval = null) {
     const container = document.getElementById(containerId);
     if (!container) {
-      console.error(`Container ${containerId} not found`);
+      console.error(`❌ Container ${containerId} not found`);
       return;
     }
 
+    console.log(`🔍 Starting renderCategoryDropdown for ${containerId}`);
+
     const renderCategories = async () => {
       try {
+        console.log(`📡 Fetching categories from API...`);
         const categories = await this.getCategories(true);
+        
+        console.log(`✅ Got ${categories.length} categories:`, categories);
+        
+        if (!categories || categories.length === 0) {
+          console.warn(`⚠️ No categories returned from API`);
+          container.innerHTML = '<li><a class="dropdown-item text-muted" href="#">No categories found</a></li>';
+          return;
+        }
         
         container.innerHTML = categories.map(category => {
           const slug = category.name.toLowerCase().replace(/\s+/g, '-');
@@ -111,7 +134,7 @@ class CategoryService {
         console.log(`✅ Rendered ${categories.length} categories in ${containerId}`);
       } catch (error) {
         console.error(`❌ Error rendering categories in ${containerId}:`, error);
-        container.innerHTML = '<li><a class="dropdown-item text-muted" href="#">Loading categories...</a></li>';
+        container.innerHTML = '<li><a class="dropdown-item text-muted" href="#">Error loading categories</a></li>';
       }
     };
 
