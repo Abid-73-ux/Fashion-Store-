@@ -7,6 +7,20 @@ const setupMigrations = require('./setup-migrations');
 // Load environment variables
 dotenv.config();
 
+// CRITICAL: Load all models BEFORE syncing database
+// This ensures Sequelize knows about all table definitions
+require('./models/User');
+require('./models/Product');
+require('./models/Order');
+require('./models/Cart');
+require('./models/Category');
+require('./models/Coupon');
+require('./models/PaymentProof');
+require('./models/OrderStatusChange');
+require('./models/WhatsAppInteraction');
+require('./models/SupportEmail');
+require('./models/StoreSettings');
+
 // Initialize Express app
 const app = express();
 
