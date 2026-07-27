@@ -360,8 +360,21 @@
         setTimeout(() => {
             const fileInput = document.getElementById('productImageFile');
             if (fileInput) {
-                fileInput.addEventListener('change', handleFileSelect);
-                console.log('✅ File input listener ready');
+                // Add multiple event handlers to prevent any default behavior
+                fileInput.addEventListener('change', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    handleFileSelect(e);
+                    return false;
+                }, true); // Use capture phase
+                
+                // Also prevent any bubbling
+                fileInput.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                }, true);
+                
+                console.log('✅ File input listener ready with event capture');
             }
         }, 100);
 
