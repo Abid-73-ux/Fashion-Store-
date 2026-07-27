@@ -185,7 +185,12 @@
                                 <div class="tab-content">
                                     <!-- Upload Panel -->
                                     <div class="tab-pane fade show active" id="uploadPanel">
-                                        <input type="file" class="form-control" id="productImageFile" accept="image/jpeg,image/png,image/webp">
+                                        <div style="position: relative; display: inline-block; width: 100%;">
+                                            <input type="file" id="productImageFile" accept="image/jpeg,image/png,image/webp" style="position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer;">
+                                            <div class="form-control" style="cursor: pointer; background: #f8f9fa; border: 2px dashed #dee2e6; padding: 12px; text-align: center;">
+                                                <i class="bi bi-cloud-arrow-up"></i> Click to upload image
+                                            </div>
+                                        </div>
                                         <small class="text-muted d-block mt-2">JPG, PNG, or WebP (Max 5MB)</small>
                                         <div id="uploadStatus" style="margin-top: 0.5rem;"></div>
                                     </div>
@@ -336,22 +341,6 @@
             }
         });
 
-        // SAFETY NET: Watch for unwanted image clearing and restore it
-        const imagePreviewDiv = document.getElementById('imagePreview');
-        const observer = new MutationObserver(() => {
-            // If preview was cleared but we have an uploaded image, restore it
-            if (imageUploadedSuccessfully && uploadedImageUrl && imagePreviewDiv.innerHTML.includes('bi-image')) {
-                console.log('🔧 Restoring cleared image preview...');
-                imagePreviewDiv.innerHTML = `<img src="${uploadedImageUrl}" style="width: 100%; height: 100%; object-fit: cover;">`;
-            }
-        });
-        
-        observer.observe(imagePreviewDiv, {
-            childList: true,
-            innerHTML: true,
-            subtree: true
-        });
-
         // Prevent form submission on Enter key
         document.getElementById('productForm').addEventListener('keypress', function(e) {
             if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
@@ -367,65 +356,49 @@
             return false;
         });
 
-        // Attach file input listener - CRITICAL for preventing page reload
+        // Attach file input listener
         setTimeout(() => {
             const fileInput = document.getElementById('productImageFile');
             if (fileInput) {
-                fileInput.addEventListener('change', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('🎯 File change event triggered');
-                    handleFileSelect(e);
-                    return false;
-                });
-                console.log('✅ File input listener attached');
-            } else {
-                console.error('❌ productImageFile not found');
+                fileInput.addEventListener('change', handleFileSelect);
+                console.log('✅ File input listener ready');
             }
         }, 100);
 
         // File upload handler
         async function handleFileSelect(event) {
-            event.preventDefault();
-            event.stopPropagation();
-            
             const file = event.target.files[0];
-            if (!file) return false;
+            if (!file) return;
 
-            console.log('📁 File selected:', file.name, file.size, file.type);
+            console.log('📁 File selected:', file.name);
 
-            // Validate file type
+            // Validate file
             if (!file.type.startsWith('image/')) {
                 Toast.error('Please select an image file');
-                console.error('Invalid file type:', file.type);
-                return false;
+                return;
             }
 
-            // Validate file size (5MB)
             if (file.size > 5 * 1024 * 1024) {
                 Toast.error('File size must not exceed 5MB');
-                return false;
+                return;
             }
 
+            // Upload to backend
+            const token = localStorage.getItem('admin-token') || localStorage.getItem('token');
+            if (!token) {
+                Toast.error('Not authenticated. Please login.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('productName', document.getElementById('productName').value || 'product');
+
+            const uploadStatus = document.getElementById('uploadStatus');
+            uploadStatus.innerHTML = '<small class="text-info">⏳ Uploading image...</small>';
+
             try {
-                const token = localStorage.getItem('admin-token') || localStorage.getItem('token');
-                const productName = document.getElementById('productName').value || 'product';
-                
-                console.log('🔐 Token:', token ? '✓ Present' : '✗ Missing');
-                console.log('📦 Product name:', productName);
-                
-                // Create FormData for multipart upload
-                const formData = new FormData();
-                formData.append('image', file);
-                formData.append('productName', productName);
-
-                const uploadStatus = document.getElementById('uploadStatus');
-                uploadStatus.innerHTML = '<small class="text-info">⏳ Uploading...</small>';
-
-                const uploadUrl = API_CONFIG.getEndpoint(`/products/image/upload?productName=${encodeURIComponent(productName)}`);
-                console.log('🔗 Upload URL:', uploadUrl);
-
-                const response = await fetch(uploadUrl, {
+                const response = await fetch(API_CONFIG.getEndpoint('/products/image/upload'), {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -433,59 +406,31 @@
                     body: formData
                 });
 
-                console.log('📊 Upload response status:', response.status);
-
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('❌ Server error response:', errorText);
-                    let errorData = { error: 'Upload failed' };
-                    try {
-                        errorData = JSON.parse(errorText);
-                    } catch (e) {
-                        errorData = { error: errorText || 'Upload failed' };
-                    }
-                    throw new Error(errorData.error || `Error ${response.status}`);
+                    const error = await response.json();
+                    throw new Error(error.error || 'Upload failed');
                 }
 
                 const result = await response.json();
-                console.log('✅ Upload successful:', result);
-
-                // Set the image URL to the uploaded file
                 const imageUrl = result.data.imageUrl;
-                console.log('🖼️ Image URL set to:', imageUrl);
-                
-                // Store it persistently
-                uploadedImageUrl = imageUrl;
-                imageUploadedSuccessfully = true;
-                
-                // Set both the hidden input AND the preview
+
+                // Update hidden input
                 document.getElementById('productImage').value = imageUrl;
-                
-                // FORCE update preview with persistence
-                const previewDiv = document.getElementById('imagePreview');
-                previewDiv.innerHTML = `<img src="${imageUrl}" style="width: 100%; height: 100%; object-fit: cover;">`;
-                previewDiv.dataset.uploadedImage = imageUrl;  // Store in data attribute as backup
-                
-                const uploadStatusDiv = document.getElementById('uploadStatus');
-                uploadStatusDiv.innerHTML = '<small class="text-success">✅ Image uploaded successfully! Ready to save.</small>';
-                uploadStatusDiv.dataset.uploaded = 'true';  // Mark that upload succeeded
-                
+
+                // Update preview
+                document.getElementById('imagePreview').innerHTML = `<img src="${imageUrl}" style="width: 100%; height: 100%; object-fit: cover;">`;
+
+                // Show success
+                uploadStatus.innerHTML = '<small class="text-success">✅ Image uploaded successfully!</small>';
                 Toast.success('Image uploaded successfully!');
-                
-                console.log('✅ Preview updated and stored:', imageUrl);
-                
-                // Clear the file input after successful upload (but don't clear form)
-                setTimeout(() => {
-                    document.getElementById('productImageFile').value = '';
-                }, 500);
-                
+
+                console.log('✅ Image uploaded:', imageUrl);
+
             } catch (error) {
-                console.error('❌ Upload error:', error.message);
-                document.getElementById('uploadStatus').innerHTML = `<small class="text-danger">❌ ${error.message}</small>`;
+                console.error('❌ Upload error:', error);
+                uploadStatus.innerHTML = `<small class="text-danger">❌ ${error.message}</small>`;
                 Toast.error('Upload failed: ' + error.message);
             }
-            
-            return false;
         }
 
         function saveProduct() {
