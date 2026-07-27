@@ -53,11 +53,44 @@ async function initializeDatabase() {
     // Step 1: Run migrations
     await setupMigrations();
     
+    // Step 2: Seed default categories if none exist
+    await seedDefaultCategories();
+    
     console.log('✅ Database initialization completed');
     
   } catch (err) {
     console.error('⚠️ Database initialization error:', err.message);
     // Continue startup - tables may already exist
+  }
+}
+
+// Seed default categories
+async function seedDefaultCategories() {
+  try {
+    const Category = require('./models/Category');
+    
+    const count = await Category.count();
+    if (count > 0) {
+      console.log('✅ Categories already exist:', count);
+      return;
+    }
+    
+    console.log('🌱 Seeding default categories...');
+    const defaultCategories = [
+      { name: 'Men', slug: 'men', description: 'Men\'s clothing and accessories', isActive: true },
+      { name: 'Women', slug: 'women', description: 'Women\'s clothing and accessories', isActive: true },
+      { name: 'Children', slug: 'children', description: 'Children\'s clothing and accessories', isActive: true },
+      { name: 'Accessories', slug: 'accessories', description: 'Clothing accessories', isActive: true }
+    ];
+    
+    const created = await Category.bulkCreate(defaultCategories);
+    console.log('✅ Created', created.length, 'default categories');
+    created.forEach((cat) => {
+      console.log(`   - ${cat.name}`);
+    });
+    
+  } catch (error) {
+    console.error('⚠️ Error seeding categories:', error.message);
   }
 }
 
