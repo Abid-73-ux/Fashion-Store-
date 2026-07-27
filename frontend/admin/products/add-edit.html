@@ -146,12 +146,7 @@
                                     <div class="col-md-6">
                                         <label class="form-label">Category *</label>
                                         <select class="form-select" id="productCategory" required>
-                                            <option value="">Select Category</option>
-                                            <option value="Men">Men</option>
-                                            <option value="Women">Women</option>
-                                            <option value="Children">Children</option>
-                                            <option value="Accessories">Accessories</option>
-                                            <option value="Unisex">Unisex</option>
+                                            <option value="">Loading categories...</option>
                                         </select>
                                     </div>
                                 </div>
@@ -249,6 +244,38 @@
         let imageUploadedSuccessfully = false;  // Flag to prevent clearing after upload
         let uploadedImageUrl = null;  // Store the uploaded image URL persistently
 
+        // Load categories from API
+        async function loadCategories() {
+            try {
+                console.log('📦 Loading categories from API...');
+                const url = API_CONFIG.getEndpoint('/categories');
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    console.warn('⚠️ Failed to load categories');
+                    return;
+                }
+
+                const result = await response.json();
+                const categories = result.data || [];
+                console.log('✅ Categories loaded:', categories.length);
+
+                const categorySelect = document.getElementById('productCategory');
+                if (categorySelect) {
+                    categorySelect.innerHTML = '<option value="">Select Category</option>';
+                    categories.forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = cat.name;
+                        option.textContent = cat.name;
+                        categorySelect.appendChild(option);
+                    });
+                    console.log('✅ Category options added to dropdown');
+                }
+            } catch (error) {
+                console.error('❌ Error loading categories:', error);
+            }
+        }
+
         // Log page unload to detect if page is actually reloading
         window.addEventListener('beforeunload', (e) => {
             console.error('⚠️  PAGE UNLOAD/RELOAD DETECTED! This should not happen.');
@@ -268,6 +295,9 @@
         const params = new URLSearchParams(window.location.search);
         productId = params.get('id');
         isEditMode = !!productId;
+
+        // Load categories first
+        loadCategories();
 
         if (isEditMode) {
             document.getElementById('pageHeading').textContent = 'Edit Product';
