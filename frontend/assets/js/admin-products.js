@@ -11,7 +11,7 @@ const AdminProducts = (() => {
 
     const fetchProductsFromAPI = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('admin-token') || localStorage.getItem('token');
             const url = API_CONFIG.getEndpoint('/products');
             
             console.log('📦 Fetching products from API:', url);
@@ -125,7 +125,7 @@ const AdminProducts = (() => {
                 const productId = parseInt(btn.dataset.id);
                 showDeleteConfirmation('Product', async () => {
                     try {
-                        const token = localStorage.getItem('token');
+                        const token = localStorage.getItem('admin-token') || localStorage.getItem('token');
                         const url = API_CONFIG.getEndpoint(`/products/${productId}`);
                         
                         const response = await fetch(url, {
