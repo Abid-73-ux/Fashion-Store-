@@ -232,7 +232,7 @@ exports.createProduct = async (req, res) => {
     try {
         const {
             name, description, price, salePrice, stock, sku, 
-            image, images, category, size, color, material, 
+            image, imageUrl, images, category, size, color, material, 
             isFeatured, isNew, isBestseller, isSale
         } = req.body;
 
@@ -244,6 +244,9 @@ exports.createProduct = async (req, res) => {
             });
         }
 
+        // Handle both image and imageUrl field names
+        const productImage = image || imageUrl;
+
         const product = await Product.create({
             name,
             description,
@@ -251,7 +254,7 @@ exports.createProduct = async (req, res) => {
             salePrice: salePrice ? parseFloat(salePrice) : null,
             stock: parseInt(stock) || 0,
             sku,
-            image,
+            image: productImage,
             images: images || [],
             category,
             size,
@@ -284,8 +287,13 @@ exports.updateProduct = async (req, res) => {
 
         // Update fields
         Object.keys(req.body).forEach(key => {
-            if (['price', 'salePrice', 'stock'].includes(key)) {
+            // Handle both image and imageUrl
+            if (key === 'imageUrl') {
+                product.image = req.body[key];
+            } else if (['price', 'salePrice', 'stock'].includes(key)) {
                 product[key] = key === 'stock' ? parseInt(req.body[key]) : parseFloat(req.body[key]);
+            } else if (key !== 'image') {  // Skip 'image' key as it's handled by imageUrl
+                product[key] = req.body[key];
             } else {
                 product[key] = req.body[key];
             }

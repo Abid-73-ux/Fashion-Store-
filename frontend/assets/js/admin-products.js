@@ -7,9 +7,38 @@ const AdminProducts = (() => {
     let currentSearch = '';
     let currentFilter = 'All Categories';
     let currentSort = 'Latest';
+    let allProducts = [];
+
+    const fetchProductsFromAPI = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const url = API_CONFIG.getEndpoint('/products');
+            
+            console.log('📦 Fetching products from API:', url);
+            
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                console.warn('⚠️ Failed to fetch from API, falling back to localStorage');
+                allProducts = AdminStorage.getProducts();
+                return;
+            }
+
+            const result = await response.json();
+            allProducts = result.data || [];
+            console.log('✅ Products fetched from API:', allProducts.length, 'products');
+        } catch (error) {
+            console.error('❌ API fetch error, using localStorage:', error);
+            allProducts = AdminStorage.getProducts();
+        }
+    };
 
     const renderProducts = () => {
-        let products = AdminStorage.getProducts();
+        let products = [...allProducts];
 
         // Apply filters
         if (currentFilter !== 'All Categories') {
@@ -27,19 +56,19 @@ const AdminProducts = (() => {
         // Apply sorting
         switch(currentSort) {
             case 'Oldest':
-                products.sort((a, b) => new Date(a.created) - new Date(b.created));
+                products.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
                 break;
             case 'Price: Low to High':
-                products.sort((a, b) => a.price - b.price);
+                products.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
                 break;
             case 'Price: High to Low':
-                products.sort((a, b) => b.price - a.price);
+                products.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
                 break;
             case 'Most Sold':
                 products.sort((a, b) => (b.sold || 0) - (a.sold || 0));
                 break;
             default: // Latest
-                products.sort((a, b) => new Date(b.created) - new Date(a.created));
+                products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         }
 
         const tbody = document.querySelector('table tbody');
@@ -50,21 +79,25 @@ const AdminProducts = (() => {
             return;
         }
 
-        tbody.innerHTML = products.map(product => `
+        tbody.innerHTML = products.map(product => {
+            const imageUrl = product.imageUrl || product.image || 'https://via.placeholder.com/40x50?text=No+Image';
+            const createdDate = new Date(product.createdAt).toLocaleDateString();
+            
+            return `
             <tr>
                 <td><input class="form-check-input" type="checkbox" data-product-id="${product.id}"></td>
                 <td>
                     <div class="d-flex align-items-center gap-2">
-                        <img src="${product.image}" style="width: 40px; height: 50px; object-fit: cover;">
+                        <img src="${imageUrl}" style="width: 40px; height: 50px; object-fit: cover; border-radius: 4px;" alt="${product.name}" onerror="this.src='https://via.placeholder.com/40x50?text=No+Image'">
                         <strong>${product.name}</strong>
                     </div>
                 </td>
                 <td>${product.sku}</td>
                 <td>${product.category}</td>
-                <td><strong>$${product.price.toFixed(2)}</strong></td>
+                <td><strong>$${parseFloat(product.price).toFixed(2)}</strong></td>
                 <td><span class="badge bg-${product.stock > 50 ? 'success' : product.stock > 0 ? 'warning' : 'danger'}">${product.stock}</span></td>
-                <td><span class="badge bg-success">${product.status}</span></td>
-                <td>${new Date(product.created).toLocaleDateString()}</td>
+                <td><span class="badge bg-success">Active</span></td>
+                <td>${createdDate}</td>
                 <td>
                     <div class="dropdown">
                         <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
@@ -79,7 +112,8 @@ const AdminProducts = (() => {
                     </div>
                 </td>
             </tr>
-        `).join('');
+        `};
+        }).join('');
 
         attachProductHandlers();
     };
@@ -89,10 +123,31 @@ const AdminProducts = (() => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 const productId = parseInt(btn.dataset.id);
-                showDeleteConfirmation('Product', () => {
-                    AdminStorage.deleteProduct(productId);
-                    Toast.success('Product deleted successfully');
-                    renderProducts();
+                showDeleteConfirmation('Product', async () => {
+                    try {
+                        const token = localStorage.getItem('token');
+                        const url = API_CONFIG.getEndpoint(`/products/${productId}`);
+                        
+                        const response = await fetch(url, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('Failed to delete product');
+                        }
+
+                        Toast.success('Product deleted successfully');
+                        // Also delete from localStorage for consistency
+                        AdminStorage.deleteProduct(productId);
+                        await fetchProductsFromAPI();
+                        renderProducts();
+                    } catch (error) {
+                        console.error('Delete error:', error);
+                        Toast.error('Error deleting product: ' + error.message);
+                    }
                 });
             });
         });
@@ -141,7 +196,10 @@ const AdminProducts = (() => {
     };
 
     return {
-        init: () => {
+        init: async () => {
+            // Fetch products from API first
+            await fetchProductsFromAPI();
+
             // Search input
             const searchInput = document.getElementById('searchInput');
             if (searchInput) {
@@ -173,13 +231,14 @@ const AdminProducts = (() => {
             // Reset button
             const resetBtn = document.querySelector('.btn-outline-secondary');
             if (resetBtn && resetBtn.textContent.includes('Reset')) {
-                resetBtn.addEventListener('click', () => {
+                resetBtn.addEventListener('click', async () => {
                     currentSearch = '';
                     currentFilter = 'All Categories';
                     currentSort = 'Latest';
                     if (searchInput) searchInput.value = '';
                     if (categorySelect) categorySelect.value = 'All Categories';
                     if (sortSelect) sortSelect.value = 'Latest';
+                    await fetchProductsFromAPI();
                     renderProducts();
                 });
             }
@@ -197,7 +256,12 @@ const AdminProducts = (() => {
             renderProducts();
         },
 
-        render: renderProducts
+        render: renderProducts,
+        
+        refresh: async () => {
+            await fetchProductsFromAPI();
+            renderProducts();
+        }
     };
 })();
 

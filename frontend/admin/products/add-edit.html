@@ -229,19 +229,69 @@
         if (isEditMode) {
             document.getElementById('pageHeading').textContent = 'Edit Product';
             document.getElementById('pageTitle').textContent = 'Edit Product';
-            const product = AdminStorage.getProduct(productId);
-            if (product) {
-                document.getElementById('productName').value = product.name;
-                document.getElementById('productDescription').value = product.description || '';
-                document.getElementById('productSku').value = product.sku;
-                document.getElementById('productBrand').value = product.brand || '';
-                document.getElementById('productPrice').value = product.price;
-                document.getElementById('productDiscount').value = product.discount || 0;
-                document.getElementById('productStock').value = product.stock;
-                document.getElementById('productCategory').value = product.category;
-                document.getElementById('productImage').value = product.image;
-                document.querySelector(`input[value="${product.status}"]`).checked = true;
-            }
+            
+            // Try to load from API first, fallback to localStorage
+            const loadProductData = async () => {
+                try {
+                    const token = localStorage.getItem('token');
+                    const url = API_CONFIG.getEndpoint(`/products/${productId}`);
+                    
+                    console.log('📦 Loading product from API:', url);
+                    
+                    const response = await fetch(url, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (!response.ok) {
+                        console.warn('API load failed, trying localStorage...');
+                        throw new Error('API load failed');
+                    }
+
+                    const result = await response.json();
+                    const product = result.data;
+                    
+                    console.log('✅ Product loaded from API:', product);
+                    
+                    // Use image or imageUrl field
+                    const imageUrl = product.imageUrl || product.image;
+                    
+                    document.getElementById('productName').value = product.name;
+                    document.getElementById('productDescription').value = product.description || '';
+                    document.getElementById('productSku').value = product.sku;
+                    document.getElementById('productBrand').value = product.brand || '';
+                    document.getElementById('productPrice').value = product.price;
+                    document.getElementById('productDiscount').value = product.discount || 0;
+                    document.getElementById('productStock').value = product.stock;
+                    document.getElementById('productCategory').value = product.category;
+                    document.getElementById('productImage').value = imageUrl;
+                    document.getElementById('productTax').value = product.tax || 0;
+                    
+                    // Trigger image preview
+                    if (imageUrl) {
+                        document.getElementById('imagePreview').innerHTML = `<img src="${imageUrl}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                    }
+                } catch (error) {
+                    console.error('❌ Error loading product:', error);
+                    // Fallback to localStorage
+                    const product = AdminStorage.getProduct(productId);
+                    if (product) {
+                        document.getElementById('productName').value = product.name;
+                        document.getElementById('productDescription').value = product.description || '';
+                        document.getElementById('productSku').value = product.sku;
+                        document.getElementById('productBrand').value = product.brand || '';
+                        document.getElementById('productPrice').value = product.price;
+                        document.getElementById('productDiscount').value = product.discount || 0;
+                        document.getElementById('productStock').value = product.stock;
+                        document.getElementById('productCategory').value = product.category;
+                        document.getElementById('productImage').value = product.image;
+                        document.querySelector(`input[value="${product.status}"]`).checked = true;
+                    }
+                }
+            };
+            
+            loadProductData();
         }
 
         // Image preview
@@ -272,26 +322,73 @@
                 sku: sku,
                 brand: document.getElementById('productBrand').value,
                 price: parseFloat(price),
+                salePrice: parseFloat(price) * (1 - (parseFloat(document.getElementById('productDiscount').value) || 0) / 100),
                 discount: parseFloat(document.getElementById('productDiscount').value) || 0,
                 tax: parseFloat(document.getElementById('productTax').value) || 0,
                 stock: parseInt(stock),
                 category: category,
-                image: document.getElementById('productImage').value,
+                imageUrl: document.getElementById('productImage').value,
                 status: document.querySelector('input[name="productStatus"]:checked').value
             };
 
+            // Save to backend API
+            saveProductToBackend(productData);
+        }
+
+        async function saveProductToBackend(productData) {
             try {
-                if (isEditMode) {
-                    AdminStorage.updateProduct(parseInt(productId), productData);
-                    Toast.success('Product updated!');
-                } else {
-                    AdminStorage.addProduct(productData);
-                    Toast.success('Product added!');
+                const token = localStorage.getItem('token');
+                
+                if (!token) {
+                    Toast.error('Not authenticated. Please login.');
+                    return;
                 }
+
+                const url = isEditMode 
+                    ? `${API_CONFIG.getEndpoint('/products')}/${productId}`
+                    : API_CONFIG.getEndpoint('/products');
+
+                const method = isEditMode ? 'PUT' : 'POST';
+
+                console.log(`📦 ${isEditMode ? 'Updating' : 'Creating'} product...`);
+                console.log('Product data:', productData);
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(productData)
+                });
+
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('❌ API Error:', errorData);
+                    throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                console.log('✅ Success:', result);
+
+                if (isEditMode) {
+                    Toast.success('Product updated successfully!');
+                    // Also update LocalStorage for consistency
+                    AdminStorage.updateProduct(parseInt(productId), productData);
+                } else {
+                    Toast.success('Product added successfully!');
+                    // Also store in LocalStorage for consistency
+                    AdminStorage.addProduct(productData);
+                }
+
                 setTimeout(() => {
                     window.location.href = '../products.html';
-                }, 1000);
+                }, 1500);
+
             } catch (error) {
+                console.error('❌ Error:', error);
                 Toast.error('Error: ' + error.message);
             }
         }
