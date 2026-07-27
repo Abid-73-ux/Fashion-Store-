@@ -138,7 +138,7 @@ const AdminProducts = (() => {
                     </div>
                 </td>
             </tr>
-        `};
+            `;
         }).join('');
         
         console.log('✅ Table HTML updated');
