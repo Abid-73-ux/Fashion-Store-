@@ -287,10 +287,8 @@
                         <a class="nav-link dropdown-toggle" href="#" id="categoriesDropdown" role="button" data-bs-toggle="dropdown" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem;">
                             Categories
                         </a>
-                        <ul class="dropdown-menu border-0 shadow-lg">
-                            <li><a class="dropdown-item" href="shop.html?category=men">Men</a></li>
-                            <li><a class="dropdown-item" href="shop.html?category=women">Women</a></li>
-                            <li><a class="dropdown-item" href="shop.html?category=accessories">Accessories</a></li>
+                        <ul class="dropdown-menu border-0 shadow-lg" id="categoriesMenu">
+                            <li><a class="dropdown-item" href="#">Loading categories...</a></li>
                         </ul>
                     </li>
                     <li class="nav-item">
@@ -523,11 +521,8 @@
                 <!-- Shop Links -->
                 <div class="col-lg-2 col-md-6 col-6 mb-4 mb-lg-0">
                     <h5 class="mb-3" style="font-weight: 600; font-size: 1rem;">Shop</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="shop.html?category=men" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Men</a></li>
-                        <li class="mb-2"><a href="shop.html?category=women" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Women</a></li>
-                        <li class="mb-2"><a href="shop.html?category=accessories" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Accessories</a></li>
-                        <li class="mb-2"><a href="shop.html?filter=sale" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Sale</a></li>
+                    <ul class="list-unstyled" id="footerShopCategories">
+                        <li class="mb-2"><a href="shop.html" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">All Items</a></li>
                     </ul>
                 </div>
                 
@@ -584,6 +579,20 @@
     <script src="assets/js/toast.js"></script>
     <script src="assets/js/main.js"></script>
     <script src="assets/js/profile.js"></script>
+    
+    <!-- Service Layer -->
+    <script src="assets/js/services/categoryService.js"></script>
+    
+    <!-- Initialize Dynamic Categories -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Initialize dropdown categories with 5-second auto-refresh
+            await categoryService.renderCategoryDropdown('categoriesMenu', 'shop.html?category=', 5000);
+            
+            // Initialize footer categories
+            await categoryService.renderFooterCategories('footerShopCategories', 'shop.html?category=');
+        });
+    </script>
 
     <!-- WhatsApp Widget -->
     <script src="assets/js/whatsapp-widget.js"></script>

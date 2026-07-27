@@ -54,9 +54,7 @@
                             Categories
                         </a>
                         <ul class="dropdown-menu border-0 shadow-lg" id="categoriesMenu">
-                            <li><a class="dropdown-item" href="shop.html?category=men">Men</a></li>
-                            <li><a class="dropdown-item" href="shop.html?category=women">Women</a></li>
-                            <li><a class="dropdown-item" href="shop.html?category=accessories">Accessories</a></li>
+                            <li><a class="dropdown-item" href="#">Loading categories...</a></li>
                         </ul>
                     </li>
                     <li class="nav-item">
@@ -156,17 +154,8 @@
                             <!-- Category Filter -->
                             <div class="filter-group mb-4">
                                 <h6 class="mb-3" style="text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.75rem; font-weight: 600; color: var(--gray-700);">Categories</h6>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" value="men" id="catMen" name="category">
-                                    <label class="form-check-label" for="catMen" style="font-size: 0.9375rem; color: var(--gray-600);">Men's Wear</label>
-                                </div>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" value="women" id="catWomen" name="category">
-                                    <label class="form-check-label" for="catWomen" style="font-size: 0.9375rem; color: var(--gray-600);">Women's Wear</label>
-                                </div>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" value="accessories" id="catAccessories" name="category">
-                                    <label class="form-check-label" for="catAccessories" style="font-size: 0.9375rem; color: var(--gray-600);">Accessories</label>
+                                <div id="categoryFiltersContainer">
+                                    <p class="text-muted small">Loading categories...</p>
                                 </div>
                             </div>
                             
@@ -309,11 +298,8 @@
                 <!-- Shop Links -->
                 <div class="col-lg-2 col-md-6 col-6 mb-4 mb-lg-0">
                     <h5 class="mb-3" style="font-weight: 600; font-size: 1rem;">Shop</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="shop.html?category=men" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Men</a></li>
-                        <li class="mb-2"><a href="shop.html?category=women" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Women</a></li>
-                        <li class="mb-2"><a href="shop.html?category=accessories" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Accessories</a></li>
-                        <li class="mb-2"><a href="shop.html?filter=sale" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">Sale</a></li>
+                    <ul class="list-unstyled" id="footerShopCategories">
+                        <li class="mb-2"><a href="shop.html" class="text-white-50 text-decoration-none" style="font-size: 0.9rem;">All Items</a></li>
                     </ul>
                 </div>
                 
@@ -380,6 +366,20 @@
     
     <!-- Page Specific JS -->
     <script src="assets/js/shop.js"></script>
+    
+    <!-- Initialize Dynamic Categories -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Initialize dropdown categories with 5-second auto-refresh
+            await categoryService.renderCategoryDropdown('categoriesMenu', 'shop.html?category=', 5000);
+            
+            // Initialize filter checkboxes
+            await categoryService.renderCategoryFilters('categoryFiltersContainer');
+            
+            // Initialize footer categories
+            await categoryService.renderFooterCategories('footerShopCategories', 'shop.html?category=');
+        });
+    </script>
     
     <!-- WhatsApp Widget -->
     <script src="assets/js/whatsapp-widget.js"></script>
