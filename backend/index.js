@@ -42,18 +42,27 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// Run database migrations on startup
-setupMigrations().catch(err => {
-    console.error('❌ Failed to run migrations:', err.message);
-    // Continue startup even if migrations fail (tables may already exist)
-});
-
-// Sync database models with ALTER enabled to update schema
-sequelize.sync({ alter: true }).then(() => {
+// Initialize database on startup (run migrations first, then sync)
+async function initializeDatabase() {
+  try {
+    console.log('🔧 Starting database initialization...');
+    
+    // Step 1: Run migrations
+    await setupMigrations();
+    
+    // Step 2: Sync models
+    console.log('📝 Syncing Sequelize models...');
+    await sequelize.sync({ alter: true });
     console.log('✅ Database models synchronized');
-}).catch(err => {
-    console.error('⚠️ Database sync error:', err.message);
-});
+    
+  } catch (err) {
+    console.error('⚠️ Database initialization error:', err.message);
+    // Continue startup - tables may already exist
+  }
+}
+
+// Initialize database before starting routes
+initializeDatabase();
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
