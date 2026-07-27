@@ -278,9 +278,9 @@ exports.createOrder = async (req, res) => {
           whatsappNumber: customerInfo.whatsappNumber
         };
 
-        // Email and WhatsApp notifications DISABLED - not required for now
-        // await emailNotificationService.sendOrderConfirmation(order.toJSON(), customer);
-        // await whatsappService.notifyOrderPlaced(order.toJSON(), customer);
+        // Send order confirmation email
+        console.log('📧 Sending order confirmation email to:', customerInfo.email);
+        await emailNotificationService.sendOrderConfirmation(order.toJSON(), customer);
 
         console.log('✅ Order created successfully:', orderId);
       } catch (error) {
