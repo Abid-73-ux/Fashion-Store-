@@ -334,10 +334,18 @@ exports.deleteProduct = async (req, res) => {
 
 // Helper function to format product response
 function formatProductResponse(product) {
-    // Use environment-based URL for images
+    // Use environment-based URL for images only if it's a relative path
     const baseUrl = process.env.NODE_ENV === 'production' 
         ? 'https://fashion-store-p5m9.onrender.com'
         : 'http://localhost:5000';
+    
+    // Determine the correct image URL
+    let imageUrl = product.image;
+    if (imageUrl && !imageUrl.startsWith('http')) {
+        // Relative path, prepend base URL
+        imageUrl = `${baseUrl}/${imageUrl}`;
+    }
+    // If it already starts with http, use it as-is (external URL)
     
     return {
         id: product.id,
@@ -347,8 +355,8 @@ function formatProductResponse(product) {
         salePrice: product.salePrice ? parseFloat(product.salePrice) : null,
         stock: product.stock,
         sku: product.sku,
-        image: product.image ? `${baseUrl}/${product.image}` : null,
-        imageUrl: product.image ? `${baseUrl}/${product.image}` : null,  // Alternative field name
+        image: imageUrl,
+        imageUrl: imageUrl,  // Alternative field name
         images: product.images || [],
         category: product.category,
         size: product.size,
