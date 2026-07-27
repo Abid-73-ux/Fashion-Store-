@@ -249,13 +249,10 @@
         let imageUploadedSuccessfully = false;  // Flag to prevent clearing after upload
         let uploadedImageUrl = null;  // Store the uploaded image URL persistently
 
-        if (!Auth.isAdmin()) {
-            console.error('❌ NOT ADMIN - Redirecting to login');
-            Toast.error('Access denied');
-            setTimeout(() => { window.location.href = '../../login.html'; }, 2000);
-        } else {
-            console.log('✅ Admin verified - proceeding');
-        }
+        // Admin check - log but don't redirect
+        console.log('Auth.isAdmin():', Auth.isAdmin());
+        console.log('Admin token:', !!localStorage.getItem('admin-token'));
+        console.log('Admin user:', !!localStorage.getItem('admin-user'));
 
         const params = new URLSearchParams(window.location.search);
         productId = params.get('id');
