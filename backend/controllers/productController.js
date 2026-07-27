@@ -1,6 +1,7 @@
 const Product = require('../models/Product');
 const Category = require('../models/Category');
 const { Op } = require('sequelize');
+const fileService = require('../services/fileService');
 
 // Get all products with filters
 exports.getProducts = async (req, res) => {
@@ -332,6 +333,45 @@ exports.deleteProduct = async (req, res) => {
     }
 };
 
+// Upload product image (admin only)
+exports.uploadProductImage = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ success: false, error: 'No image file uploaded' });
+        }
+
+        const fileService = require('../services/fileService');
+        
+        // Get product name from query for filename
+        const productName = req.query.productName || 'product';
+        
+        // Save the product image
+        const saveResult = fileService.saveProductImage(req.file, productName);
+        
+        if (!saveResult.success) {
+            return res.status(400).json({ success: false, error: saveResult.error });
+        }
+
+        // Get full URL for the image
+        const imageUrl = fileService.getFileUrl(saveResult.filePath);
+
+        console.log('✅ Product image uploaded:', saveResult.fileName, '→', imageUrl);
+
+        res.status(200).json({
+            success: true,
+            data: {
+                filePath: saveResult.filePath,
+                fileName: saveResult.fileName,
+                imageUrl: imageUrl,
+                mimeType: saveResult.mimeType
+            }
+        });
+    } catch (error) {
+        console.error('Upload product image error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
 // Helper function to format product response
 function formatProductResponse(product) {
     // Use environment-based URL for images only if it's a relative path
@@ -373,3 +413,50 @@ function formatProductResponse(product) {
         updatedAt: product.updatedAt
     };
 }
+
+// Upload product image
+exports.uploadProductImage = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                error: 'No file uploaded'
+            });
+        }
+
+        // Validate file
+        const validation = fileService.validateFile(req.file);
+        if (!validation.isValid) {
+            return res.status(400).json({
+                success: false,
+                error: validation.error
+            });
+        }
+
+        // Save the file to uploads/products directory
+        fileService.ensureUploadDir(fileService.UPLOAD_DIRS.products);
+        const filename = fileService.generateSecureFilename('product', req.file.originalname);
+        const filePath = require('path').join(fileService.UPLOAD_DIRS.products, filename);
+        const fs = require('fs');
+        fs.writeFileSync(filePath, req.file.buffer);
+
+        // Return relative path for storing in database
+        const relativePath = `products/${filename}`;
+
+        res.status(200).json({
+            success: true,
+            data: {
+                imageUrl: relativePath,
+                originalName: req.file.originalname,
+                mimeType: req.file.mimetype,
+                size: req.file.size
+            }
+        });
+    } catch (error) {
+        console.error('Upload product image error:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+};

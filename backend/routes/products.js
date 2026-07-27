@@ -1,4 +1,5 @@
 const express = require('express');
+const multer = require('multer');
 const {
     getProducts,
     getProduct,
@@ -8,11 +9,20 @@ const {
     getSaleProducts,
     createProduct,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    uploadProductImage
 } = require('../controllers/productController');
 const { protect, authorize } = require('../middleware/auth');
 
 const router = express.Router();
+
+// Configure multer for product image uploads
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB limit
+    }
+});
 
 // Public routes
 router.get('/', getProducts);
@@ -27,5 +37,8 @@ router.post('/', protect, authorize('admin'), createProduct);
 router.put('/:id', protect, authorize('admin'), updateProduct);
 router.patch('/:id', protect, authorize('admin'), updateProduct);
 router.delete('/:id', protect, authorize('admin'), deleteProduct);
+
+// Image upload route - admin only
+router.post('/image/upload', protect, authorize('admin'), upload.single('image'), uploadProductImage);
 
 module.exports = router;

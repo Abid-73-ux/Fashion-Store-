@@ -115,6 +115,29 @@ function generateSecureFilename(orderId, originalFilename) {
 }
 
 /**
+ * Generate secure filename for product image
+ * @param {string} productName - Product name for reference
+ * @param {string} originalFilename - Original filename
+ * @returns {string} Secure filename
+ */
+function generateProductImageFilename(productName, originalFilename) {
+  // Extract file extension
+  const ext = path.extname(originalFilename).toLowerCase();
+
+  // Generate random string using crypto
+  const randomString = crypto.randomBytes(16).toString('hex');
+
+  // Generate timestamp
+  const timestamp = Date.now();
+
+  // Sanitize product name (remove special chars, spaces to hyphens)
+  const sanitized = (productName || 'product').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+  // Create filename: product_{name}_{timestamp}_{random}.{ext}
+  return `product_${sanitized}_${timestamp}_${randomString}${ext}`;
+}
+
+/**
  * Save uploaded file to payment proofs directory
  * @param {Object} file - Express file object with buffer
  * @param {string} orderId - Order ID for filename
@@ -151,6 +174,47 @@ function savePaymentProof(file, orderId) {
     };
   } catch (error) {
     console.error('Error saving payment proof:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Save uploaded product image
+ * @param {Object} file - Express file object with buffer
+ * @param {string} productName - Product name for filename
+ * @returns {Object} { success: boolean, filePath: string, fileName: string, error: string }
+ */
+function saveProductImage(file, productName) {
+  try {
+    // Validate file first
+    const validation = validateFile(file);
+    if (!validation.isValid) {
+      return { success: false, error: validation.error };
+    }
+
+    // Ensure directory exists
+    ensureUploadDir(UPLOAD_DIRS.products);
+
+    // Generate secure filename
+    const filename = generateProductImageFilename(productName, file.originalname || 'product_image');
+
+    // Full file path
+    const filePath = path.join(UPLOAD_DIRS.products, filename);
+
+    // Save file to disk
+    fs.writeFileSync(filePath, file.buffer);
+
+    // Return just the filename relative to uploads folder
+    const relativePath = `products/${filename}`;
+
+    return {
+      success: true,
+      filePath: relativePath,
+      fileName: filename,
+      mimeType: file.mimetype
+    };
+  } catch (error) {
+    console.error('Error saving product image:', error);
     return { success: false, error: error.message };
   }
 }
@@ -235,7 +299,9 @@ module.exports = {
   validateMimeType,
   validateFile,
   generateSecureFilename,
+  generateProductImageFilename,
   savePaymentProof,
+  saveProductImage,
   deleteFile,
   getFileUrl,
   generateThumbnail
