@@ -174,10 +174,10 @@
                                 <!-- Upload/URL Tabs -->
                                 <ul class="nav nav-tabs mb-3" id="imageTab">
                                     <li class="nav-item">
-                                        <a class="nav-link active" id="uploadTab" data-bs-toggle="tab" href="#uploadPanel" role="tab">Upload</a>
+                                        <a class="nav-link active" id="uploadTab" href="#uploadPanel" role="tab" onclick="switchTab(event, 'uploadPanel')">Upload</a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" id="urlTab" data-bs-toggle="tab" href="#urlPanel" role="tab">URL</a>
+                                        <a class="nav-link" id="urlTab" href="#urlPanel" role="tab" onclick="switchTab(event, 'urlPanel')">URL</a>
                                     </li>
                                 </ul>
                                 
@@ -187,7 +187,7 @@
                                     <div class="tab-pane fade show active" id="uploadPanel">
                                         <div style="position: relative; display: inline-block; width: 100%;">
                                             <input type="file" id="productImageFile" accept="image/jpeg,image/png,image/webp" style="position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer;">
-                                            <div class="form-control" style="cursor: pointer; background: #f8f9fa; border: 2px dashed #dee2e6; padding: 12px; text-align: center;">
+                                            <div id="uploadButton" class="form-control" style="cursor: pointer; background: #f8f9fa; border: 2px dashed #dee2e6; padding: 12px; text-align: center;">
                                                 <i class="bi bi-cloud-arrow-up"></i> Click to upload image
                                             </div>
                                         </div>
@@ -352,6 +352,29 @@
             }
         });
 
+        // Simple tab switching - manual, no Bootstrap
+        function switchTab(event, panelId) {
+            event.preventDefault();
+            console.log('Switching to tab:', panelId);
+            
+            // Hide all tabs
+            document.getElementById('uploadPanel').classList.remove('show', 'active');
+            document.getElementById('urlPanel').classList.remove('show', 'active');
+            
+            // Show selected tab
+            document.getElementById(panelId).classList.add('show', 'active');
+            
+            // Update tab buttons
+            document.getElementById('uploadTab').classList.remove('active');
+            document.getElementById('urlTab').classList.remove('active');
+            
+            if (panelId === 'uploadPanel') {
+                document.getElementById('uploadTab').classList.add('active');
+            } else {
+                document.getElementById('urlTab').classList.add('active');
+            }
+        }
+
         // Prevent form submission on Enter key
         document.getElementById('productForm').addEventListener('keypress', function(e) {
             if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
@@ -413,77 +436,81 @@
             }
         }
 
-        // Attach file input listener
+        // Attach file input listener - SIMPLE DIRECT APPROACH
         setTimeout(() => {
             const fileInput = document.getElementById('productImageFile');
-            if (fileInput) {
-                console.log('✅ Attaching file input listeners...');
+            const uploadButton = document.getElementById('uploadButton');
+            
+            if (fileInput && uploadButton) {
+                console.log('✅ Setting up file upload handler...');
                 
-                // Add multiple event handlers to prevent any default behavior
-                fileInput.addEventListener('change', (e) => {
-                    console.log('📁 change event fired (with handlers)');
+                // Click the hidden file input when button is clicked
+                uploadButton.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    e.stopImmediatePropagation();
-                    handleFileSelect(e);
+                    console.log('📁 Upload button clicked - triggering file input');
+                    fileInput.click();
                     return false;
-                }, true); // Use capture phase
+                }, false);
                 
-                // Also prevent any bubbling
-                fileInput.addEventListener('click', (e) => {
-                    console.log('📁 click event fired');
-                    e.stopPropagation();
-                }, true);
+                // Handle file selection
+                fileInput.addEventListener('change', (e) => {
+                    console.log('📁 File input change event fired');
+                    handleFileSelect(e);
+                    // Reset the file input value after handling
+                    setTimeout(() => {
+                        fileInput.value = '';
+                        console.log('📁 File input value cleared');
+                    }, 500);
+                }, false);
                 
-                console.log('✅ File input listeners attached with event capture');
+                console.log('✅ File upload handler ready');
             } else {
-                console.error('❌ File input element not found!');
+                console.error('❌ File input or upload button not found');
             }
         }, 100);
 
-        // File upload handler
+        // File upload handler - SIMPLE AND DIRECT
         async function handleFileSelect(event) {
-            console.log('📁 handleFileSelect START');
+            console.log('📁 handleFileSelect - START');
+            
             const file = event.target.files[0];
             if (!file) {
-                console.log('📁 No file selected, returning');
+                console.log('❌ No file in input');
                 return;
             }
 
-            console.log('📁 File selected:', file.name, file.size, file.type);
+            console.log('✅ File received:', file.name, file.size, file.type);
 
-            // Validate file
+            // Validate
             if (!file.type.startsWith('image/')) {
-                Toast.error('Please select an image file');
-                console.log('❌ Not an image file');
+                Toast.error('Image files only (JPG, PNG, WebP)');
                 return;
             }
-
             if (file.size > 5 * 1024 * 1024) {
-                Toast.error('File size must not exceed 5MB');
-                console.log('❌ File too large');
+                Toast.error('Max file size is 5MB');
                 return;
             }
 
-            // Upload to backend
+            // Get auth token
             const token = localStorage.getItem('admin-token') || localStorage.getItem('token');
             if (!token) {
-                Toast.error('Not authenticated. Please login.');
-                console.log('❌ No token');
+                Toast.error('Login required');
                 return;
             }
 
-            const formData = new FormData();
-            formData.append('image', file);
-            formData.append('productName', document.getElementById('productName').value || 'product');
-
+            // Show loading
             const uploadStatus = document.getElementById('uploadStatus');
-            console.log('📁 Showing upload status message...');
-            uploadStatus.innerHTML = '<small class="text-info">⏳ Uploading image...</small>';
+            uploadStatus.innerHTML = '<small class="text-info">⏳ Uploading...</small>';
             uploadStatus.style.display = 'block';
 
             try {
-                console.log('📁 Starting fetch to upload endpoint...');
+                console.log('� Uploading to backend...');
+                
+                const formData = new FormData();
+                formData.append('image', file);
+                formData.append('productName', document.getElementById('productName').value || 'product');
+
                 const response = await fetch(API_CONFIG.getEndpoint('/products/image/upload'), {
                     method: 'POST',
                     headers: {
@@ -492,55 +519,40 @@
                     body: formData
                 });
 
-                console.log('📁 Fetch completed, response status:', response.status);
-
                 if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error || 'Upload failed');
+                    const err = await response.json();
+                    throw new Error(err.error || 'Upload failed');
                 }
 
                 const result = await response.json();
                 const imageUrl = result.data.imageUrl;
 
-                console.log('📁 ✅ Upload successful:', imageUrl);
+                console.log('✅ Upload successful:', imageUrl);
 
-                // LOCK - Set flag to prevent any clearing
+                // Update the HIDDEN input (not visible to user)
+                const hiddenInput = document.getElementById('productImage');
+                hiddenInput.value = imageUrl;
+                console.log('✅ Hidden input updated');
+
+                // Update the VISIBLE preview
+                const preview = document.getElementById('imagePreview');
+                preview.innerHTML = `<img src="${imageUrl}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;">`;
+                console.log('✅ Preview updated');
+
+                // Show success message
+                uploadStatus.innerHTML = `<small class="text-success"><strong>✅ Image uploaded!</strong><br>You can now save the product.</small>`;
+                uploadStatus.style.display = 'block';
+
+                // Mark as uploaded
                 imageUploadedSuccessfully = true;
                 uploadedImageUrl = imageUrl;
 
-                // Update hidden input
-                console.log('📁 Updating productImage input...');
-                const productImageInput = document.getElementById('productImage');
-                productImageInput.value = imageUrl;
-                // Prevent any changes to this input
-                productImageInput.dataset.locked = 'true';
-
-                // Update preview
-                console.log('📁 Updating image preview...');
-                const imagePreviewDiv = document.getElementById('imagePreview');
-                imagePreviewDiv.innerHTML = `<img src="${imageUrl}" style="width: 100%; height: 100%; object-fit: cover;">`;
-                imagePreviewDiv.dataset.locked = 'true';
-
-                // Show success - persistent
-                console.log('📁 Showing success status...');
-                uploadStatus.innerHTML = '<small class="text-success">✅ Image uploaded successfully! You can now fill the remaining fields.</small>';
-                uploadStatus.style.display = 'block';
-                uploadStatus.dataset.locked = 'true';
-                
-                // Scroll to the success message so user can see it
-                uploadStatus.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                
-                Toast.success('Image uploaded successfully!');
-
-                console.log('✅ Image uploaded and LOCKED:', imageUrl);
-                console.log('📁 handleFileSelect COMPLETE');
-                
-                // Start monitoring to prevent mutations
-                startMutationMonitoring();
+                Toast.success('Image ready!');
+                console.log('📁 handleFileSelect - COMPLETE');
 
             } catch (error) {
-                console.error('❌ Upload error:', error);
-                uploadStatus.innerHTML = `<small class="text-danger">❌ ${error.message}</small>`;
+                console.error('❌ Upload failed:', error.message);
+                uploadStatus.innerHTML = `<small class="text-danger">❌ Error: ${error.message}</small>`;
                 uploadStatus.style.display = 'block';
                 Toast.error('Upload failed: ' + error.message);
             }
