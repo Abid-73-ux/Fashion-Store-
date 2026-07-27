@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Image Upload - Debug</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="p-5">
+    <div class="container">
+        <h1>Image Upload Test - Debug Page</h1>
+        
+        <div class="card" style="max-width: 600px; margin: 2rem auto;">
+            <div class="card-body">
+                <h5>Test Upload (No Form, No Submission)</h5>
+                
+                <!-- Image Preview -->
+                <div id="imagePreview" style="width: 100%; height: 200px; background: #f0f0f0; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; border-radius: 4px; margin-bottom: 1rem;">
+                    <i style="font-size: 3rem; color: #999;">📷</i>
+                </div>
+                
+                <!-- File Input -->
+                <div style="position: relative; display: inline-block; width: 100%; margin-bottom: 1rem;">
+                    <input type="file" id="productImageFile" accept="image/jpeg,image/png,image/webp" style="position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer;">
+                    <div class="form-control" style="cursor: pointer; background: #f8f9fa; border: 2px dashed #dee2e6; padding: 12px; text-align: center;">
+                        ☁️ Click to upload image
+                    </div>
+                </div>
+                
+                <small class="text-muted d-block mb-3">JPG, PNG, or WebP (Max 5MB)</small>
+                
+                <!-- Status -->
+                <div id="uploadStatus" class="alert alert-info" style="display: none;">
+                    Status message here
+                </div>
+                
+                <!-- Log -->
+                <div id="debugLog" style="background: #f5f5f5; padding: 1rem; border-radius: 4px; font-family: monospace; font-size: 0.85rem; max-height: 300px; overflow-y: auto;">
+                    <p>Debug log will appear here...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../assets/js/config.js"></script>
+    <script>
+        // DEBUG LOG FUNCTION
+        const logs = [];
+        function debugLog(msg) {
+            const timestamp = new Date().toLocaleTimeString();
+            const fullMsg = `[${timestamp}] ${msg}`;
+            logs.push(fullMsg);
+            document.getElementById('debugLog').innerHTML = logs.map(l => `<div>${l}</div>`).join('');
+            console.log(fullMsg);
+        }
+
+        debugLog('Page loaded');
+
+        // Get file input
+        const fileInput = document.getElementById('productImageFile');
+        debugLog('File input element found');
+
+        // File input handler
+        async function handleFileSelect(event) {
+            debugLog('handleFileSelect called');
+            debugLog(`Event type: ${event.type}`);
+            debugLog(`Has files: ${event.target.files.length}`);
+            
+            const file = event.target.files[0];
+            if (!file) {
+                debugLog('No file selected');
+                return;
+            }
+
+            debugLog(`File selected: ${file.name} (${file.size} bytes, ${file.type})`);
+
+            // Validate file
+            if (!file.type.startsWith('image/')) {
+                debugLog('ERROR: Not an image file');
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                debugLog('ERROR: File too large (>5MB)');
+                return;
+            }
+
+            debugLog('File validation passed');
+
+            // Upload to backend
+            const token = localStorage.getItem('admin-token') || localStorage.getItem('token');
+            if (!token) {
+                debugLog('ERROR: No auth token found');
+                return;
+            }
+
+            debugLog(`Auth token found: ${token.substring(0, 20)}...`);
+
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('productName', 'test-product');
+
+            const statusDiv = document.getElementById('uploadStatus');
+            statusDiv.style.display = 'block';
+            statusDiv.textContent = '⏳ Uploading...';
+            statusDiv.className = 'alert alert-info';
+
+            try {
+                debugLog('Starting upload...');
+                const endpoint = API_CONFIG.getEndpoint('/products/image/upload');
+                debugLog(`Upload endpoint: ${endpoint}`);
+
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                debugLog(`Response status: ${response.status}`);
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Upload failed');
+                }
+
+                const result = await response.json();
+                const imageUrl = result.data.imageUrl;
+
+                debugLog(`Upload successful: ${imageUrl}`);
+
+                // Update preview
+                document.getElementById('imagePreview').innerHTML = `<img src="${imageUrl}" style="width: 100%; height: 100%; object-fit: cover;">`;
+
+                statusDiv.textContent = '✅ Image uploaded successfully!';
+                statusDiv.className = 'alert alert-success';
+
+                debugLog('UI updated with image');
+
+            } catch (error) {
+                debugLog(`ERROR: ${error.message}`);
+                statusDiv.textContent = `❌ ${error.message}`;
+                statusDiv.className = 'alert alert-danger';
+            }
+        }
+
+        // Set up file input listener - MULTIPLE APPROACHES
+        debugLog('Setting up file input listeners...');
+
+        // Approach 1: Simple change event
+        fileInput.addEventListener('change', (e) => {
+            debugLog('change event fired');
+            handleFileSelect(e);
+        });
+
+        // Approach 2: With stopPropagation
+        fileInput.addEventListener('change', (e) => {
+            debugLog('change event (with stop) fired');
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
+
+        // Approach 3: Capture phase
+        fileInput.addEventListener('change', (e) => {
+            debugLog('change event (capture phase) fired');
+        }, true);
+
+        // Prevent document-level form submission
+        document.addEventListener('submit', (e) => {
+            debugLog('Document submit intercepted - preventing default');
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }, true);
+
+        // Monitor page visibility changes
+        document.addEventListener('visibilitychange', () => {
+            debugLog(`Visibility changed: ${document.visibilityState}`);
+        });
+
+        // Monitor navigation
+        window.addEventListener('beforeunload', (e) => {
+            debugLog('WARNING: beforeunload event fired - page is reloading!');
+        });
+
+        debugLog('All listeners attached - ready for upload');
+    </script>
+</body>
+</html>

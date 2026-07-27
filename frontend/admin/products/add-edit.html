@@ -249,6 +249,17 @@
         let imageUploadedSuccessfully = false;  // Flag to prevent clearing after upload
         let uploadedImageUrl = null;  // Store the uploaded image URL persistently
 
+        // Log page unload to detect if page is actually reloading
+        window.addEventListener('beforeunload', (e) => {
+            console.error('⚠️  PAGE UNLOAD/RELOAD DETECTED! This should not happen.');
+            console.trace('Unload stack trace');
+        });
+
+        // Log all history navigation
+        window.addEventListener('popstate', (e) => {
+            console.warn('🔙 History navigation detected (back/forward)');
+        });
+
         // Admin check - log but don't redirect
         console.log('Auth.isAdmin():', Auth.isAdmin());
         console.log('Admin token:', !!localStorage.getItem('admin-token'));
@@ -356,12 +367,61 @@
             return false;
         });
 
+        // Monitor for unwanted mutations to locked elements
+        const mutationObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                // Check if any locked elements are being modified
+                if (mutation.target.dataset && mutation.target.dataset.locked === 'true') {
+                    console.warn('🔒 Attempted modification to locked element:', mutation.target.id);
+                    // Restore if needed
+                    if (mutation.target.id === 'imagePreview' && uploadedImageUrl) {
+                        console.log('🔄 Restoring image preview...');
+                        mutation.target.innerHTML = `<img src="${uploadedImageUrl}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                    }
+                    if (mutation.target.id === 'productImage' && uploadedImageUrl) {
+                        console.log('🔄 Restoring productImage input...');
+                        mutation.target.value = uploadedImageUrl;
+                    }
+                }
+            });
+        });
+
+        // Start monitoring after upload (will be set after first successful upload)
+        let monitoringActive = false;
+        
+        // Helper to start monitoring
+        function startMutationMonitoring() {
+            if (!monitoringActive) {
+                monitoringActive = true;
+                const imagElements = [
+                    document.getElementById('imagePreview'),
+                    document.getElementById('productImage'),
+                    document.getElementById('uploadStatus')
+                ];
+                
+                imagElements.forEach(el => {
+                    if (el) {
+                        mutationObserver.observe(el, {
+                            attributes: true,
+                            attributeFilter: ['style', 'data-locked'],
+                            childList: true,
+                            subtree: true
+                        });
+                    }
+                });
+                console.log('✅ Mutation monitoring started');
+            }
+        }
+
         // Attach file input listener
         setTimeout(() => {
             const fileInput = document.getElementById('productImageFile');
             if (fileInput) {
+                console.log('✅ Attaching file input listeners...');
+                
                 // Add multiple event handlers to prevent any default behavior
                 fileInput.addEventListener('change', (e) => {
+                    console.log('📁 change event fired (with handlers)');
                     e.preventDefault();
                     e.stopPropagation();
                     e.stopImmediatePropagation();
@@ -371,28 +431,37 @@
                 
                 // Also prevent any bubbling
                 fileInput.addEventListener('click', (e) => {
+                    console.log('📁 click event fired');
                     e.stopPropagation();
                 }, true);
                 
-                console.log('✅ File input listener ready with event capture');
+                console.log('✅ File input listeners attached with event capture');
+            } else {
+                console.error('❌ File input element not found!');
             }
         }, 100);
 
         // File upload handler
         async function handleFileSelect(event) {
+            console.log('📁 handleFileSelect START');
             const file = event.target.files[0];
-            if (!file) return;
+            if (!file) {
+                console.log('📁 No file selected, returning');
+                return;
+            }
 
-            console.log('📁 File selected:', file.name);
+            console.log('📁 File selected:', file.name, file.size, file.type);
 
             // Validate file
             if (!file.type.startsWith('image/')) {
                 Toast.error('Please select an image file');
+                console.log('❌ Not an image file');
                 return;
             }
 
             if (file.size > 5 * 1024 * 1024) {
                 Toast.error('File size must not exceed 5MB');
+                console.log('❌ File too large');
                 return;
             }
 
@@ -400,6 +469,7 @@
             const token = localStorage.getItem('admin-token') || localStorage.getItem('token');
             if (!token) {
                 Toast.error('Not authenticated. Please login.');
+                console.log('❌ No token');
                 return;
             }
 
@@ -408,9 +478,12 @@
             formData.append('productName', document.getElementById('productName').value || 'product');
 
             const uploadStatus = document.getElementById('uploadStatus');
+            console.log('📁 Showing upload status message...');
             uploadStatus.innerHTML = '<small class="text-info">⏳ Uploading image...</small>';
+            uploadStatus.style.display = 'block';
 
             try {
+                console.log('📁 Starting fetch to upload endpoint...');
                 const response = await fetch(API_CONFIG.getEndpoint('/products/image/upload'), {
                     method: 'POST',
                     headers: {
@@ -418,6 +491,8 @@
                     },
                     body: formData
                 });
+
+                console.log('📁 Fetch completed, response status:', response.status);
 
                 if (!response.ok) {
                     const error = await response.json();
@@ -427,21 +502,46 @@
                 const result = await response.json();
                 const imageUrl = result.data.imageUrl;
 
+                console.log('📁 ✅ Upload successful:', imageUrl);
+
+                // LOCK - Set flag to prevent any clearing
+                imageUploadedSuccessfully = true;
+                uploadedImageUrl = imageUrl;
+
                 // Update hidden input
-                document.getElementById('productImage').value = imageUrl;
+                console.log('📁 Updating productImage input...');
+                const productImageInput = document.getElementById('productImage');
+                productImageInput.value = imageUrl;
+                // Prevent any changes to this input
+                productImageInput.dataset.locked = 'true';
 
                 // Update preview
-                document.getElementById('imagePreview').innerHTML = `<img src="${imageUrl}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                console.log('📁 Updating image preview...');
+                const imagePreviewDiv = document.getElementById('imagePreview');
+                imagePreviewDiv.innerHTML = `<img src="${imageUrl}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                imagePreviewDiv.dataset.locked = 'true';
 
-                // Show success
-                uploadStatus.innerHTML = '<small class="text-success">✅ Image uploaded successfully!</small>';
+                // Show success - persistent
+                console.log('📁 Showing success status...');
+                uploadStatus.innerHTML = '<small class="text-success">✅ Image uploaded successfully! You can now fill the remaining fields.</small>';
+                uploadStatus.style.display = 'block';
+                uploadStatus.dataset.locked = 'true';
+                
+                // Scroll to the success message so user can see it
+                uploadStatus.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                
                 Toast.success('Image uploaded successfully!');
 
-                console.log('✅ Image uploaded:', imageUrl);
+                console.log('✅ Image uploaded and LOCKED:', imageUrl);
+                console.log('📁 handleFileSelect COMPLETE');
+                
+                // Start monitoring to prevent mutations
+                startMutationMonitoring();
 
             } catch (error) {
                 console.error('❌ Upload error:', error);
                 uploadStatus.innerHTML = `<small class="text-danger">❌ ${error.message}</small>`;
+                uploadStatus.style.display = 'block';
                 Toast.error('Upload failed: ' + error.message);
             }
         }
