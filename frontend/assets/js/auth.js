@@ -212,12 +212,15 @@ const Auth = {
   }
 };
 
-// Initialize on page load
+// Initialize on page load (with delay to ensure all scripts are loaded)
 document.addEventListener('DOMContentLoaded', () => {
   // Update navbar if Navigation module is available
-  if (typeof Navigation !== 'undefined') {
-    Navigation.updateNavbar();
-  }
+  // Use setTimeout to ensure all scripts have loaded
+  setTimeout(() => {
+    if (typeof Navigation !== 'undefined' && typeof Navigation.updateNavbar === 'function') {
+      Navigation.updateNavbar();
+    }
+  }, 100);
 });
 
 // Export for use in modules

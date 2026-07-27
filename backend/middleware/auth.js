@@ -26,9 +26,17 @@ const protect = async (req, res, next) => {
 
 const authorize = (...roles) => {
     return (req, res, next) => {
-        if (!roles.includes(req.user.role)) {
+        console.log('🔐 Authorization Check:');
+        console.log('   User ID:', req.user?.id);
+        console.log('   User Role:', req.user?.role);
+        console.log('   Required Roles:', roles);
+        console.log('   Match:', roles.includes(req.user?.role));
+        
+        if (!roles.includes(req.user?.role)) {
+            console.error('❌ Authorization failed - user role not in allowed roles');
             return res.status(403).json({ error: 'Not authorized to perform this action' });
         }
+        console.log('✅ Authorization passed');
         next();
     };
 };

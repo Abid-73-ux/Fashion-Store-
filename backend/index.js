@@ -47,13 +47,13 @@ async function initializeDatabase() {
   try {
     console.log('🔧 Starting database initialization...');
     
+    // Wait a bit to ensure models are loaded
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
     // Step 1: Run migrations
     await setupMigrations();
     
-    // Step 2: Sync models
-    console.log('📝 Syncing Sequelize models...');
-    await sequelize.sync({ alter: true });
-    console.log('✅ Database models synchronized');
+    console.log('✅ Database initialization completed');
     
   } catch (err) {
     console.error('⚠️ Database initialization error:', err.message);

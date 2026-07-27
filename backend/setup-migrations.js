@@ -12,9 +12,8 @@ async function setupMigrations() {
     // Step 0: Sync Sequelize models to create/update tables
     console.log('📝 Syncing Sequelize models...');
     try {
-      // Use alter:false first to avoid foreign key issues on fresh database
-      // Migrations will handle the actual table creation
-      const result = await sequelize.sync({ alter: false });
+      // First ensure all models are associated/configured
+      const result = await sequelize.sync({ alter: true, force: false });
       console.log('✅ Sequelize models synced successfully');
     } catch (err) {
       // If tables don't exist, that's OK - migrations will create them
