@@ -15,6 +15,7 @@ const AdminProducts = (() => {
             const url = API_CONFIG.getEndpoint('/products');
             
             console.log('📦 Fetching products from API:', url);
+            console.log('🔑 Token:', token ? `${token.substring(0, 20)}...` : 'NO TOKEN');
             
             const response = await fetch(url, {
                 headers: {
@@ -22,35 +23,54 @@ const AdminProducts = (() => {
                 }
             });
 
+            console.log('📊 Response status:', response.status);
+            console.log('📊 Response ok:', response.ok);
+
             if (!response.ok) {
-                console.warn('⚠️ Failed to fetch from API, falling back to localStorage');
+                const errorText = await response.text();
+                console.warn('⚠️ Failed to fetch from API (status ' + response.status + ')');
+                console.warn('Error response:', errorText);
                 allProducts = AdminStorage.getProducts();
                 return;
             }
 
             const result = await response.json();
+            console.log('📦 API Response:', result);
+            
             allProducts = result.data || [];
             console.log('✅ Products fetched from API:', allProducts.length, 'products');
+            
+            // Log first product as sample
+            if (allProducts.length > 0) {
+                console.log('📋 First product:', allProducts[0]);
+            }
         } catch (error) {
-            console.error('❌ API fetch error, using localStorage:', error);
+            console.error('❌ API fetch error:', error);
+            console.log('📦 Falling back to localStorage');
             allProducts = AdminStorage.getProducts();
         }
     };
 
     const renderProducts = () => {
+        console.log('🎨 renderProducts called with', allProducts.length, 'total products');
+        
         let products = [...allProducts];
 
         // Apply filters
         if (currentFilter !== 'All Categories') {
+            const beforeFilter = products.length;
             products = products.filter(p => p.category === currentFilter);
+            console.log(`🔍 Category filter "${currentFilter}": ${beforeFilter} → ${products.length}`);
         }
 
         // Apply search
         if (currentSearch) {
+            const beforeSearch = products.length;
             products = products.filter(p =>
                 p.name.toLowerCase().includes(currentSearch.toLowerCase()) ||
                 p.sku.toLowerCase().includes(currentSearch.toLowerCase())
             );
+            console.log(`🔎 Search filter "${currentSearch}": ${beforeSearch} → ${products.length}`);
         }
 
         // Apply sorting
@@ -70,15 +90,21 @@ const AdminProducts = (() => {
             default: // Latest
                 products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         }
+        console.log(`📊 After sorting (${currentSort}):`, products.length, 'products');
 
         const tbody = document.querySelector('table tbody');
-        if (!tbody) return;
+        if (!tbody) {
+            console.error('❌ Table tbody not found!');
+            return;
+        }
 
         if (products.length === 0) {
+            console.warn('⚠️ No products to display');
             tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-5">No products found. <a href="products/add-edit.html">Add your first product</a></td></tr>';
             return;
         }
 
+        console.log('✅ Rendering', products.length, 'products');
         tbody.innerHTML = products.map(product => {
             const imageUrl = product.imageUrl || product.image || 'https://via.placeholder.com/40x50?text=No+Image';
             const createdDate = new Date(product.createdAt).toLocaleDateString();
@@ -114,6 +140,8 @@ const AdminProducts = (() => {
             </tr>
         `};
         }).join('');
+        
+        console.log('✅ Table HTML updated');
 
         attachProductHandlers();
     };
