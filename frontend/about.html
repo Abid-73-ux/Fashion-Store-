@@ -228,10 +228,8 @@
                         <a class="nav-link dropdown-toggle" href="#" id="categoriesDropdown" role="button" data-bs-toggle="dropdown" style="letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.8125rem;">
                             Categories
                         </a>
-                        <ul class="dropdown-menu border-0 shadow-lg">
-                            <li><a class="dropdown-item" href="shop.html?category=men">Men</a></li>
-                            <li><a class="dropdown-item" href="shop.html?category=women">Women</a></li>
-                            <li><a class="dropdown-item" href="shop.html?category=accessories">Accessories</a></li>
+                        <ul class="dropdown-menu border-0 shadow-lg" id="categoriesMenu">
+                            <li><a class="dropdown-item" href="#">Loading categories...</a></li>
                         </ul>
                     </li>
                     <li class="nav-item">
@@ -402,29 +400,29 @@
                 <div class="col-md-6 col-lg-3">
                     <div class="team-member">
                         <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400" alt="Team Member" class="team-photo">
-                        <h5 class="team-name">Michael Anderson</h5>
-                        <p class="team-role">Founder & Creative Director</p>
+                        <h5 class="team-name">Muhammad Abid </h5>
+                        <p class="team-role">Frontend Developer</p>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="team-member">
                         <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=400" alt="Team Member" class="team-photo">
-                        <h5 class="team-name">Sarah Johnson</h5>
-                        <p class="team-role">Head of Design</p>
+                        <h5 class="team-name">Muhammad Abid </h5>
+                        <p class="team-role">Backend Developer</p>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="team-member">
                         <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400" alt="Team Member" class="team-photo">
-                        <h5 class="team-name">David Chen</h5>
-                        <p class="team-role">Operations Director</p>
+                        <h5 class="team-name">Muhammad Abid </h5>
+                        <p class="team-role">UI UX Designer</p>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="team-member">
                         <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=400" alt="Team Member" class="team-photo">
-                        <h5 class="team-name">Emma Williams</h5>
-                        <p class="team-role">Brand Manager</p>
+                        <h5 class="team-name">Muhammad Abid </h5>
+                        <p class="team-role">Full Stack Developer</p>
                     </div>
                 </div>
             </div>
@@ -523,6 +521,17 @@
     <script src="assets/js/navbar.js"></script>
     <script src="assets/js/toast.js"></script>
     <script src="assets/js/main.js"></script>
+    
+    <!-- Service Layer -->
+    <script src="assets/js/services/categoryService.js"></script>
+    
+    <!-- Initialize Dynamic Categories -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Initialize dropdown categories with 5-second auto-refresh
+            await categoryService.renderCategoryDropdown('categoriesMenu', 'shop.html?category=', 5000);
+        });
+    </script>
     
     <!-- WhatsApp Widget -->
     <script src="assets/js/whatsapp-widget.js"></script>
