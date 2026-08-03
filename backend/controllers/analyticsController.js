@@ -7,21 +7,12 @@ const { Op, sequelize } = require('sequelize');
 exports.getSalesData = async (req, res) => {
     try {
         const { period = 'monthly' } = req.query;
-        
-        let groupFormat;
-        if (period === 'daily') {
-            groupFormat = sequelize.fn('DATE', sequelize.col('Order.createdAt'));
-        } else if (period === 'weekly') {
-            groupFormat = sequelize.fn('DATE_TRUNC', 'week', sequelize.col('Order.createdAt'));
-        } else {
-            groupFormat = sequelize.fn('DATE_TRUNC', 'month', sequelize.col('Order.createdAt'));
-        }
 
         const salesData = await Order.findAll({
             attributes: [
                 [sequelize.fn('DATE_TRUNC', 'month', sequelize.col('createdAt')), 'date'],
-                [sequelize.fn('COUNT', sequelize.col('id')), 'count'],
-                [sequelize.fn('SUM', sequelize.col('totalPrice')), 'revenue']
+                [sequelize.fn('COUNT', sequelize.col('id')), 'orders'],
+                [sequelize.fn('SUM', sequelize.col('total')), 'totalRevenue']
             ],
             where: {
                 status: { [Op.ne]: 'cancelled' }
@@ -36,11 +27,12 @@ exports.getSalesData = async (req, res) => {
             success: true,
             data: salesData.map(item => ({
                 date: item.date,
-                orders: parseInt(item.count),
-                revenue: parseFloat(item.revenue || 0)
+                orders: parseInt(item.orders) || 0,
+                revenue: parseFloat(item.totalRevenue || 0)
             }))
         });
     } catch (error) {
+        console.error('Analytics getSalesData error:', error.message);
         res.status(500).json({ error: error.message });
     }
 };
@@ -53,7 +45,7 @@ exports.getRevenueData = async (req, res) => {
         const revenueData = await Order.findAll({
             attributes: [
                 [sequelize.fn('DATE_TRUNC', 'month', sequelize.col('createdAt')), 'date'],
-                [sequelize.fn('SUM', sequelize.col('totalPrice')), 'revenue']
+                [sequelize.fn('SUM', sequelize.col('total')), 'revenue']
             ],
             where: {
                 status: { [Op.ne]: 'cancelled' }
@@ -72,6 +64,7 @@ exports.getRevenueData = async (req, res) => {
             }))
         });
     } catch (error) {
+        console.error('Analytics getRevenueData error:', error.message);
         res.status(500).json({ error: error.message });
     }
 };
@@ -79,17 +72,15 @@ exports.getRevenueData = async (req, res) => {
 // Get top products
 exports.getTopProducts = async (req, res) => {
     try {
-        const { limit = 10 } = req.query;
+        const { limit = 5 } = req.query;
 
-        // This is a simplified approach - in production you'd want to join with OrderItems
+        // Get top products by rating and featured status
         const topProducts = await Product.findAll({
-            attributes: [
-                'id',
-                'name',
-                'price',
-                [sequelize.fn('RANDOM'), 'random_sales'] // Placeholder - use order items in production
-            ],
-            order: [['isBestseller', 'DESC'], ['rating', 'DESC']],
+            attributes: ['id', 'name', 'price', 'rating', 'reviews'],
+            where: {
+                isBestseller: true
+            },
+            order: [['rating', 'DESC'], ['reviews', 'DESC']],
             limit: parseInt(limit),
             raw: true
         });
@@ -99,6 +90,7 @@ exports.getTopProducts = async (req, res) => {
             data: topProducts
         });
     } catch (error) {
+        console.error('Analytics getTopProducts error:', error.message);
         res.status(500).json({ error: error.message });
     }
 };
@@ -109,7 +101,7 @@ exports.getCustomerGrowth = async (req, res) => {
         const customerGrowth = await User.findAll({
             attributes: [
                 [sequelize.fn('DATE_TRUNC', 'month', sequelize.col('createdAt')), 'date'],
-                [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+                [sequelize.fn('COUNT', sequelize.col('id')), 'newCustomers']
             ],
             where: {
                 role: 'user'
@@ -124,10 +116,11 @@ exports.getCustomerGrowth = async (req, res) => {
             success: true,
             data: customerGrowth.map(item => ({
                 date: item.date,
-                newCustomers: parseInt(item.count)
+                newCustomers: parseInt(item.newCustomers) || 0
             }))
         });
     } catch (error) {
+        console.error('Analytics getCustomerGrowth error:', error.message);
         res.status(500).json({ error: error.message });
     }
 };
@@ -138,7 +131,7 @@ exports.getDashboardStats = async (req, res) => {
         // Total revenue
         const revenueResult = await Order.findOne({
             attributes: [
-                [sequelize.fn('SUM', sequelize.col('totalPrice')), 'total']
+                [sequelize.fn('SUM', sequelize.col('total')), 'totalRevenue']
             ],
             where: {
                 status: { [Op.ne]: 'cancelled' }
@@ -160,13 +153,14 @@ exports.getDashboardStats = async (req, res) => {
         res.status(200).json({
             success: true,
             stats: {
-                totalRevenue: parseFloat(revenueResult?.total || 0),
+                totalRevenue: parseFloat(revenueResult?.totalRevenue || 0),
                 totalOrders,
                 totalCustomers,
                 totalProducts
             }
         });
     } catch (error) {
+        console.error('Analytics getDashboardStats error:', error.message);
         res.status(500).json({ error: error.message });
     }
 };
@@ -187,10 +181,11 @@ exports.getOrderStatusBreakdown = async (req, res) => {
             success: true,
             data: breakdown.map(item => ({
                 status: item.status,
-                count: parseInt(item.count)
+                count: parseInt(item.count) || 0
             }))
         });
     } catch (error) {
+        console.error('Analytics getOrderStatusBreakdown error:', error.message);
         res.status(500).json({ error: error.message });
     }
 };
