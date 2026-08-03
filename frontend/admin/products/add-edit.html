@@ -276,6 +276,9 @@
 
                 const categorySelect = document.getElementById('productCategory');
                 if (categorySelect) {
+                    // Store currently selected value to preserve user's selection
+                    const currentSelection = categorySelect.value;
+                    
                     categorySelect.innerHTML = '<option value="">Select Category</option>';
                     
                     if (categories.length > 0) {
@@ -287,6 +290,13 @@
                             categorySelect.appendChild(option);
                             console.log(`   ➕ Added: ${cat.name}`);
                         });
+                        
+                        // Restore previously selected value if it exists in new list
+                        if (currentSelection && categories.some(cat => cat.name === currentSelection)) {
+                            categorySelect.value = currentSelection;
+                            console.log(`✅ Restored selection: ${currentSelection}`);
+                        }
+                        
                         console.log(`✅ ${categories.length} category options added to dropdown`);
                     } else {
                         console.warn('⚠️ No categories in response');
