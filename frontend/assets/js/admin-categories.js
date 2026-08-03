@@ -56,7 +56,7 @@ const AdminCategories = (() => {
                 <td>
                     ${category.image ? `<img src="${category.image}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">` : '-'}
                 </td>
-                <td>${category.products || 0}</td>
+                <td>${category.productCount || 0}</td>
                 <td>
                     <div class="dropdown">
                         <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
