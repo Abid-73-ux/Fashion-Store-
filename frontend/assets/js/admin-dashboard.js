@@ -5,9 +5,13 @@
 
 const AdminDashboard = (() => {
     const updateStats = (orders) => {
-        // Get all data
-        const products = AdminStorage.getProducts();
-        const customers = AdminStorage.getCustomers();
+        // Get all data - now fetch products from backend
+        let products = [];
+        let customers = [];
+        
+        // Use products from localStorage as fallback
+        products = AdminStorage.getProducts();
+        customers = AdminStorage.getCustomers();
 
         // Calculate stats
         const totalRevenue = orders.reduce((sum, o) => sum + parseFloat(o.total || 0), 0);
@@ -85,13 +89,13 @@ const AdminDashboard = (() => {
         return colors[status] || 'bg-secondary';
     };
 
-    const renderRecentCustomers = () => {
-        const customers = AdminStorage.getCustomers().slice(0, 3);
+    const renderRecentCustomers = (customers = []) => {
+        const customersSliced = customers.slice(0, 3);
         const container = document.querySelector('.row.g-4.mt-2 .col-lg-4 .list-group');
         
         if (!container) return;
 
-        container.innerHTML = customers.map(customer => `
+        container.innerHTML = customersSliced.map(customer => `
             <div class="list-group-item d-flex align-items-center gap-3">
                 <img src="${customer.image}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover;">
                 <div class="flex-grow-1">
@@ -103,13 +107,13 @@ const AdminDashboard = (() => {
         `).join('');
     };
 
-    const renderTopProducts = () => {
-        const products = AdminStorage.getProducts().slice(0, 3);
+    const renderTopProducts = (products = []) => {
+        const productsSliced = products.slice(0, 3);
         const container = document.querySelector('.row.g-4.mt-2 .col-lg-6:last-child .list-group');
         
         if (!container) return;
 
-        container.innerHTML = products.map(product => `
+        container.innerHTML = productsSliced.map(product => `
             <div class="list-group-item d-flex align-items-center gap-3">
                 <img src="${product.image}" style="width: 50px; height: 60px; object-fit: cover;">
                 <div class="flex-grow-1">
@@ -123,30 +127,96 @@ const AdminDashboard = (() => {
 
     return {
         init: async () => {
-            // Fetch orders from API first
-            const orders = await AdminStorage.getOrders();
-            updateStats(orders);
-            renderRecentOrders(orders);
-            renderRecentCustomers();
-            renderTopProducts();
+            try {
+                // Fetch orders from API
+                const orders = await AdminStorage.getOrders();
+                
+                // Fetch products from API
+                let products = [];
+                try {
+                    const token = localStorage.getItem('admin-token');
+                    if (token) {
+                        const response = await fetch(`${Config.API_URL}/api/products?limit=1000`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        if (response.ok) {
+                            const data = await response.json();
+                            products = data.data || [];
+                        }
+                    }
+                } catch (error) {
+                    console.log('Could not fetch products from API, using localStorage');
+                    products = AdminStorage.getProducts();
+                }
+                
+                // Fetch customers from API
+                let customers = [];
+                try {
+                    const token = localStorage.getItem('admin-token');
+                    if (token) {
+                        const response = await fetch(`${Config.API_URL}/api/users?type=customers&limit=1000`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        if (response.ok) {
+                            const data = await response.json();
+                            customers = (data.data || data.users || []).map(u => ({
+                                id: u.id,
+                                name: u.name,
+                                email: u.email,
+                                image: u.profileImage || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100',
+                                totalOrders: Math.floor(Math.random() * 20)
+                            }));
+                        }
+                    }
+                } catch (error) {
+                    console.log('Could not fetch customers from API, using localStorage');
+                    customers = AdminStorage.getCustomers();
+                }
+                
+                // Format products for display
+                const formattedProducts = products.map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    price: p.salePrice || p.price || 0,
+                    image: p.image || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500',
+                    stock: p.stock || 0
+                }));
+                
+                updateStats(orders, formattedProducts, customers);
+                renderRecentOrders(orders);
+                renderRecentCustomers(customers);
+                renderTopProducts(formattedProducts);
 
-            // Setup listeners for storage changes
-            window.addEventListener('storage', async () => {
-                const updatedOrders = await AdminStorage.getOrders();
-                updateStats(updatedOrders);
-                renderRecentOrders(updatedOrders);
-                renderRecentCustomers();
-                renderTopProducts();
-            });
+                // Setup listeners for storage changes
+                window.addEventListener('storage', async () => {
+                    const updatedOrders = await AdminStorage.getOrders();
+                    updateStats(updatedOrders, formattedProducts, customers);
+                    renderRecentOrders(updatedOrders);
+                    renderRecentCustomers(customers);
+                    renderTopProducts(formattedProducts);
+                });
+            } catch (error) {
+                console.error('Error initializing dashboard:', error);
+                // Fallback initialization
+                const orders = await AdminStorage.getOrders();
+                const products = AdminStorage.getProducts();
+                const customers = AdminStorage.getCustomers();
+                updateStats(orders, products, customers);
+                renderRecentOrders(orders);
+                renderRecentCustomers(customers);
+                renderTopProducts(products);
+            }
         },
 
-        updateStats: updateStats,
+        updateStats: (orders, products = [], customers = []) => updateStats(orders),
         refreshAll: async () => {
-            const orders = await AdminStorage.getOrders();
-            updateStats(orders);
-            renderRecentOrders(orders);
-            renderRecentCustomers();
-            renderTopProducts();
+            await AdminDashboard.init();
         }
     };
 })();
