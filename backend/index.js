@@ -31,9 +31,9 @@ const Review = require('./models/Review');
 const User = require('./models/User');
 const Product = require('./models/Product');
 
-// Setup associations
-User.hasMany(Review, { foreignKey: 'userId', as: 'reviews' });
-Product.hasMany(Review, { foreignKey: 'productId', as: 'reviews' });
+// Setup associations (use different alias to avoid naming collision with Product.reviews field)
+User.hasMany(Review, { foreignKey: 'userId', as: 'userReviews' });
+Product.hasMany(Review, { foreignKey: 'productId', as: 'productReviews' });
 Review.belongsTo(User, { foreignKey: 'userId' });
 Review.belongsTo(Product, { foreignKey: 'productId' });
 
