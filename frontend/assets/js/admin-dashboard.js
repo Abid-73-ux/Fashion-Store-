@@ -4,15 +4,7 @@
  */
 
 const AdminDashboard = (() => {
-    const updateStats = (orders) => {
-        // Get all data - now fetch products from backend
-        let products = [];
-        let customers = [];
-        
-        // Use products from localStorage as fallback
-        products = AdminStorage.getProducts();
-        customers = AdminStorage.getCustomers();
-
+    const updateStats = (orders, products = [], customers = []) => {
         // Calculate stats
         const totalRevenue = orders.reduce((sum, o) => sum + parseFloat(o.total || 0), 0);
         const totalOrders = orders.length;
@@ -20,16 +12,18 @@ const AdminDashboard = (() => {
         const totalProducts = products.length;
         const lowStockProducts = products.filter(p => p.stock < 20 && p.stock > 0).length;
         const outOfStockProducts = products.filter(p => p.stock === 0).length;
-        const avgRating = 4.8; // Sample data
         
-        // Pending orders
+        // Order statuses
         const pendingOrders = orders.filter(o => 
             o.status === 'pending' || o.status === 'confirmed' || o.status === 'processing'
         ).length;
         const deliveredOrders = orders.filter(o => o.status === 'delivered').length;
         const cancelledOrders = orders.filter(o => o.status === 'cancelled').length;
+        
+        // Count pending payments (orders without 'paid' payment status)
+        const pendingPayments = orders.filter(o => o.payment !== 'Paid').length;
 
-        // Update stat cards
+        // Update stat cards (first row: Revenue, Orders, Customers, Products)
         const statCards = document.querySelectorAll('.stat-value');
         if (statCards.length >= 4) {
             statCards[0].textContent = 'Rs ' + totalRevenue.toFixed(0);
@@ -38,13 +32,13 @@ const AdminDashboard = (() => {
             statCards[3].textContent = totalProducts;
         }
 
-        // Update quick stats
+        // Update quick stats (second row: Pending, Delivered, Low Stock, Pending Payments)
         const quickStats = document.querySelectorAll('.row.g-3.mb-4 .stat-value');
         if (quickStats.length >= 4) {
             quickStats[0].textContent = pendingOrders;
             quickStats[1].textContent = deliveredOrders;
             quickStats[2].textContent = lowStockProducts;
-            quickStats[3].textContent = avgRating;
+            quickStats[3].textContent = pendingPayments;
         }
 
         // Update recent orders count
@@ -213,7 +207,7 @@ const AdminDashboard = (() => {
             }
         },
 
-        updateStats: (orders, products = [], customers = []) => updateStats(orders),
+        updateStats: (orders, products = [], customers = []) => updateStats(orders, products, customers),
         refreshAll: async () => {
             await AdminDashboard.init();
         }
