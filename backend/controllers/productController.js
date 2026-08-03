@@ -237,6 +237,9 @@ exports.createProduct = async (req, res) => {
             isFeatured, isNew, isBestseller, isSale
         } = req.body;
 
+        console.log('📝 Create Product Request Body:', JSON.stringify(req.body, null, 2));
+        console.log('📌 Extracted category:', category, `(type: ${typeof category})`);
+
         // Validate required fields
         if (!name || !price || !sku) {
             return res.status(400).json({
@@ -245,8 +248,25 @@ exports.createProduct = async (req, res) => {
             });
         }
 
+        // Validate category
+        if (!category) {
+            console.warn('⚠️ Category is empty!');
+            return res.status(400).json({
+                success: false,
+                error: 'Category is required'
+            });
+        }
+
         // Handle both image and imageUrl field names
         const productImage = image || imageUrl;
+
+        console.log('🏗️ Creating product with:', {
+            name,
+            category,
+            price,
+            sku,
+            image: productImage
+        });
 
         const product = await Product.create({
             name,
@@ -267,12 +287,14 @@ exports.createProduct = async (req, res) => {
             isSale: isSale || false
         });
 
+        console.log('✅ Product created:', product.toJSON());
+
         res.status(201).json({
             success: true,
             data: formatProductResponse(product)
         });
     } catch (error) {
-        console.error('Create product error:', error);
+        console.error('❌ Create product error:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 };
@@ -286,15 +308,22 @@ exports.updateProduct = async (req, res) => {
             return res.status(404).json({ success: false, error: 'Product not found' });
         }
 
+        console.log('📝 Update Product Request Body:', JSON.stringify(req.body, null, 2));
+        console.log('📌 Category in request:', req.body.category);
+
         // Update fields
         Object.keys(req.body).forEach(key => {
             // Handle both image and imageUrl
             if (key === 'imageUrl') {
                 product.image = req.body[key];
+                console.log('  Image updated:', req.body[key]);
             } else if (['price', 'salePrice', 'stock'].includes(key)) {
                 product[key] = key === 'stock' ? parseInt(req.body[key]) : parseFloat(req.body[key]);
             } else if (key !== 'image') {  // Skip 'image' key as it's handled by imageUrl
                 product[key] = req.body[key];
+                if (key === 'category') {
+                    console.log('  Category updated:', req.body[key]);
+                }
             } else {
                 product[key] = req.body[key];
             }
@@ -302,12 +331,14 @@ exports.updateProduct = async (req, res) => {
 
         await product.save();
 
+        console.log('✅ Product updated:', product.toJSON());
+
         res.status(200).json({
             success: true,
             data: formatProductResponse(product)
         });
     } catch (error) {
-        console.error('Update product error:', error);
+        console.error('❌ Update product error:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 };
