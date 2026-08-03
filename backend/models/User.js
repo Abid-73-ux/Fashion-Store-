@@ -93,4 +93,7 @@ User.hasMany(OrderStatusChange, {
   as: 'statusChanges'
 });
 
+// Association with Review (will be set up after Review model is loaded)
+// Using a lazy approach - associations will be set up in index.js after all models are loaded
+
 module.exports = User;

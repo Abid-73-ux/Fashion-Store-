@@ -93,4 +93,7 @@ const Product = sequelize.define('Product', {
 // Association with Category
 Product.belongsTo(Category, { foreignKey: 'categoryId', allowNull: true });
 
+// Association with Review (will be set up after Review model is loaded)
+// Using a lazy approach - associations will be set up in index.js after all models are loaded
+
 module.exports = Product;

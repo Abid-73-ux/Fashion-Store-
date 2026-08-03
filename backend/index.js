@@ -25,6 +25,18 @@ require('./models/Review');
 // Initialize Express app
 const app = express();
 
+// IMPORTANT: Set up model associations after all models are loaded
+// This ensures foreign key relationships work properly
+const Review = require('./models/Review');
+const User = require('./models/User');
+const Product = require('./models/Product');
+
+// Setup associations
+User.hasMany(Review, { foreignKey: 'userId', as: 'reviews' });
+Product.hasMany(Review, { foreignKey: 'productId', as: 'reviews' });
+Review.belongsTo(User, { foreignKey: 'userId' });
+Review.belongsTo(Product, { foreignKey: 'productId' });
+
 // Middleware
 app.use(cors({
     origin: function(origin, callback) {

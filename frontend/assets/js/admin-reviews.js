@@ -177,7 +177,11 @@ const AdminReviews = (() => {
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (document.textContent.includes('Review Management')) {
+    // Check if this is the reviews page
+    const pageTitle = document.querySelector('h1, h2, .page-title');
+    const isReviewsPage = pageTitle && pageTitle.textContent.includes('Review');
+    
+    if (isReviewsPage || document.querySelector('table[role="grid"]')) {
         AdminReviews.init();
     }
 });

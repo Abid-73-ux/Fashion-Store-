@@ -100,11 +100,6 @@
     <script>
         if (!Auth.isAdmin()) { Toast.error('Access denied'); setTimeout(() => { window.location.href = '../login.html'; }, 2000); }
         
-        // Initialize reviews module
-        document.addEventListener('DOMContentLoaded', () => {
-            AdminReviews.init();
-        });
-        
         document.getElementById('adminLogout')?.addEventListener('click', (e) => { e.preventDefault(); Modal.showLogoutConfirm(() => { Auth.logout(); setTimeout(() => { window.location.href = '../login.html'; }, 1000); }); });
         document.getElementById('topbarLogout')?.addEventListener('click', (e) => { e.preventDefault(); Modal.showLogoutConfirm(() => { Auth.logout(); setTimeout(() => { window.location.href = '../login.html'; }, 1000); }); });
     </script>
