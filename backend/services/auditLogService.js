@@ -1,450 +1,248 @@
 /**
- * Audit Logging Service
- * Comprehensive logging for all order-related operations
- * Ensures compliance and provides investigation trail
+ * Audit Log Service
+ * Logs all sensitive operations for compliance and security monitoring
+ * 
+ * Logs: Admin actions, payment verification, price changes, order updates
  */
 
-const { AuditLog } = require('../models');
-const logger = require('../utils/logger');
+const fs = require('fs');
+const path = require('path');
+
+// Create logs directory if it doesn't exist
+const LOGS_DIR = path.join(__dirname, '../logs');
+if (!fs.existsSync(LOGS_DIR)) {
+    fs.mkdirSync(LOGS_DIR, { recursive: true });
+}
+
+const AUDIT_LOG_FILE = path.join(LOGS_DIR, 'audit.log');
 
 /**
- * Log event types
+ * Log an audit event
+ * @param {string} action - Action performed (e.g., 'PAYMENT_VERIFIED', 'ORDER_CANCELLED')
+ * @param {number} userId - ID of user performing action
+ * @param {number} resourceId - ID of resource being modified
+ * @param {string} resourceType - Type of resource ('order', 'product', 'user', etc.)
+ * @param {*} oldValue - Previous value
+ * @param {*} newValue - New value
+ * @param {Object} details - Additional context
  */
-const EVENT_TYPES = {
-    // Order events
-    ORDER_CREATED: 'order_created',
-    ORDER_UPDATED: 'order_updated',
-    ORDER_CANCELLED: 'order_cancelled',
+exports.log = (action, userId, resourceId, resourceType = 'unknown', oldValue = null, newValue = null, details = {}) => {
+    const timestamp = new Date().toISOString();
+    const logEntry = {
+        timestamp,
+        action,              // What action was performed
+        userId,              // Who performed it
+        resourceId,          // What was modified
+        resourceType,        // Type of resource
+        oldValue,            // Before state
+        newValue,            // After state
+        ipAddress: details.ipAddress || 'unknown',
+        userAgent: details.userAgent || 'unknown',
+        reason: details.reason || null,
+        error: details.error || null
+    };
 
-    // Payment events
-    PAYMENT_PROOF_UPLOADED: 'payment_proof_uploaded',
-    PAYMENT_VERIFIED: 'payment_verified',
-    PAYMENT_REJECTED: 'payment_rejected',
-
-    // Status changes
-    STATUS_CHANGED: 'status_changed',
-    SHIPMENT_UPDATED: 'shipment_updated',
-
-    // Admin actions
-    ADMIN_LOGIN: 'admin_login',
-    ADMIN_LOGOUT: 'admin_logout',
-    ADMIN_ACCESS: 'admin_access',
-
-    // System events
-    NOTIFICATION_SENT: 'notification_sent',
-    NOTIFICATION_FAILED: 'notification_failed',
-    SYSTEM_ERROR: 'system_error'
-};
-
-/**
- * Create audit log entry
- */
-const log = async (params) => {
-    const {
-        eventType,
-        orderId = null,
-        userId = null,
-        adminId = null,
-        action,
-        details = {},
-        status = 'success',
-        errorMessage = null,
-        ipAddress = null,
-        userAgent = null
-    } = params;
-
+    // Stringify and write to log
+    const logLine = JSON.stringify(logEntry) + '\n';
+    
     try {
-        const logEntry = await AuditLog.create({
-            eventType,
-            orderId,
-            userId,
-            adminId,
-            action,
-            details: JSON.stringify(details),
-            status,
-            errorMessage,
-            ipAddress,
-            userAgent,
-            timestamp: new Date()
-        });
+        fs.appendFileSync(AUDIT_LOG_FILE, logLine);
+    } catch (err) {
+        console.error('🔴 Failed to write audit log:', err.message);
+    }
 
-        logger.info(`Audit log created: ${eventType}`, {
-            orderId,
-            userId,
-            adminId
-        });
-
-        return logEntry.toJSON();
-
-    } catch (error) {
-        logger.error(`Error creating audit log: ${error.message}`, error);
-        // Don't throw - logging shouldn't break operations
-        return null;
+    // Also log to console in development
+    if (process.env.NODE_ENV === 'development') {
+        console.log(`\n🔍 AUDIT LOG:`);
+        console.log(`  Action: ${action}`);
+        console.log(`  User: ${userId}`);
+        console.log(`  Resource: ${resourceType}:${resourceId}`);
+        console.log(`  Changed: ${JSON.stringify(oldValue)} → ${JSON.stringify(newValue)}`);
+        if (details.reason) console.log(`  Reason: ${details.reason}`);
+        if (details.error) console.log(`  Error: ${details.error}`);
+        console.log();
     }
 };
 
 /**
- * Log order creation
+ * Log payment verification action
  */
-const logOrderCreation = async (order, customer, items) => {
-    return log({
-        eventType: EVENT_TYPES.ORDER_CREATED,
-        orderId: order.id,
-        userId: customer.id,
-        action: `Order created: #${order.orderId}`,
-        details: {
-            orderId: order.orderId,
-            customerName: customer.firstName + ' ' + customer.lastName,
-            customerEmail: customer.email,
-            itemCount: items.length,
-            total: order.total,
-            paymentMethod: order.paymentMethod,
-            items: items.map(i => ({
-                productId: i.productId,
-                productName: i.productName,
-                quantity: i.quantity,
-                price: i.price
-            }))
+exports.logPaymentVerification = (orderId, adminUserId, approved, rejectionReason = null, details = {}) => {
+    exports.log(
+        approved ? 'PAYMENT_VERIFIED' : 'PAYMENT_REJECTED',
+        adminUserId,
+        orderId,
+        'order',
+        { status: 'pending_verification' },
+        { status: approved ? 'verified' : 'rejected', rejectionReason },
+        {
+            ...details,
+            reason: rejectionReason || (approved ? 'Approved' : 'Rejected')
         }
-    });
+    );
 };
 
 /**
- * Log payment proof upload
+ * Log order status change
  */
-const logPaymentProofUpload = async (order, fileName, fileSize, userId) => {
-    return log({
-        eventType: EVENT_TYPES.PAYMENT_PROOF_UPLOADED,
-        orderId: order.id,
+exports.logOrderStatusChange = (orderId, adminUserId, oldStatus, newStatus, details = {}) => {
+    exports.log(
+        'ORDER_STATUS_CHANGED',
+        adminUserId,
+        orderId,
+        'order',
+        { status: oldStatus },
+        { status: newStatus },
+        details
+    );
+};
+
+/**
+ * Log order cancellation
+ */
+exports.logOrderCancellation = (orderId, userId, reason = null, details = {}) => {
+    exports.log(
+        'ORDER_CANCELLED',
         userId,
-        action: `Payment proof uploaded for order #${order.orderId}`,
-        details: {
-            orderId: order.orderId,
-            fileName,
-            fileSize,
-            uploadTime: new Date()
+        orderId,
+        'order',
+        { status: 'active' },
+        { status: 'cancelled' },
+        {
+            ...details,
+            reason: reason || 'Cancelled by user'
         }
-    });
+    );
 };
 
 /**
- * Log payment verification
+ * Log product price change
  */
-const logPaymentVerification = async (order, adminId, decision, reason = null) => {
-    return log({
-        eventType: decision === 'approve' ? EVENT_TYPES.PAYMENT_VERIFIED : EVENT_TYPES.PAYMENT_REJECTED,
-        orderId: order.id,
-        adminId,
-        action: `Payment ${decision === 'approve' ? 'verified' : 'rejected'} for order #${order.orderId}`,
-        details: {
-            orderId: order.orderId,
-            decision,
-            reason,
-            adminId,
-            verifiedAt: new Date(),
-            amount: order.total
-        }
-    });
+exports.logPriceChange = (productId, adminUserId, oldPrice, newPrice, oldSalePrice, newSalePrice, details = {}) => {
+    exports.log(
+        'PRICE_CHANGED',
+        adminUserId,
+        productId,
+        'product',
+        { price: oldPrice, salePrice: oldSalePrice },
+        { price: newPrice, salePrice: newSalePrice },
+        details
+    );
 };
 
 /**
- * Log status change
+ * Log coupon usage/creation
  */
-const logStatusChange = async (order, oldStatus, newStatus, changedBy, reason = null) => {
-    return log({
-        eventType: EVENT_TYPES.STATUS_CHANGED,
-        orderId: order.id,
-        adminId: changedBy,
-        action: `Order status changed from ${oldStatus} to ${newStatus}`,
-        details: {
-            orderId: order.orderId,
-            oldStatus,
-            newStatus,
-            changedBy,
-            reason,
-            changedAt: new Date()
-        }
-    });
-};
-
-/**
- * Log shipment update
- */
-const logShipmentUpdate = async (order, adminId, trackingNumber, carrier) => {
-    return log({
-        eventType: EVENT_TYPES.SHIPMENT_UPDATED,
-        orderId: order.id,
-        adminId,
-        action: `Shipment details updated for order #${order.orderId}`,
-        details: {
-            orderId: order.orderId,
-            trackingNumber,
-            carrier,
-            shippedAt: new Date()
-        }
-    });
+exports.logCouponAction = (couponId, userId, action, details = {}) => {
+    exports.log(
+        action,  // COUPON_CREATED, COUPON_DELETED, COUPON_USED
+        userId,
+        couponId,
+        'coupon',
+        null,
+        details.couponData || null,
+        details
+    );
 };
 
 /**
  * Log admin login
  */
-const logAdminLogin = async (admin, ipAddress, userAgent) => {
-    return log({
-        eventType: EVENT_TYPES.ADMIN_LOGIN,
-        adminId: admin.id,
-        action: `Admin login: ${admin.email}`,
-        details: {
-            adminId: admin.id,
-            email: admin.email,
-            loginTime: new Date()
-        },
-        ipAddress,
-        userAgent
-    });
-};
-
-/**
- * Log admin logout
- */
-const logAdminLogout = async (admin, ipAddress) => {
-    return log({
-        eventType: EVENT_TYPES.ADMIN_LOGOUT,
-        adminId: admin.id,
-        action: `Admin logout: ${admin.email}`,
-        details: {
-            adminId: admin.id,
-            email: admin.email,
-            logoutTime: new Date()
-        },
-        ipAddress
-    });
-};
-
-/**
- * Log admin access
- */
-const logAdminAccess = async (admin, page, ipAddress, userAgent) => {
-    return log({
-        eventType: EVENT_TYPES.ADMIN_ACCESS,
-        adminId: admin.id,
-        action: `Admin accessed page: ${page}`,
-        details: {
-            adminId: admin.id,
-            email: admin.email,
-            page,
-            accessTime: new Date()
-        },
-        ipAddress,
-        userAgent
-    });
-};
-
-/**
- * Log notification sent
- */
-const logNotificationSent = async (orderId, userId, notificationType, medium) => {
-    return log({
-        eventType: EVENT_TYPES.NOTIFICATION_SENT,
-        orderId,
+exports.logAdminLogin = (userId, success, reason = null, details = {}) => {
+    exports.log(
+        success ? 'ADMIN_LOGIN_SUCCESS' : 'ADMIN_LOGIN_FAILED',
         userId,
-        action: `${notificationType} notification sent via ${medium}`,
-        details: {
-            orderId,
-            notificationType,
-            medium,
-            sentAt: new Date()
-        }
-    });
-};
-
-/**
- * Log notification failure
- */
-const logNotificationFailure = async (orderId, userId, notificationType, medium, error) => {
-    return log({
-        eventType: EVENT_TYPES.NOTIFICATION_FAILED,
-        orderId,
         userId,
-        action: `${notificationType} notification failed via ${medium}`,
-        details: {
-            orderId,
-            notificationType,
-            medium,
-            failedAt: new Date()
-        },
-        status: 'failed',
-        errorMessage: error.message
-    });
+        'user',
+        null,
+        { status: success ? 'success' : 'failed' },
+        {
+            ...details,
+            reason: reason || (success ? 'Successful login' : 'Failed login attempt')
+        }
+    );
 };
 
 /**
- * Log system error
+ * Log sensitive user data access
  */
-const logSystemError = async (error, context = {}) => {
-    return log({
-        eventType: EVENT_TYPES.SYSTEM_ERROR,
-        action: `System error occurred`,
-        details: {
-            errorMessage: error.message,
-            errorStack: error.stack,
-            context,
-            occurredAt: new Date()
-        },
-        status: 'failed',
-        errorMessage: error.message
-    });
+exports.logDataAccess = (userId, targetUserId, dataType, details = {}) => {
+    exports.log(
+        'SENSITIVE_DATA_ACCESSED',
+        userId,
+        targetUserId,
+        'user_data',
+        null,
+        { dataType },
+        {
+            ...details,
+            reason: `Accessed ${dataType}`
+        }
+    );
 };
 
 /**
- * Get audit logs for order
+ * Log payment proof upload
  */
-const getOrderLogs = async (orderId, limit = 100) => {
+exports.logPaymentProofUpload = (orderId, userId, fileName, fileSize, details = {}) => {
+    exports.log(
+        'PAYMENT_PROOF_UPLOADED',
+        userId,
+        orderId,
+        'payment_proof',
+        null,
+        { fileName, fileSize },
+        details
+    );
+};
+
+/**
+ * Retrieve audit logs (for admin dashboard)
+ * @param {Object} options - Filter options
+ * @returns {Array} Array of audit log entries
+ */
+exports.getLogs = (options = {}) => {
     try {
-        const logs = await AuditLog.findAll({
-            where: { orderId },
-            order: [['timestamp', 'DESC']],
-            limit
-        });
+        const content = fs.readFileSync(AUDIT_LOG_FILE, 'utf-8');
+        const lines = content.trim().split('\n').filter(line => line.length > 0);
+        
+        let logs = lines.map(line => {
+            try {
+                return JSON.parse(line);
+            } catch {
+                return null;
+            }
+        }).filter(Boolean);
 
-        return logs.map(log => ({
-            id: log.id,
-            eventType: log.eventType,
-            action: log.action,
-            details: log.details ? JSON.parse(log.details) : {},
-            status: log.status,
-            errorMessage: log.errorMessage,
-            timestamp: log.timestamp
-        }));
-
-    } catch (error) {
-        logger.error(`Error fetching audit logs for order ${orderId}:`, error);
-        return [];
-    }
-};
-
-/**
- * Get audit logs for admin
- */
-const getAdminLogs = async (adminId, limit = 100) => {
-    try {
-        const logs = await AuditLog.findAll({
-            where: { adminId },
-            order: [['timestamp', 'DESC']],
-            limit
-        });
-
-        return logs.map(log => ({
-            id: log.id,
-            eventType: log.eventType,
-            orderId: log.orderId,
-            action: log.action,
-            timestamp: log.timestamp
-        }));
-
-    } catch (error) {
-        logger.error(`Error fetching audit logs for admin ${adminId}:`, error);
-        return [];
-    }
-};
-
-/**
- * Search audit logs
- */
-const searchLogs = async (query, filters = {}) => {
-    try {
-        const where = {};
-
-        if (filters.eventType) where.eventType = filters.eventType;
-        if (filters.orderId) where.orderId = filters.orderId;
-        if (filters.userId) where.userId = filters.userId;
-        if (filters.adminId) where.adminId = filters.adminId;
-        if (filters.status) where.status = filters.status;
-
-        if (filters.startDate || filters.endDate) {
-            where.timestamp = {};
-            if (filters.startDate) where.timestamp[require('sequelize').Op.gte] = new Date(filters.startDate);
-            if (filters.endDate) where.timestamp[require('sequelize').Op.lte] = new Date(filters.endDate);
+        // Apply filters
+        if (options.action) {
+            logs = logs.filter(log => log.action === options.action);
         }
 
-        const logs = await AuditLog.findAll({
-            where,
-            order: [['timestamp', 'DESC']],
-            limit: 500
-        });
-
-        return logs.map(log => log.toJSON());
-
-    } catch (error) {
-        logger.error(`Error searching audit logs:`, error);
-        return [];
-    }
-};
-
-/**
- * Export logs for compliance
- */
-const exportLogs = async (startDate, endDate, format = 'json') => {
-    try {
-        const logs = await AuditLog.findAll({
-            where: {
-                timestamp: {
-                    [require('sequelize').Op.between]: [new Date(startDate), new Date(endDate)]
-                }
-            },
-            order: [['timestamp', 'ASC']]
-        });
-
-        if (format === 'csv') {
-            return convertLogsToCSV(logs);
+        if (options.userId) {
+            logs = logs.filter(log => log.userId === options.userId);
         }
 
-        return logs.map(log => log.toJSON());
+        if (options.resourceType) {
+            logs = logs.filter(log => log.resourceType === options.resourceType);
+        }
 
-    } catch (error) {
-        logger.error(`Error exporting logs:`, error);
+        if (options.startDate) {
+            logs = logs.filter(log => new Date(log.timestamp) >= new Date(options.startDate));
+        }
+
+        if (options.endDate) {
+            logs = logs.filter(log => new Date(log.timestamp) <= new Date(options.endDate));
+        }
+
+        // Sort by timestamp descending (newest first)
+        logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        // Limit results
+        const limit = options.limit || 100;
+        return logs.slice(0, limit);
+    } catch (err) {
+        console.error('Error reading audit logs:', err.message);
         return [];
     }
-};
-
-/**
- * Convert logs to CSV format
- */
-const convertLogsToCSV = (logs) => {
-    const headers = ['Timestamp', 'Event Type', 'Action', 'Order ID', 'User ID', 'Admin ID', 'Status', 'Error Message'];
-    const rows = logs.map(log => [
-        log.timestamp,
-        log.eventType,
-        log.action,
-        log.orderId || '',
-        log.userId || '',
-        log.adminId || '',
-        log.status,
-        log.errorMessage || ''
-    ]);
-
-    const csv = [headers, ...rows]
-        .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-        .join('\n');
-
-    return csv;
-};
-
-module.exports = {
-    EVENT_TYPES,
-    log,
-    logOrderCreation,
-    logPaymentProofUpload,
-    logPaymentVerification,
-    logStatusChange,
-    logShipmentUpdate,
-    logAdminLogin,
-    logAdminLogout,
-    logAdminAccess,
-    logNotificationSent,
-    logNotificationFailure,
-    logSystemError,
-    getOrderLogs,
-    getAdminLogs,
-    searchLogs,
-    exportLogs
 };

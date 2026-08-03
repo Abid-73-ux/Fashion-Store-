@@ -183,26 +183,32 @@ function validatePassword(password) {
 
   if (!password) {
     errors.push('Password is required');
+    return { isValid: false, errors };
   }
 
-  if (password && password.length < 8) {
+  if (password.length < 8) {
     errors.push('Password must be at least 8 characters');
   }
 
-  if (password && password.length > INPUT_LIMITS.MAX_PASSWORD) {
+  if (password.length > INPUT_LIMITS.MAX_PASSWORD) {
     errors.push(`Password cannot exceed ${INPUT_LIMITS.MAX_PASSWORD} characters`);
   }
 
-  if (password && !/[A-Z]/.test(password)) {
-    errors.push('Password must contain at least one uppercase letter');
+  if (!/[A-Z]/.test(password)) {
+    errors.push('Password must contain at least one uppercase letter (A-Z)');
   }
 
-  if (password && !/[a-z]/.test(password)) {
-    errors.push('Password must contain at least one lowercase letter');
+  if (!/[a-z]/.test(password)) {
+    errors.push('Password must contain at least one lowercase letter (a-z)');
   }
 
-  if (password && !/[0-9]/.test(password)) {
-    errors.push('Password must contain at least one number');
+  if (!/[0-9]/.test(password)) {
+    errors.push('Password must contain at least one number (0-9)');
+  }
+
+  // SECURITY: Require special character for stronger passwords
+  if (!/[@$!%*?&#\-_+=]/.test(password)) {
+    errors.push('Password must contain at least one special character (@$!%*?&#-_+=)');
   }
 
   return {

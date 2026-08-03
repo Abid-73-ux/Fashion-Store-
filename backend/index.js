@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const compression = require('compression');
 const dotenv = require('dotenv');
 const sequelize = require('./database/sequelize');
 const setupMigrations = require('./setup-migrations');
@@ -41,6 +42,12 @@ Review.belongsTo(Product, { foreignKey: 'productId' });
 // SECURITY: Setup security headers
 securityHeaders.setupSecurityHeaders(app);
 
+// SECURITY: Enable gzip compression for all responses
+app.use(compression({
+    threshold: 1024,  // Only compress responses > 1KB
+    level: 6          // Compression level (1-9, 6 is good balance)
+}));
+
 // SECURITY: Configure CORS
 const corsOptions = securityHeaders.configureCORS({
     origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000']
@@ -54,8 +61,8 @@ app.use(securityHeaders.rateLimiter(15 * 60 * 1000, 100)); // 100 requests per 1
 app.use(securityHeaders.sanitizeInput);
 
 // Middleware
-app.use(express.json());
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json({ limit: '1mb' }));  // SECURITY: Limit JSON body size
+app.use(express.urlencoded({ limit: '1mb', extended: true }));  // SECURITY: Limit form data
 
 // Initialize database on startup (run migrations first, then sync)
 async function initializeDatabase() {

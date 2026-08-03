@@ -10,6 +10,10 @@ const generateToken = (user) => {
     );
 };
 
+// SECURITY: Password length limits to prevent DoS
+const MAX_PASSWORD_LENGTH = 128;
+const MIN_PASSWORD_LENGTH = 8;
+
 // Register
 exports.register = async (req, res) => {
     try {
@@ -17,6 +21,15 @@ exports.register = async (req, res) => {
 
         if (!name || !email || !password) {
             return res.status(400).json({ error: 'Please provide all required fields' });
+        }
+
+        // SECURITY: Prevent long password DoS attack
+        if (password.length < MIN_PASSWORD_LENGTH) {
+            return res.status(422).json({ error: 'Password must be at least 8 characters' });
+        }
+
+        if (password.length > MAX_PASSWORD_LENGTH) {
+            return res.status(422).json({ error: 'Password cannot exceed 128 characters' });
         }
 
         // Check if user exists
@@ -57,6 +70,11 @@ exports.login = async (req, res) => {
 
         if (!email || !password) {
             return res.status(400).json({ error: 'Please provide email and password' });
+        }
+
+        // SECURITY: Prevent long password DoS attack on login too
+        if (password.length > 128) {
+            return res.status(422).json({ error: 'Invalid credentials' });
         }
 
         // Check for user

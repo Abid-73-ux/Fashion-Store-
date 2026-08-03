@@ -1,5 +1,6 @@
 const express = require('express');
 const multer = require('multer');
+const rateLimit = require('express-rate-limit');
 const {
     getOrders,
     getUserOrders,
@@ -15,6 +16,37 @@ const {
 const { protect, authorize } = require('../middleware/auth');
 
 const router = express.Router();
+
+// ==================== SECURITY: RATE LIMITING ====================
+
+// Rate limiting for payment verification (sensitive operation)
+const paymentVerificationLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,  // 1 hour
+    max: 100,                   // 100 requests per hour
+    message: 'Too many payment verification requests. Please try again later.',
+    keyGenerator: (req) => req.user?.id || req.ip,  // Per-user + per-IP
+    skip: (req) => !req.user,   // Skip if not authenticated
+});
+
+// Rate limiting for order creation (prevent spam orders)
+const orderCreationLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,   // 1 hour
+    max: 50,                     // 50 orders per hour per user
+    message: 'Too many orders created. Please try again later.',
+    keyGenerator: (req) => req.user?.id || req.ip,
+    skip: (req) => !req.user,
+});
+
+// Rate limiting for payment proof uploads
+const paymentProofUploadLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,   // 1 hour
+    max: 20,                     // 20 uploads per hour
+    message: 'Too many payment proof uploads. Please try again later.',
+    keyGenerator: (req) => req.user?.id || req.ip,
+    skip: (req) => !req.user,
+});
+
+// ==================== MULTER CONFIGURATION ====================
 
 // Configure multer for file uploads (memory storage for direct file handling)
 const upload = multer({
@@ -33,17 +65,16 @@ const upload = multer({
     }
 });
 
-// ==================== Phase 2 & Legacy Routes ====================
-// NOTE: Order matters! Specific routes before wildcard routes
+// ==================== ROUTES ====================
 
 // Task 2.1: Create order
-router.post('/create', protect, createOrder);
+router.post('/create', protect, orderCreationLimiter, createOrder);
 
 // Task 2.6: Admin get pending verification orders (specific path)
 router.get('/admin/pending-verification', protect, authorize('admin'), getPendingVerificationOrders);
 
-// Task 2.4: Admin verify payment (specific path)
-router.post('/admin/verify-payment/:orderId', protect, authorize('admin'), verifyPayment);
+// Task 2.4: Admin verify payment (specific path) - WITH RATE LIMITING
+router.post('/admin/verify-payment/:orderId', protect, authorize('admin'), paymentVerificationLimiter, verifyPayment);
 
 // Task 2.5: Admin update order status (specific path)
 router.put('/admin/:orderId/status', protect, authorize('admin'), updateOrderStatus);
@@ -57,10 +88,9 @@ router.get('/my-orders', protect, getUserOrders);
 // Legacy: Cancel order (specific path with 'cancel')
 router.patch('/:id/cancel', protect, cancelOrder);
 
-// Task 2.3: Upload payment proof (temporary - before order creation)
-// This endpoint accepts a file and creates a temporary PaymentProof record
-// Returns paymentProofId to be used during order creation
-router.post('/temporary/payment-proof', protect, upload.single('file'), async (req, res) => {
+// Task 2.3: Upload payment proof (temporary - before order creation) - WITH RATE LIMITING
+// SECURITY: This uploads payment proofs that must be linked to an order
+router.post('/temporary/payment-proof', protect, paymentProofUploadLimiter, upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({
@@ -118,8 +148,8 @@ router.post('/temporary/payment-proof', protect, upload.single('file'), async (r
   }
 });
 
-// Task 2.3: Upload payment proof (specific path with 'payment-proof')
-router.post('/:orderId/payment-proof', protect, upload.single('file'), uploadPaymentProof);
+// Task 2.3: Upload payment proof (specific path with 'payment-proof') - WITH RATE LIMITING
+router.post('/:orderId/payment-proof', protect, paymentProofUploadLimiter, upload.single('file'), uploadPaymentProof);
 
 // Task 2.2: Get order by orderId (catch-all GET - must be last)
 router.get('/:orderId', protect, getOrder);
