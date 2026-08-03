@@ -3,6 +3,14 @@
  * Dynamically selects between local and production backend URLs
  */
 
+const Config = {
+  API_URL: (window.location.hostname === 'localhost' || 
+            window.location.hostname === '127.0.0.1' ||
+            window.location.hostname.includes('localhost')) 
+    ? 'http://127.0.0.1:5000' 
+    : 'https://fashion-store-p5m9.onrender.com'
+};
+
 const API_CONFIG = {
   // Detect environment
   isDevelopment: window.location.hostname === 'localhost' || 

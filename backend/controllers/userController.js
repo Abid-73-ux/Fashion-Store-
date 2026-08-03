@@ -1,13 +1,19 @@
 const User = require('../models/User');
+const { Op } = require('sequelize');
 
 // Get all users (admin only)
 exports.getUsers = async (req, res) => {
     try {
-        const { role, limit = 10, offset = 0 } = req.query;
+        const { role, limit = 10, offset = 0, type } = req.query;
         const where = {};
 
         if (role) {
             where.role = role;
+        }
+
+        // If type='customers', get users who placed orders (not admin)
+        if (type === 'customers') {
+            where.role = { [Op.ne]: 'admin' };
         }
 
         const { count, rows: users } = await User.findAndCountAll({

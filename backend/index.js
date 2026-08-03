@@ -20,6 +20,7 @@ require('./models/OrderStatusChange');
 require('./models/WhatsAppInteraction');
 require('./models/SupportEmail');
 require('./models/StoreSettings');
+require('./models/Review');
 
 // Initialize Express app
 const app = express();
@@ -108,6 +109,8 @@ app.use('/api/cart', require('./routes/cart'));
 app.use('/api/whatsapp', require('./routes/whatsapp'));
 app.use('/api/support', require('./routes/support'));
 app.use('/api/settings', require('./routes/storeSettings'));
+app.use('/api/reviews', require('./routes/reviews'));
+app.use('/api/analytics', require('./routes/analytics'));
 
 // File serving routes (for payment proofs and other uploads)
 const path = require('path');

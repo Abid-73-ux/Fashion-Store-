@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Categories API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        .button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 10px 5px 10px 0;
+        }
+        .button:hover {
+            background: #0056b3;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .logs {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 4px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #007bff;
+            padding-left: 10px;
+        }
+        .success { border-left-color: #28a745; color: #28a745; }
+        .error { border-left-color: #dc3545; color: #dc3545; }
+        .info { border-left-color: #17a2b8; color: #17a2b8; }
+        .warning { border-left-color: #ffc107; color: #ffc107; }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Categories API Test</h1>
+        
+        <div class="section">
+            <h2>Test Actions</h2>
+            <button class="button" onclick="testAPI()">🔍 Test API Endpoint</button>
+            <button class="button" onclick="clearLogs()">🗑️ Clear Logs</button>
+            <button class="button" onclick="copyLogsToClipboard()">📋 Copy Logs</button>
+        </div>
+
+        <div class="section">
+            <h2>API Configuration</h2>
+            <p><strong>Base URL:</strong> <span id="baseUrl">Loading...</span></p>
+            <p><strong>Categories Endpoint:</strong> <span id="endpoint">Loading...</span></p>
+        </div>
+
+        <div class="section">
+            <h2>Test Logs</h2>
+            <div class="logs" id="logs">
+                <div class="log-entry info">📝 Waiting for test to start...</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Raw Response</h2>
+            <pre id="response">No response yet</pre>
+        </div>
+    </div>
+
+    <script>
+        function addLog(message, type = 'info') {
+            const logsDiv = document.getElementById('logs');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logsDiv.appendChild(entry);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+            document.getElementById('response').textContent = 'No response yet';
+            addLog('Logs cleared', 'info');
+        }
+
+        function copyLogsToClipboard() {
+            const logs = document.getElementById('logs').innerText;
+            navigator.clipboard.writeText(logs).then(() => {
+                addLog('✅ Logs copied to clipboard', 'success');
+            }).catch(err => {
+                addLog('❌ Failed to copy logs', 'error');
+            });
+        }
+
+        async function testAPI() {
+            clearLogs();
+            addLog('🚀 Starting API test...', 'info');
+
+            try {
+                // Determine API base URL
+                const hostname = window.location.hostname;
+                const isDev = hostname === 'localhost' || hostname === '127.0.0.1';
+                const apiBase = isDev 
+                    ? 'http://127.0.0.1:5000/api' 
+                    : 'https://fashion-store-p5m9.onrender.com/api';
+                
+                addLog(`🔗 Environment: ${isDev ? 'DEVELOPMENT' : 'PRODUCTION'}`, 'info');
+                addLog(`📍 Hostname: ${hostname}`, 'info');
+                addLog(`🌐 Using API Base: ${apiBase}`, 'info');
+
+                document.getElementById('baseUrl').textContent = apiBase;
+                document.getElementById('endpoint').textContent = `${apiBase}/categories`;
+
+                const url = `${apiBase}/categories?active=true`;
+                addLog(`📡 Fetching: ${url}`, 'info');
+                addLog('⏳ Waiting for response...', 'warning');
+
+                const response = await fetch(url);
+                
+                addLog(`📬 Response Status: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                addLog('✅ Response received successfully', 'success');
+                addLog(`📦 Response Type: ${typeof data}`, 'info');
+                addLog(`🔑 Response Keys: ${Object.keys(data).join(', ')}`, 'info');
+
+                // Display raw response
+                document.getElementById('response').textContent = JSON.stringify(data, null, 2);
+
+                // Check response structure
+                if (data.success) {
+                    addLog('✅ Response has "success": true', 'success');
+                    
+                    if (Array.isArray(data.data)) {
+                        addLog(`✅ Response has "data" array with ${data.data.length} items`, 'success');
+                        
+                        data.data.forEach((category, index) => {
+                            addLog(`   [${index + 1}] ${category.name} (ID: ${category.id}, Slug: ${category.slug})`, 'success');
+                        });
+                    } else {
+                        addLog('❌ "data" is not an array', 'error');
+                        addLog(`   Type: ${typeof data.data}`, 'error');
+                    }
+                } else if (Array.isArray(data)) {
+                    addLog('ℹ️ Response is a direct array (not wrapped)', 'info');
+                    addLog(`✅ Array has ${data.length} items`, 'success');
+                    
+                    data.forEach((category, index) => {
+                        addLog(`   [${index + 1}] ${category.name} (ID: ${category.id}, Slug: ${category.slug})`, 'success');
+                    });
+                } else {
+                    addLog('⚠️ Unexpected response format', 'warning');
+                }
+
+                addLog('🎉 API Test Complete!', 'success');
+
+            } catch (error) {
+                addLog(`❌ Error: ${error.message}`, 'error');
+                addLog(`Stack: ${error.stack}`, 'error');
+                document.getElementById('response').textContent = `ERROR: ${error.message}`;
+            }
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            const hostname = window.location.hostname;
+            const isDev = hostname === 'localhost' || hostname === '127.0.0.1';
+            const apiBase = isDev 
+                ? 'http://127.0.0.1:5000/api' 
+                : 'https://fashion-store-p5m9.onrender.com/api';
+            
+            document.getElementById('baseUrl').textContent = apiBase;
+            document.getElementById('endpoint').textContent = `${apiBase}/categories`;
+            addLog('✅ Page loaded. Click "Test API Endpoint" to begin.', 'success');
+        });
+    </script>
+</body>
+</html>

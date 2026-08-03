@@ -1,15 +1,80 @@
 /**
  * Admin Coupons Module
- * Handles coupon management
+ * Handles coupon management with backend integration
  */
 
 const AdminCoupons = (() => {
+    let coupons = [];
+    let isLoading = false;
+
+    const fetchCoupons = async () => {
+        try {
+            isLoading = true;
+            const token = Auth.getAdminToken();
+            
+            if (!token) {
+                throw new Error('Admin not authenticated');
+            }
+            
+            const response = await fetch(`${Config.API_URL}/api/coupons`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch coupons');
+            }
+
+            const data = await response.json();
+            if (data.success) {
+                coupons = data.coupons || [];
+            } else {
+                coupons = [];
+            }
+            renderCoupons();
+        } catch (error) {
+            console.error('Error fetching coupons:', error);
+            Toast.error('Failed to load coupons');
+            coupons = [];
+            renderCoupons();
+        } finally {
+            isLoading = false;
+        }
+    };
+
+    const deleteCoupon = async (couponId) => {
+        try {
+            const token = Auth.getAdminToken();
+            
+            if (!token) {
+                throw new Error('Admin not authenticated');
+            }
+            
+            const response = await fetch(`${Config.API_URL}/api/coupons/${couponId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete coupon');
+            }
+
+            Toast.success('Coupon deleted successfully');
+            fetchCoupons();
+        } catch (error) {
+            console.error('Error deleting coupon:', error);
+            Toast.error('Failed to delete coupon');
+        }
+    };
+
     const renderCoupons = () => {
-        console.log('renderCoupons called');
-        const coupons = AdminStorage.getCoupons();
-        console.log('Coupons from storage:', coupons);
         const tbody = document.getElementById('couponsContainer');
-        console.log('tbody element found:', tbody);
         
         if (!tbody) {
             console.error('couponsContainer not found!');
@@ -21,34 +86,42 @@ const AdminCoupons = (() => {
             return;
         }
 
-        tbody.innerHTML = coupons.map(coupon => `
-            <tr>
-                <td><strong>${coupon.code}</strong></td>
-                <td>${coupon.discount}</td>
-                <td>${coupon.type}</td>
-                <td>${coupon.usage}</td>
-                <td>${coupon.expires}</td>
-                <td>
-                    <span class="badge ${coupon.status === 'Active' ? 'bg-success' : 'bg-danger'}">
-                        ${coupon.status}
-                    </span>
-                </td>
-                <td>
-                    <div class="dropdown">
-                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-three-dots-vertical"></i>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="coupons/add-edit.html?id=${coupon.id}"><i class="bi bi-pencil me-2"></i>Edit</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger delete-coupon" href="#" data-id="${coupon.id}"><i class="bi bi-trash me-2"></i>Delete</a></li>
-                        </ul>
-                    </div>
-                </td>
-            </tr>
-        `).join('');
+        tbody.innerHTML = coupons.map(coupon => {
+            const expiryDate = new Date(coupon.expiryDate);
+            const isExpired = expiryDate < new Date();
+            const isActive = coupon.isActive && !isExpired;
+            const discountDisplay = coupon.discountType === 'percentage' 
+                ? `${coupon.discountValue}%` 
+                : `Rs ${coupon.discountValue}`;
 
-        console.log('Rendered', coupons.length, 'coupons');
+            return `
+                <tr>
+                    <td><strong>${coupon.code}</strong></td>
+                    <td>${discountDisplay}</td>
+                    <td>${coupon.discountType === 'percentage' ? 'Percentage' : 'Fixed'}</td>
+                    <td>${coupon.usageCount}/${coupon.usageLimit || '∞'}</td>
+                    <td>${expiryDate.toLocaleDateString()}</td>
+                    <td>
+                        <span class="badge ${isActive ? 'bg-success' : 'bg-danger'}">
+                            ${isActive ? 'Active' : isExpired ? 'Expired' : 'Inactive'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="coupons/add-edit.html?id=${coupon.id}"><i class="bi bi-pencil me-2"></i>Edit</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger delete-coupon" href="#" data-id="${coupon.id}"><i class="bi bi-trash me-2"></i>Delete</a></li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
         attachCouponHandlers();
     };
 
@@ -57,12 +130,10 @@ const AdminCoupons = (() => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 const couponId = parseInt(btn.dataset.id);
-                const coupon = AdminStorage.getCoupons().find(c => c.id === couponId);
+                const coupon = coupons.find(c => c.id === couponId);
                 
                 if (confirm(`Are you sure you want to delete "${coupon.code}"?`)) {
-                    AdminStorage.deleteCoupon(couponId);
-                    Toast.success('Coupon deleted successfully');
-                    renderCoupons();
+                    deleteCoupon(couponId);
                 }
             });
         });
@@ -70,8 +141,7 @@ const AdminCoupons = (() => {
 
     return {
         init: () => {
-            console.log('AdminCoupons.init() called');
-            renderCoupons();
+            fetchCoupons();
         },
 
         render: renderCoupons
@@ -79,8 +149,6 @@ const AdminCoupons = (() => {
 })();
 
 // Direct initialization
-console.log('admin-coupons.js loaded');
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOMContentLoaded fired');
     AdminCoupons.init();
 });
