@@ -207,9 +207,6 @@ TAKANJ is a full-stack e-commerce platform featuring:
 
 ## 📞 Support
 
-For issues or questions:
-- 📧 Email: support@takanj.com
-- 📱 WhatsApp: +92-XXX-XXXXXXX
 - 💬 WhatsApp Widget: Available on website
 
 ---
@@ -234,8 +231,6 @@ This project is proprietary. All rights reserved.
 ---
 
 **Status:** ✅ Production Ready  
-**Security Score:** ⭐ 95/100  
-**Last Updated:** August 4, 2026  
 **Deployed:** Netlify (Frontend), Render.com (Backend)
 ## Future Enhancements
 - Email notifications
