@@ -249,27 +249,54 @@
             try {
                 console.log('📦 Loading categories from API...');
                 const url = API_CONFIG.getEndpoint('/categories');
+                console.log('🔗 API URL:', url);
+                
                 const response = await fetch(url);
+                console.log('📬 Response status:', response.status);
                 
                 if (!response.ok) {
-                    console.warn('⚠️ Failed to load categories');
+                    console.warn('⚠️ Failed to load categories, status:', response.status);
                     return;
                 }
 
                 const result = await response.json();
-                const categories = result.data || [];
-                console.log('✅ Categories loaded:', categories.length);
+                console.log('📊 API Response:', result);
+                
+                // Handle both direct array and wrapped response
+                let categories = [];
+                if (Array.isArray(result)) {
+                    categories = result;
+                } else if (result.data && Array.isArray(result.data)) {
+                    categories = result.data;
+                } else if (result.success && result.data && Array.isArray(result.data)) {
+                    categories = result.data;
+                }
+                
+                console.log('✅ Categories extracted:', categories.length, categories);
 
                 const categorySelect = document.getElementById('productCategory');
                 if (categorySelect) {
                     categorySelect.innerHTML = '<option value="">Select Category</option>';
-                    categories.forEach(cat => {
-                        const option = document.createElement('option');
-                        option.value = cat.name;
-                        option.textContent = cat.name;
-                        categorySelect.appendChild(option);
-                    });
-                    console.log('✅ Category options added to dropdown');
+                    
+                    if (categories.length > 0) {
+                        categories.forEach(cat => {
+                            const option = document.createElement('option');
+                            option.value = cat.name; // Use category name as value
+                            option.textContent = cat.name;
+                            option.dataset.categoryId = cat.id; // Store ID for reference
+                            categorySelect.appendChild(option);
+                            console.log(`   ➕ Added: ${cat.name}`);
+                        });
+                        console.log(`✅ ${categories.length} category options added to dropdown`);
+                    } else {
+                        console.warn('⚠️ No categories in response');
+                        const emptyOption = document.createElement('option');
+                        emptyOption.value = '';
+                        emptyOption.textContent = 'No categories available';
+                        categorySelect.appendChild(emptyOption);
+                    }
+                } else {
+                    console.error('❌ Category select element not found');
                 }
             } catch (error) {
                 console.error('❌ Error loading categories:', error);
@@ -349,7 +376,13 @@
                     document.getElementById('productPrice').value = product.price;
                     document.getElementById('productDiscount').value = product.discount || 0;
                     document.getElementById('productStock').value = product.stock;
-                    document.getElementById('productCategory').value = product.category;
+                    
+                    // Set category with small delay to ensure options are loaded
+                    setTimeout(() => {
+                        document.getElementById('productCategory').value = product.category;
+                        console.log('✅ Category set to:', product.category);
+                    }, 100);
+                    
                     document.getElementById('productImage').value = imageUrl;
                     document.getElementById('productTax').value = product.tax || 0;
                     
@@ -369,7 +402,13 @@
                         document.getElementById('productPrice').value = product.price;
                         document.getElementById('productDiscount').value = product.discount || 0;
                         document.getElementById('productStock').value = product.stock;
-                        document.getElementById('productCategory').value = product.category;
+                        
+                        // Set category with small delay to ensure options are loaded
+                        setTimeout(() => {
+                            document.getElementById('productCategory').value = product.category;
+                            console.log('✅ Category set from localStorage to:', product.category);
+                        }, 100);
+                        
                         document.getElementById('productImage').value = product.image;
                         document.querySelector(`input[value="${product.status}"]`).checked = true;
                     }
