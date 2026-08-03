@@ -120,7 +120,7 @@ const AdminProducts = (() => {
                 </td>
                 <td>${product.sku}</td>
                 <td>${product.category}</td>
-                <td><strong>$${parseFloat(product.price).toFixed(2)}</strong></td>
+                <td><strong>Rs ${parseFloat(product.price).toFixed(2)}</strong></td>
                 <td><span class="badge bg-${product.stock > 50 ? 'success' : product.stock > 0 ? 'warning' : 'danger'}">${product.stock}</span></td>
                 <td><span class="badge bg-success">Active</span></td>
                 <td>${createdDate}</td>

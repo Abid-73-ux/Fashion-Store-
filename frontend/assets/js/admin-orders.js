@@ -64,7 +64,7 @@ const AdminOrders = (() => {
                 <td>${order.customer}</td>
                 <td>${order.date}</td>
                 <td>${order.items}</td>
-                <td><strong>$${parseFloat(order.total).toFixed(2)}</strong></td>
+                <td><strong>Rs ${parseFloat(order.total).toFixed(2)}</strong></td>
                 <td><span class="badge ${order.payment === 'Paid' ? 'bg-success' : 'bg-danger'}">${order.payment}</span></td>
                 <td>
                     <select class="form-select form-select-sm status-select" data-order-id="${order.id}" style="width: auto; display: inline-block;">
