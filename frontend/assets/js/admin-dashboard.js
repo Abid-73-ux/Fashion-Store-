@@ -28,7 +28,7 @@ const AdminDashboard = (() => {
         // Update stat cards
         const statCards = document.querySelectorAll('.stat-value');
         if (statCards.length >= 4) {
-            statCards[0].textContent = '$' + totalRevenue.toFixed(0);
+            statCards[0].textContent = 'Rs ' + totalRevenue.toFixed(0);
             statCards[1].textContent = totalOrders;
             statCards[2].textContent = totalCustomers;
             statCards[3].textContent = totalProducts;
@@ -65,7 +65,7 @@ const AdminDashboard = (() => {
                 <td>${order.customer}</td>
                 <td>${order.date}</td>
                 <td>${order.items}</td>
-                <td><strong>$${parseFloat(order.total).toFixed(2)}</strong></td>
+                <td><strong>Rs ${parseFloat(order.total).toFixed(2)}</strong></td>
                 <td><span class="badge ${order.payment === 'Paid' ? 'bg-success' : 'bg-danger'}">${order.payment}</span></td>
                 <td><span class="badge ${getStatusColor(order.status)}">${order.status}</span></td>
                 <td><a href="orders/details.html?id=${order.id}" class="btn btn-sm btn-outline-primary">View</a></td>
@@ -116,7 +116,7 @@ const AdminDashboard = (() => {
                     <h6 class="mb-0" style="font-size: 0.9rem;">${product.name}</h6>
                     <small class="text-muted">${product.stock} in stock</small>
                 </div>
-                <strong style="color: var(--secondary-color);">$${product.price.toFixed(2)}</strong>
+                <strong style="color: var(--secondary-color);">Rs ${product.price.toFixed(2)}</strong>
             </div>
         `).join('');
     };
