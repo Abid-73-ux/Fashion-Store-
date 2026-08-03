@@ -3,33 +3,45 @@ const Product = require('../models/Product');
 const User = require('../models/User');
 const { Op, sequelize } = require('sequelize');
 
-// Get sales data for charts
+// Get sales data for charts - simplified approach
 exports.getSalesData = async (req, res) => {
     try {
         const { period = 'monthly' } = req.query;
 
-        const salesData = await Order.findAll({
-            attributes: [
-                [sequelize.fn('DATE_TRUNC', 'month', sequelize.col('createdAt')), 'date'],
-                [sequelize.fn('COUNT', sequelize.col('id')), 'orders'],
-                [sequelize.fn('SUM', sequelize.col('total')), 'totalRevenue']
-            ],
+        // Get all non-cancelled orders
+        const orders = await Order.findAll({
             where: {
                 status: { [Op.ne]: 'cancelled' }
             },
-            group: [sequelize.fn('DATE_TRUNC', 'month', sequelize.col('createdAt'))],
-            order: [[sequelize.fn('DATE_TRUNC', 'month', sequelize.col('createdAt')), 'ASC']],
-            raw: true,
-            subQuery: false
+            attributes: ['id', 'total', 'createdAt'],
+            raw: true
         });
+
+        // Group by month in JavaScript
+        const groupedData = {};
+        orders.forEach(order => {
+            const date = new Date(order.createdAt);
+            const monthKey = date.toISOString().substring(0, 7); // YYYY-MM format
+            
+            if (!groupedData[monthKey]) {
+                groupedData[monthKey] = { count: 0, revenue: 0 };
+            }
+            groupedData[monthKey].count += 1;
+            groupedData[monthKey].revenue += parseFloat(order.total || 0);
+        });
+
+        // Convert to array and sort
+        const salesData = Object.entries(groupedData)
+            .map(([date, data]) => ({
+                date: new Date(date + '-01'),
+                orders: data.count,
+                revenue: data.revenue
+            }))
+            .sort((a, b) => a.date - b.date);
 
         res.status(200).json({
             success: true,
-            data: salesData.map(item => ({
-                date: item.date,
-                orders: parseInt(item.orders) || 0,
-                revenue: parseFloat(item.totalRevenue || 0)
-            }))
+            data: salesData
         });
     } catch (error) {
         console.error('Analytics getSalesData error:', error.message);
@@ -37,31 +49,43 @@ exports.getSalesData = async (req, res) => {
     }
 };
 
-// Get revenue data
+// Get revenue data - simplified approach
 exports.getRevenueData = async (req, res) => {
     try {
         const { period = 'monthly' } = req.query;
 
-        const revenueData = await Order.findAll({
-            attributes: [
-                [sequelize.fn('DATE_TRUNC', 'month', sequelize.col('createdAt')), 'date'],
-                [sequelize.fn('SUM', sequelize.col('total')), 'revenue']
-            ],
+        // Get all non-cancelled orders
+        const orders = await Order.findAll({
             where: {
                 status: { [Op.ne]: 'cancelled' }
             },
-            group: [sequelize.fn('DATE_TRUNC', 'month', sequelize.col('createdAt'))],
-            order: [[sequelize.fn('DATE_TRUNC', 'month', sequelize.col('createdAt')), 'ASC']],
-            raw: true,
-            subQuery: false
+            attributes: ['total', 'createdAt'],
+            raw: true
         });
+
+        // Group by month in JavaScript
+        const groupedData = {};
+        orders.forEach(order => {
+            const date = new Date(order.createdAt);
+            const monthKey = date.toISOString().substring(0, 7); // YYYY-MM format
+            
+            if (!groupedData[monthKey]) {
+                groupedData[monthKey] = 0;
+            }
+            groupedData[monthKey] += parseFloat(order.total || 0);
+        });
+
+        // Convert to array and sort
+        const revenueData = Object.entries(groupedData)
+            .map(([date, revenue]) => ({
+                date: new Date(date + '-01'),
+                revenue: revenue
+            }))
+            .sort((a, b) => a.date - b.date);
 
         res.status(200).json({
             success: true,
-            data: revenueData.map(item => ({
-                date: item.date,
-                revenue: parseFloat(item.revenue || 0)
-            }))
+            data: revenueData
         });
     } catch (error) {
         console.error('Analytics getRevenueData error:', error.message);
@@ -95,29 +119,41 @@ exports.getTopProducts = async (req, res) => {
     }
 };
 
-// Get customer growth data
+// Get customer growth data - simplified approach
 exports.getCustomerGrowth = async (req, res) => {
     try {
-        const customerGrowth = await User.findAll({
-            attributes: [
-                [sequelize.fn('DATE_TRUNC', 'month', sequelize.col('createdAt')), 'date'],
-                [sequelize.fn('COUNT', sequelize.col('id')), 'newCustomers']
-            ],
+        // Get all users with user role
+        const users = await User.findAll({
             where: {
                 role: 'user'
             },
-            group: [sequelize.fn('DATE_TRUNC', 'month', sequelize.col('createdAt'))],
-            order: [[sequelize.fn('DATE_TRUNC', 'month', sequelize.col('createdAt')), 'ASC']],
-            raw: true,
-            subQuery: false
+            attributes: ['id', 'createdAt'],
+            raw: true
         });
+
+        // Group by month in JavaScript
+        const groupedData = {};
+        users.forEach(user => {
+            const date = new Date(user.createdAt);
+            const monthKey = date.toISOString().substring(0, 7); // YYYY-MM format
+            
+            if (!groupedData[monthKey]) {
+                groupedData[monthKey] = 0;
+            }
+            groupedData[monthKey] += 1;
+        });
+
+        // Convert to array and sort
+        const customerGrowth = Object.entries(groupedData)
+            .map(([date, count]) => ({
+                date: new Date(date + '-01'),
+                newCustomers: count
+            }))
+            .sort((a, b) => a.date - b.date);
 
         res.status(200).json({
             success: true,
-            data: customerGrowth.map(item => ({
-                date: item.date,
-                newCustomers: parseInt(item.newCustomers) || 0
-            }))
+            data: customerGrowth
         });
     } catch (error) {
         console.error('Analytics getCustomerGrowth error:', error.message);
@@ -125,19 +161,19 @@ exports.getCustomerGrowth = async (req, res) => {
     }
 };
 
-// Get dashboard stats
+// Get dashboard stats - simplified approach
 exports.getDashboardStats = async (req, res) => {
     try {
         // Total revenue
-        const revenueResult = await Order.findOne({
-            attributes: [
-                [sequelize.fn('SUM', sequelize.col('total')), 'totalRevenue']
-            ],
+        const orders = await Order.findAll({
             where: {
                 status: { [Op.ne]: 'cancelled' }
             },
+            attributes: ['total'],
             raw: true
         });
+
+        const totalRevenue = orders.reduce((sum, order) => sum + parseFloat(order.total || 0), 0);
 
         // Total orders
         const totalOrders = await Order.count();
@@ -153,7 +189,7 @@ exports.getDashboardStats = async (req, res) => {
         res.status(200).json({
             success: true,
             stats: {
-                totalRevenue: parseFloat(revenueResult?.totalRevenue || 0),
+                totalRevenue,
                 totalOrders,
                 totalCustomers,
                 totalProducts
@@ -165,24 +201,35 @@ exports.getDashboardStats = async (req, res) => {
     }
 };
 
-// Get order status breakdown
+// Get order status breakdown - simplified approach
 exports.getOrderStatusBreakdown = async (req, res) => {
     try {
-        const breakdown = await Order.findAll({
-            attributes: [
-                'status',
-                [sequelize.fn('COUNT', sequelize.col('id')), 'count']
-            ],
-            group: ['status'],
+        // Get all orders with their status
+        const orders = await Order.findAll({
+            attributes: ['status'],
             raw: true
         });
 
+        // Count by status
+        const breakdown = {};
+        orders.forEach(order => {
+            const status = order.status || 'pending';
+            if (!breakdown[status]) {
+                breakdown[status] = 0;
+            }
+            breakdown[status] += 1;
+        });
+
+        // Convert to array
+        const data = Object.entries(breakdown)
+            .map(([status, count]) => ({
+                status,
+                count
+            }));
+
         res.status(200).json({
             success: true,
-            data: breakdown.map(item => ({
-                status: item.status,
-                count: parseInt(item.count) || 0
-            }))
+            data
         });
     } catch (error) {
         console.error('Analytics getOrderStatusBreakdown error:', error.message);
