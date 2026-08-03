@@ -3,6 +3,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const sequelize = require('./database/sequelize');
 const setupMigrations = require('./setup-migrations');
+const securityHeaders = require('./middleware/securityHeaders');
 
 // Load environment variables
 dotenv.config();
@@ -37,21 +38,22 @@ Product.hasMany(Review, { foreignKey: 'productId', as: 'productReviews' });
 Review.belongsTo(User, { foreignKey: 'userId' });
 Review.belongsTo(Product, { foreignKey: 'productId' });
 
+// SECURITY: Setup security headers
+securityHeaders.setupSecurityHeaders(app);
+
+// SECURITY: Configure CORS
+const corsOptions = securityHeaders.configureCORS({
+    origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000']
+});
+app.use(cors(corsOptions));
+
+// SECURITY: Apply rate limiting to all routes
+app.use(securityHeaders.rateLimiter(15 * 60 * 1000, 100)); // 100 requests per 15 minutes
+
+// SECURITY: Sanitize inputs
+app.use(securityHeaders.sanitizeInput);
+
 // Middleware
-app.use(cors({
-    origin: function(origin, callback) {
-        // Allow all origins in development
-        const allowedOrigins = process.env.CORS_ORIGIN?.split(',') || ['*'];
-        if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
-            callback(null, true);
-        } else {
-            callback(null, true); // Allow anyway for development
-        }
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    headers: ['Content-Type', 'Authorization']
-}));
 app.use(express.json());
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
