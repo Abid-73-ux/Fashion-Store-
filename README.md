@@ -287,44 +287,7 @@ takanj-ecommerce/
 
 ---
 
-## 🚀 Getting Started
 
-### Prerequisites
-- Node.js 18+
-- PostgreSQL 12+
-- npm or yarn
-- Git
-
-### Backend Setup
-
-```bash
-# Navigate to backend
-cd backend
-
-# Install dependencies
-npm install
-
-# Create .env file with:
-DATABASE_URL=postgresql://user:password@host:5432/takanj
-JWT_SECRET=your-secret-key-min-32-chars
-CORS_ORIGIN=http://localhost:3000,https://yourdomain.com
-NODE_ENV=production
-PORT=5000
-GMAIL_USER=your-email@gmail.com
-GMAIL_PASSWORD=your-app-password
-
-# Run database migrations
-npm run setup-migrations
-
-# Seed initial data (optional)
-npm run seed
-
-# Start server
-npm start
-
-# Development (with auto-reload)
-npm run dev
-```
 
 
 ### Frontend
