@@ -143,19 +143,58 @@ app.use((req, res) => {
     res.status(404).json({ error: 'Route not found' });
 });
 
-// Error handler
+// SECURITY: Global error handler for all errors
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(err.status || 500).json({
-        error: err.message || 'Internal server error'
+    console.error('❌ Error:', err);
+    
+    // Log error details for debugging (but don't expose to client)
+    const errorId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+    console.error(`Error ID: ${errorId}`, err.stack);
+    
+    // Determine status code
+    const statusCode = err.status || err.statusCode || 500;
+    
+    // Determine error message (don't expose internal errors to client)
+    const isProduction = process.env.NODE_ENV === 'production';
+    const message = isProduction 
+        ? (statusCode === 500 ? 'Internal server error' : err.message)
+        : err.message;
+    
+    res.status(statusCode).json({
+        error: message,
+        ...(process.env.NODE_ENV !== 'production' && { errorId, stack: err.stack })
     });
+});
+
+// SECURITY: Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+    console.error('🔴 UNCAUGHT EXCEPTION:', err);
+    console.error(err.stack);
+    // Log to error monitoring service in production
+    // process.exit(1);  // Don't exit - let the app continue running
+});
+
+// SECURITY: Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('🔴 UNHANDLED REJECTION:', reason);
+    console.error('Promise:', promise);
+    // Log to error monitoring service in production
 });
 
 // Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`✅ Server running on http://localhost:${PORT}`);
     console.log(`📝 Database: PostgreSQL (Neon)`);
     console.log(`🔗 Connection: DATABASE_URL configured`);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+    console.log('📴 SIGTERM signal received: closing HTTP server');
+    server.close(() => {
+        console.log('HTTP server closed');
+        process.exit(0);
+    });
 });
 
