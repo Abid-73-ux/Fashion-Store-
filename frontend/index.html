@@ -61,11 +61,7 @@
                             Categories
                         </a>
                         <ul class="dropdown-menu border-0 shadow-lg" id="categoriesMenu">
-                            <!-- Categories loaded dynamically -->
-                            <li><a class="dropdown-item" href="shop.html?category=men">Men</a></li>
-                            <li><a class="dropdown-item" href="shop.html?category=women">Women</a></li>
-                            <li><a class="dropdown-item" href="shop.html?category=children">Children</a></li>
-                            <li><a class="dropdown-item" href="shop.html?category=accessories">Accessories</a></li>
+                            <li><a class="dropdown-item" href="#">Loading categories...</a></li>
                         </ul>
                     </li>
                     <li class="nav-item">
@@ -427,7 +423,10 @@
     
     <script>
         // Load featured products and new arrivals on page load
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Initialize dynamic categories
+            await categoryService.renderCategoryDropdown('categoriesMenu', 'shop.html?category=', 5000);
+            
             loadFeaturedProducts();
             loadNewArrivals();
             

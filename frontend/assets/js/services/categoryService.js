@@ -41,8 +41,15 @@ class CategoryService {
       console.log(`✅ API Response:`, json);
       
       // Extract data from response wrapper
-      const data = json.success ? json.data : json;
-      console.log(`📊 Extracted data:`, data);
+      let data = json.success ? json.data : json;
+      
+      // Ensure data is an array
+      if (!Array.isArray(data)) {
+        console.warn(`⚠️ Data is not an array:`, data, `Type: ${typeof data}`);
+        data = Array.isArray(data) ? data : [];
+      }
+      
+      console.log(`📊 Extracted data:`, data, `Count: ${data.length}`);
       
       // Cache the data
       this.cache.set(cacheKey, { data, time: Date.now() });
