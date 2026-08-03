@@ -48,9 +48,19 @@ exports.register = async (req, res) => {
 
         const token = generateToken(user);
 
+        // SECURITY: Set HttpOnly cookie instead of sending token in response
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            path: '/',
+            signed: false
+        });
+
+        // Don't send token in response body - it's in the secure cookie
         res.status(201).json({
             success: true,
-            token,
             user: {
                 id: user.id,
                 name: user.name,
@@ -91,9 +101,19 @@ exports.login = async (req, res) => {
 
         const token = generateToken(user);
 
+        // SECURITY: Set HttpOnly cookie instead of sending token in response
+        res.cookie('token', token, {
+            httpOnly: true,                                                   // JavaScript cannot read
+            secure: process.env.NODE_ENV === 'production',                   // HTTPS only in production
+            sameSite: 'strict',                                              // CSRF protection
+            maxAge: 7 * 24 * 60 * 60 * 1000,                                // 7 days
+            path: '/',
+            signed: false                                                    // Not signed (not needed with HttpOnly)
+        });
+
+        // Don't send token in response body - it's in the secure cookie
         res.status(200).json({
             success: true,
-            token,
             user: {
                 id: user.id,
                 name: user.name,
@@ -124,6 +144,26 @@ exports.validate = async (req, res) => {
             return res.status(401).json({ success: false, error: 'User not found' });
         }
         res.status(200).json({ success: true, user });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Logout
+exports.logout = async (req, res) => {
+    try {
+        // SECURITY: Clear the HttpOnly cookie
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            path: '/'
+        });
+
+        res.status(200).json({
+            success: true,
+            message: 'Logged out successfully'
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

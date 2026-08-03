@@ -4,8 +4,12 @@ const protect = async (req, res, next) => {
     try {
         let token;
 
-        if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-            token = req.headers.authorization.split(' ')[1];
+        // SECURITY: Check both cookie (HttpOnly) and header (for API clients)
+        // Priority: Cookie > Authorization header
+        if (req.cookies?.token) {
+            token = req.cookies.token;  // HttpOnly cookie (most secure)
+        } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+            token = req.headers.authorization.split(' ')[1];  // Fallback for API clients
         }
 
         if (!token) {
@@ -17,6 +21,11 @@ const protect = async (req, res, next) => {
             req.user = decoded;
             next();
         } catch (error) {
+            if (error.name === 'TokenExpiredError') {
+                // Clear expired cookie
+                res.clearCookie('token');
+                return res.status(401).json({ error: 'Session expired. Please login again.' });
+            }
             return res.status(401).json({ error: 'Not authorized to access this route' });
         }
     } catch (error) {

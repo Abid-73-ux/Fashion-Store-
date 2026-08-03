@@ -1,6 +1,10 @@
 /**
  * Authentication Module
  * Handles user authentication, token management, and role-based access
+ * 
+ * SECURITY NOTE: Tokens are now stored in HttpOnly cookies (backend-set only)
+ * Frontend can no longer access tokens directly via JavaScript
+ * Cookies are automatically sent with all requests
  */
 
 const Auth = {
@@ -11,34 +15,38 @@ const Auth = {
     ADMIN: 'admin'
   },
 
-  // Token keys
-  TOKEN_KEY: 'token',
+  // Storage keys (for user data, NOT tokens)
   USER_KEY: 'user',
-  ADMIN_TOKEN_KEY: 'admin-token',
   ADMIN_USER_KEY: 'admin-user',
 
   /**
-   * Check if user is logged in
+   * Check if user is logged in by calling API validation endpoint
    */
-  isLoggedIn() {
-    const token = localStorage.getItem(this.TOKEN_KEY);
-    const user = localStorage.getItem(this.USER_KEY);
-    return !!(token && user);
+  async isLoggedIn() {
+    try {
+      const response = await fetch(`${API_CONFIG.getEndpoint('/auth/validate')}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'  // CRITICAL: Include cookies in request
+      });
+      return response.ok;
+    } catch (e) {
+      return false;
+    }
   },
 
   /**
    * Check if user is admin
    */
   isAdmin() {
-    const adminToken = localStorage.getItem(this.ADMIN_TOKEN_KEY);
-    const adminUser = localStorage.getItem(this.ADMIN_USER_KEY);
-    
-    if (!adminToken || !adminUser) {
-      return false;
-    }
-
     try {
-      const user = JSON.parse(adminUser);
+      const adminUserJson = localStorage.getItem(this.ADMIN_USER_KEY);
+      if (!adminUserJson) {
+        return false;
+      }
+      const user = JSON.parse(adminUserJson);
       return user.role === 'admin';
     } catch (e) {
       return false;
@@ -95,7 +103,7 @@ const Auth = {
   getCurrentRole() {
     if (this.isAdmin()) {
       return this.ROLES.ADMIN;
-    } else if (this.isLoggedIn()) {
+    } else if (localStorage.getItem(this.USER_KEY)) {
       return this.ROLES.CUSTOMER;
     } else {
       return this.ROLES.GUEST;
@@ -103,18 +111,20 @@ const Auth = {
   },
 
   /**
-   * Set user (after login)
+   * Set user (after login) - Store user data only, token in cookie
+   * SECURITY: Token is automatically set by backend in HttpOnly cookie
    */
-  setUser(user, token) {
-    localStorage.setItem(this.TOKEN_KEY, token);
+  setUser(user, token = null) {
+    // SECURITY: Don't store token in localStorage
+    // Backend sets it in HttpOnly cookie automatically
     localStorage.setItem(this.USER_KEY, JSON.stringify(user));
   },
 
   /**
    * Set admin user (after admin login)
    */
-  setAdminUser(user, token) {
-    localStorage.setItem(this.ADMIN_TOKEN_KEY, token);
+  setAdminUser(user, token = null) {
+    // SECURITY: Don't store token in localStorage
     localStorage.setItem(this.ADMIN_USER_KEY, JSON.stringify(user));
   },
 
@@ -122,61 +132,51 @@ const Auth = {
    * Clear user session (logout)
    */
   logout() {
-    localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
-    localStorage.removeItem(this.ADMIN_TOKEN_KEY);
     localStorage.removeItem(this.ADMIN_USER_KEY);
     localStorage.removeItem('cart');
     localStorage.removeItem('wishlist');
+    // Token cookie cleared by backend on logout
   },
 
   /**
    * Clear admin session
    */
   logoutAdmin() {
-    localStorage.removeItem(this.ADMIN_TOKEN_KEY);
     localStorage.removeItem(this.ADMIN_USER_KEY);
   },
 
   /**
-   * Get authorization token
-   */
-  getToken() {
-    return localStorage.getItem(this.TOKEN_KEY);
-  },
-
-  /**
-   * Get admin authorization token
+   * Get admin authorization token (deprecated - now in HttpOnly cookie)
+   * SECURITY: Token is in HttpOnly cookie, cannot be accessed via JavaScript
    */
   getAdminToken() {
-    return localStorage.getItem(this.ADMIN_TOKEN_KEY);
+    // Token is now in HttpOnly cookie, this is for backward compatibility only
+    // Return null - cookies are sent automatically
+    return null;
   },
 
   /**
-   * Check if token is expired (basic check)
+   * Check if token is expired
+   * SECURITY: Token validation now done server-side via cookie
    */
   isTokenExpired() {
-    // This is a basic check - a real implementation would decode the JWT
-    // For now, we just check if token exists
-    return !this.getToken();
+    // Let server handle token validation
+    return false;
   },
 
   /**
    * Validate token with backend
+   * SECURITY: Token automatically sent in HttpOnly cookie
    */
   async validateToken() {
     try {
-      const token = this.getToken();
-      if (!token) {
-        return false;
-      }
-
       const response = await fetch(API_CONFIG.getEndpoint('/auth/validate'), {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        }
+        },
+        credentials: 'include'  // CRITICAL: Send cookies
       });
 
       return response.ok;
@@ -188,15 +188,29 @@ const Auth = {
 
   /**
    * Validate admin token with backend
+   * SECURITY: Token automatically sent in HttpOnly cookie
    */
   async validateAdminToken() {
     try {
-      const token = this.getAdminToken();
-      if (!token) {
-        return false;
-      }
+      const response = await fetch(API_CONFIG.getEndpoint('/auth/validate'), {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'  // CRITICAL: Send cookies
+      });
 
-      const response = await fetch(API_CONFIG.getEndpoint('/auth/admin/validate'), {
+      if (response.ok) {
+        const data = await response.json();
+        return data.user?.role === 'admin';
+      }
+      return false;
+    } catch (error) {
+      console.error('Admin token validation error:', error);
+      return false;
+    }
+  }
+};
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

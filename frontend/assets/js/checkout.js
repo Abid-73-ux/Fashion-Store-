@@ -617,13 +617,22 @@ async function placeOrder() {
 
     console.log('📦 Sending order to API...');
 
+    // SECURITY: Add CSRF token to request
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    };
+
+    // Add CSRF token if available
+    if (CSRFService && CSRFService.getToken()) {
+      headers['X-CSRF-Token'] = CSRFService.getToken();
+    }
+
     const response = await fetch(API_CONFIG.getEndpoint('/orders/create'), {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(orderData)
+      headers: headers,
+      body: JSON.stringify(orderData),
+      credentials: 'include'  // SECURITY: Include cookies
     });
 
     console.log('✅ Response status:', response.status);

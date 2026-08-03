@@ -1,7 +1,8 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
-const { register, login, getMe, validate } = require('../controllers/authController');
+const { register, login, getMe, validate, logout } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
+const { csrfTokenGenerator } = require('../middleware/csrfProtection');
 
 const router = express.Router();
 
@@ -29,8 +30,14 @@ const registerLimiter = rateLimit({
   legacyHeaders: false
 });
 
+// SECURITY: Endpoint to get CSRF token (no auth required)
+router.get('/csrf-token', csrfTokenGenerator, (req, res) => {
+  res.json({ csrfToken: res.locals.csrfToken });
+});
+
 router.post('/register', registerLimiter, register);
 router.post('/login', loginLimiter, login);
+router.post('/logout', protect, logout);
 router.get('/me', protect, getMe);
 router.get('/validate', protect, validate);
 

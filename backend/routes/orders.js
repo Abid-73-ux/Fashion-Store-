@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const rateLimit = require('express-rate-limit');
+const { csrfCheck } = require('../middleware/csrfProtection');
 const {
     getOrders,
     getUserOrders,
@@ -67,17 +68,17 @@ const upload = multer({
 
 // ==================== ROUTES ====================
 
-// Task 2.1: Create order
-router.post('/create', protect, orderCreationLimiter, createOrder);
+// Task 2.1: Create order - WITH CSRF PROTECTION
+router.post('/create', protect, csrfCheck, orderCreationLimiter, createOrder);
 
 // Task 2.6: Admin get pending verification orders (specific path)
 router.get('/admin/pending-verification', protect, authorize('admin'), getPendingVerificationOrders);
 
-// Task 2.4: Admin verify payment (specific path) - WITH RATE LIMITING
-router.post('/admin/verify-payment/:orderId', protect, authorize('admin'), paymentVerificationLimiter, verifyPayment);
+// Task 2.4: Admin verify payment (specific path) - WITH RATE LIMITING & CSRF
+router.post('/admin/verify-payment/:orderId', protect, authorize('admin'), csrfCheck, paymentVerificationLimiter, verifyPayment);
 
-// Task 2.5: Admin update order status (specific path)
-router.put('/admin/:orderId/status', protect, authorize('admin'), updateOrderStatus);
+// Task 2.5: Admin update order status (specific path) - WITH CSRF
+router.put('/admin/:orderId/status', protect, authorize('admin'), csrfCheck, updateOrderStatus);
 
 // Legacy: Get all orders (admin, specific path)
 router.get('/admin/list/all', protect, authorize('admin'), getOrders);
@@ -85,8 +86,8 @@ router.get('/admin/list/all', protect, authorize('admin'), getOrders);
 // Legacy: Get user orders (specific path)
 router.get('/my-orders', protect, getUserOrders);
 
-// Legacy: Cancel order (specific path with 'cancel')
-router.patch('/:id/cancel', protect, cancelOrder);
+// Legacy: Cancel order - WITH CSRF & RATE LIMIT
+router.patch('/:id/cancel', protect, csrfCheck, cancelOrder);
 
 // Task 2.3: Upload payment proof (temporary - before order creation) - WITH RATE LIMITING
 // SECURITY: This uploads payment proofs that must be linked to an order
@@ -154,7 +155,7 @@ router.post('/:orderId/payment-proof', protect, paymentProofUploadLimiter, uploa
 // Task 2.2: Get order by orderId (catch-all GET - must be last)
 router.get('/:orderId', protect, getOrder);
 
-// Legacy: Update order (admin, catch-all PATCH - must be last)
-router.patch('/:id', protect, authorize('admin'), updateOrder);
+// Legacy: Update order (admin, catch-all PATCH - must be last) - WITH CSRF
+router.patch('/:id', protect, authorize('admin'), csrfCheck, updateOrder);
 
 module.exports = router;

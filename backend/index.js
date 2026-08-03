@@ -1,10 +1,12 @@
 const express = require('express');
 const cors = require('cors');
 const compression = require('compression');
+const cookieParser = require('cookie-parser');
 const dotenv = require('dotenv');
 const sequelize = require('./database/sequelize');
 const setupMigrations = require('./setup-migrations');
 const securityHeaders = require('./middleware/securityHeaders');
+const { csrfProtection, csrfTokenGenerator, csrfCheck } = require('./middleware/csrfProtection');
 
 // Load environment variables
 dotenv.config();
@@ -48,9 +50,17 @@ app.use(compression({
     level: 6          // Compression level (1-9, 6 is good balance)
 }));
 
+// SECURITY: Cookie parser middleware (required for HttpOnly cookies)
+app.use(cookieParser());
+
+// SECURITY: CSRF protection - setup after cookie parser
+app.use(csrfProtection);
+app.use(csrfTokenGenerator);
+
 // SECURITY: Configure CORS
 const corsOptions = securityHeaders.configureCORS({
-    origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000']
+    origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000'],
+    credentials: true  // Allow cookies in CORS requests
 });
 app.use(cors(corsOptions));
 
