@@ -16,22 +16,31 @@ exports.getReviews = async (req, res) => {
             where.isApproved = isApproved === 'true';
         }
 
-        const { count, rows: reviews } = await Review.findAndCountAll({
+        // Get reviews with includes for User and Product data
+        const reviews = await Review.findAll({
             where,
             include: [
-                {
+                { 
                     model: User,
-                    attributes: ['id', 'name', 'email']
+                    as: 'User',
+                    attributes: ['id', 'name', 'email'],
+                    required: false
                 },
-                {
+                { 
                     model: Product,
-                    attributes: ['id', 'name']
+                    as: 'Product',
+                    attributes: ['id', 'name'],
+                    required: false
                 }
             ],
             limit: parseInt(limit),
             offset: parseInt(offset),
-            order: [['createdAt', 'DESC']]
+            order: [['createdAt', 'DESC']],
+            subQuery: false
         });
+
+        // Get total count separately
+        const count = await Review.count({ where });
 
         res.status(200).json({
             success: true,
@@ -40,6 +49,7 @@ exports.getReviews = async (req, res) => {
             reviews
         });
     } catch (error) {
+        console.error('Error fetching reviews:', error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -51,11 +61,15 @@ exports.getReview = async (req, res) => {
             include: [
                 {
                     model: User,
-                    attributes: ['id', 'name', 'email']
+                    as: 'User',
+                    attributes: ['id', 'name', 'email'],
+                    required: false
                 },
                 {
                     model: Product,
-                    attributes: ['id', 'name']
+                    as: 'Product',
+                    attributes: ['id', 'name'],
+                    required: false
                 }
             ]
         });
