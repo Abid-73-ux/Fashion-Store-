@@ -97,7 +97,6 @@ const AdminDashboard = (() => {
 
         container.innerHTML = customersSliced.map(customer => `
             <div class="list-group-item d-flex align-items-center gap-3">
-                <img src="${customer.image}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover;">
                 <div class="flex-grow-1">
                     <h6 class="mb-0" style="font-size: 0.9rem;">${customer.name}</h6>
                     <small class="text-muted">${customer.email}</small>
