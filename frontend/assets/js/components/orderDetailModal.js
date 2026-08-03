@@ -122,7 +122,8 @@ const OrderDetailModal = (() => {
                 </div>
             `;
 
-        content.innerHTML = `
+        // SECURITY: Create HTML with proper escaping
+        const html = `
             <div class="order-details">
                 <!-- Order Header -->
                 <div class="card mb-3">
@@ -139,16 +140,16 @@ const OrderDetailModal = (() => {
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <h6>Customer Information</h6>
-                                <p class="mb-1"><strong>${order.customerName}</strong></p>
-                                <p class="mb-1"><a href="mailto:${order.customerEmail}">${order.customerEmail}</a></p>
-                                <p class="mb-0"><a href="tel:${order.customerPhone}">${order.customerPhone}</a></p>
+                                <p class="mb-1"><strong>${DOMPurify.sanitize(order.customerName, {ALLOWED_TAGS: []})}</strong></p>
+                                <p class="mb-1"><a href="mailto:${DOMPurify.sanitize(order.customerEmail, {ALLOWED_TAGS: []})}">${DOMPurify.sanitize(order.customerEmail, {ALLOWED_TAGS: []})}</a></p>
+                                <p class="mb-0"><a href="tel:${DOMPurify.sanitize(order.customerPhone, {ALLOWED_TAGS: []})}">${DOMPurify.sanitize(order.customerPhone, {ALLOWED_TAGS: []})}</a></p>
                             </div>
                             <div class="col-md-6">
                                 <h6>Shipping Address</h6>
                                 ${order.shippingAddress ? `
-                                    <p class="mb-1">${order.shippingAddress.street}</p>
-                                    <p class="mb-1">${order.shippingAddress.city}, ${order.shippingAddress.state}</p>
-                                    <p class="mb-0">${order.shippingAddress.postalCode}</p>
+                                    <p class="mb-1">${DOMPurify.sanitize(order.shippingAddress.street, {ALLOWED_TAGS: []})}</p>
+                                    <p class="mb-1">${DOMPurify.sanitize(order.shippingAddress.city, {ALLOWED_TAGS: []})}, ${DOMPurify.sanitize(order.shippingAddress.state, {ALLOWED_TAGS: []})}</p>
+                                    <p class="mb-0">${DOMPurify.sanitize(order.shippingAddress.postalCode, {ALLOWED_TAGS: []})}</p>
                                 ` : '<p class="text-muted">No address</p>'}
                             </div>
                         </div>
@@ -178,6 +179,14 @@ const OrderDetailModal = (() => {
                             </table>
                         </div>
                     </div>
+        `;
+
+        // SECURITY: Use DOMPurify to sanitize HTML before setting
+        content.innerHTML = DOMPurify.sanitize(html, {
+            ALLOWED_TAGS: ['div', 'p', 'h6', 'small', 'strong', 'a', 'span', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'button', 'form', 'input', 'select', 'option', 'textarea', 'label', 'ul', 'li', 'ol', 'br', 'hr', 'img'],
+            ALLOWED_ATTR: ['class', 'id', 'href', 'alt', 'src', 'type', 'name', 'value', 'data-*'],
+            ALLOW_DATA_ATTR: true
+        });
                 </div>
 
                 <!-- Order Summary -->

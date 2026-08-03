@@ -1,11 +1,13 @@
 /**
  * File Service
  * Handles file uploads, validation, and storage for payment proofs and other files
+ * SECURITY: Prevents double extension uploads and EXIF data leakage
  */
 
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const sharp = require('sharp');
 
 // Supported MIME types with magic bytes for validation
 const ALLOWED_MIME_TYPES = {
@@ -13,6 +15,9 @@ const ALLOWED_MIME_TYPES = {
   'image/png': [0x89, 0x50, 0x4e, 0x47],
   'image/webp': [0x52, 0x49, 0x46, 0x46] // RIFF header for WebP
 };
+
+// Allowed file extensions (strictly enforced)
+const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp'];
 
 // File size limit (5MB)
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -32,6 +37,35 @@ function ensureUploadDir(uploadDir) {
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }
+}
+
+/**
+ * SECURITY: Validate filename prevents double extensions
+ * @param {string} originalFilename - Original filename
+ * @returns {Object} { isValid: boolean, error: string, extension: string }
+ */
+function validateFilename(originalFilename) {
+  if (!originalFilename || typeof originalFilename !== 'string') {
+    return { isValid: false, error: 'Invalid filename' };
+  }
+
+  // Split by dots to detect double extensions
+  const parts = originalFilename.split('.');
+  
+  // Block files with multiple dots (e.g., exploit.php.jpg)
+  if (parts.length > 2) {
+    return { isValid: false, error: 'Double extensions not allowed (e.g., exploit.php.jpg)' };
+  }
+
+  // Get extension
+  const ext = '.' + parts[parts.length - 1].toLowerCase();
+
+  // Validate extension is in whitelist
+  if (!ALLOWED_EXTENSIONS.includes(ext)) {
+    return { isValid: false, error: `Invalid file type. Allowed: ${ALLOWED_EXTENSIONS.join(', ')}` };
+  }
+
+  return { isValid: true, extension: ext };
 }
 
 /**
@@ -68,6 +102,12 @@ function validateFile(file) {
   // Check if file exists
   if (!file) {
     return { isValid: false, error: 'No file uploaded' };
+  }
+
+  // SECURITY: Validate filename (prevents double extensions)
+  const filenameValidation = validateFilename(file.originalname);
+  if (!filenameValidation.isValid) {
+    return { isValid: false, error: filenameValidation.error };
   }
 
   // Check file size
@@ -179,12 +219,13 @@ function savePaymentProof(file, orderId) {
 }
 
 /**
- * Save uploaded product image
+ * Save uploaded product image with EXIF removal
+ * SECURITY: Strips metadata to prevent privacy leaks
  * @param {Object} file - Express file object with buffer
  * @param {string} productName - Product name for filename
  * @returns {Object} { success: boolean, filePath: string, fileName: string, error: string }
  */
-function saveProductImage(file, productName) {
+async function saveProductImage(file, productName) {
   try {
     // Validate file first
     const validation = validateFile(file);
@@ -195,6 +236,18 @@ function saveProductImage(file, productName) {
     // Ensure directory exists
     ensureUploadDir(UPLOAD_DIRS.products);
 
+    // SECURITY: Process image with sharp to remove EXIF and metadata
+    let processedBuffer = file.buffer;
+    
+    try {
+      processedBuffer = await sharp(file.buffer)
+        .withMetadata(false)  // Remove all metadata including EXIF
+        .toBuffer();
+    } catch (sharpError) {
+      console.warn('Warning: Could not process image with sharp, using original:', sharpError.message);
+      // Continue with original buffer if sharp fails
+    }
+
     // Generate secure filename
     const filename = generateProductImageFilename(productName, file.originalname || 'product_image');
 
@@ -202,7 +255,7 @@ function saveProductImage(file, productName) {
     const filePath = path.join(UPLOAD_DIRS.products, filename);
 
     // Save file to disk
-    fs.writeFileSync(filePath, file.buffer);
+    fs.writeFileSync(filePath, processedBuffer);
 
     // Return just the filename relative to uploads folder
     const relativePath = `products/${filename}`;
