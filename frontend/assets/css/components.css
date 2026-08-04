@@ -17,6 +17,10 @@
   transition: all var(--transition-base);
   user-select: none;
   white-space: nowrap;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn:disabled {
@@ -106,6 +110,8 @@
 .btn-icon {
   width: 40px;
   height: 40px;
+  min-width: 40px;
+  min-height: 40px;
   padding: 0;
   display: inline-flex;
   align-items: center;
@@ -116,12 +122,16 @@
 .btn-icon-sm {
   width: 32px;
   height: 32px;
+  min-width: 32px;
+  min-height: 32px;
   font-size: var(--font-size-sm);
 }
 
 .btn-icon-lg {
   width: 48px;
   height: 48px;
+  min-width: 48px;
+  min-height: 48px;
   font-size: var(--font-size-lg);
 }
 
@@ -328,6 +338,9 @@
   border: var(--input-border);
   border-radius: var(--input-border-radius);
   transition: all var(--transition-fast);
+  min-height: 44px;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .form-control:focus {
