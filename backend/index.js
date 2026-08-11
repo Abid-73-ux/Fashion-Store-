@@ -58,10 +58,7 @@ app.use(csrfProtection);
 app.use(csrfTokenGenerator);
 
 // SECURITY: Configure CORS
-const corsOptions = securityHeaders.configureCORS({
-    origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000'],
-    credentials: true  // Allow cookies in CORS requests
-});
+const corsOptions = securityHeaders.configureCORS();
 app.use(cors(corsOptions));
 
 // SECURITY: Apply rate limiting to all routes
