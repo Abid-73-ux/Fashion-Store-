@@ -56,8 +56,30 @@ exports.setupSecurityHeaders = (app) => {
  * CORS Configuration
  */
 exports.configureCORS = (corsOptions = {}) => {
+    const allowedOrigins = process.env.CORS_ORIGIN?.split(',').map(origin => origin.trim()) || ['http://localhost:3000'];
+    
     const defaultOptions = {
-        origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000'],
+        origin: (origin, callback) => {
+            // Allow requests with no origin (mobile apps, Postman, etc.)
+            if (!origin) return callback(null, true);
+            
+            // Allow if origin is in the allowed list
+            if (allowedOrigins.includes(origin)) {
+                return callback(null, true);
+            }
+            
+            // Allow Vercel preview deployments
+            if (origin.includes('vercel.app')) {
+                return callback(null, true);
+            }
+            
+            // Allow Render backend
+            if (origin.includes('onrender.com')) {
+                return callback(null, true);
+            }
+            
+            callback(new Error('Not allowed by CORS'));
+        },
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization'],
